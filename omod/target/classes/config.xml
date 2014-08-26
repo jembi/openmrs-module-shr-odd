@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module configVersion="1.2">
+
+	<!-- Module Properties -->
+	<id>shr-odd</id>
+	<name>SHR On Demand Documents</name>
+	<version>0.1.0</version>
+	<package>org.openmrs.module.shr-odd</package>
+	<author>OpenSHR Community</author>
+	<description>
+		Provides content generators for CDA documents
+	</description>
+	<updateURL>https://modules.openmrs.org/modules/download/shr-odd/update.rdf</updateURL>
+	<require_version>1.10.0-SNAPSHOT</require_version>
+	<!-- / Module Properties -->
+
+	
+	<!-- Required Modules -->
+	<require_modules>
+																
+		<require_module version="">
+			org.openmrs.module.shr-cdahandler
+		</require_module>
+			
+	</require_modules>
+	<!-- / Required Modules -->
+	
+	<!-- Module Activator -->
+	<activator>org.openmrs.module.shr-odd.shr-oddActivator</activator>
+	
+	
+	<!-- Maps hibernate file's, if present -->
+	<mappingFiles>
+				
+	</mappingFiles>
+
+	<!-- Internationalization -->
+	<!-- All message codes should start with shr-odd. -->
+	<messages>
+		<lang>en</lang>
+		<file>messages.properties</file>
+	</messages>
+	<messages>
+		<lang>fr</lang>
+		<file>messages_fr.properties</file>
+	</messages>
+	<messages>
+		<lang>es</lang>
+		<file>messages_es.properties</file>
+	</messages>
+	<!-- /Internationalization -->
+
+</module>
+

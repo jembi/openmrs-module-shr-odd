@@ -11,4 +11,7 @@
   <concept_class concept_class_id="41" retired="0" description="Drug forms" uuid="b56429ef-1000-42d4-9a9f-01443455b9a6" name="Drug Form" creator="2" date_created="2014-05-02"/>
   <order_type order_type_id="40" description="Request to perform a procedure" retired="0" uuid="9506c6fe-d517-4707-a0c8-e72da23ff16d" name="Procedure Order" creator="2" date_created="2014-05-02" java_class_name="org.openmrs.module.shr.cdahandler.order.ProcedureOrder"/>
   <order_type order_type_id="41" description="Request to perform an observation" retired="0" uuid="7f14cf98-8452-42c0-acac-2ba96c8e66ce" name="Observation Order" creator="2" date_created="2014-05-02" java_class_name="org.openmrs.module.shr.cdahandler.order.ObservationOrder"/>
+  
+  <odd_type uuid="85c89cb3-7547-418d-a3d7-1a4666b38c5d" name="CCD" type_id="1" retired="0" creator="2" date_created="2014-04-05" java_class_name="org.openmrs.module.shr.odd.generator.impl.CcdGenerator"/>
+  
 </dataset>

@@ -14,14 +14,14 @@ public final class OnDemandDocumentConfiguration {
 	private static final Object s_lockObject = new Object();
 	private static OnDemandDocumentConfiguration s_instance;
 	// Some data is borrowed from the cdaImport configuration
-	private CdaHandlerConfiguration m_cdaImportConfiguration;
+	private CdaHandlerConfiguration m_cdaImportConfiguration = CdaHandlerConfiguration.getInstance();
 	
 	// Private Ctor
 	private OnDemandDocumentConfiguration()
 	{
 		
 	}
-	
+
 	/**
      * Creates or gets the instance of the configuration
      */
@@ -43,7 +43,7 @@ public final class OnDemandDocumentConfiguration {
      */
     public String getOnDemandDocumentRoot()
     {
-    	return this.m_cdaImportConfiguration.getShrRoot() + ".10";
+    	return this.m_cdaImportConfiguration.getShrRoot() + ".100";
     }
     
 	/**

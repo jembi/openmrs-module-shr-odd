@@ -14,6 +14,7 @@ import junit.framework.Assert;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
+import org.junit.Test;
 import org.marc.everest.formatters.FormatterUtil;
 import org.marc.everest.interfaces.IResultDetail;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
@@ -28,6 +29,7 @@ import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
 import org.openmrs.module.shr.cdahandler.exception.DocumentValidationException;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
+import org.openmrs.module.shr.odd.subscriber.GenericDocumentSubscriber;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.util.OpenmrsConstants;
 import org.slf4j.LoggerFactory;
@@ -56,6 +58,7 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 	{
 		this.m_oddService = Context.getService(OnDemandDocumentService.class);
 		this.m_importService = Context.getService(CdaImportService.class);
+
 		GlobalProperty saveDir = new GlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_COMPLEX_OBS_DIR, "C:\\data\\");
 		Context.getAdministrationService().setGlobalProperty(CdaHandlerConfiguration.PROP_VALIDATE_CONCEPT_STRUCTURE, "false");
 		Context.getAdministrationService().setGlobalProperty("order.nextOrderNumberSeed", "1");
@@ -69,8 +72,9 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 	/**
 	 * Do the parsing of a CDA
 	 */
-	private String doParseCda(String resourceName)
+	private Visit doParseCda(String resourceName)
 	{
+		
 		URL validAphpSample = this.getClass().getResource(resourceName);
 		File fileUnderTest = new File(validAphpSample.getFile());
 		FileInputStream fs = null;
@@ -79,7 +83,7 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 			fs = new FileInputStream(fileUnderTest);
 			Visit parsedVisit = this.m_importService.importDocument(fs);
 			assertEquals(parsedVisit, Context.getVisitService().getVisitByUuid(parsedVisit.getUuid()));
-			return parsedVisit.getUuid();
+			return parsedVisit;
 		}
 		catch(DocumentValidationException e)
 		{
@@ -104,26 +108,19 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 	/**
 	 * Test the generation of an APS document
 	 */
-	public void testGenerateAps()
+	@Test
+	public void testWasTriggerFired()
 	{
-		
+		// Register the handler for a generic
+		this.m_importService.subscribeImport(null, GenericDocumentSubscriber.getInstance());
 		// First import the APS document
-		this.doParseCda("validAphpSamplFullSections.xml");
-		
+		Visit visit = this.doParseCda("/validAphpSampleFullSections.xml");
 		// Get patient information by name
 		List<Patient> patient = Context.getPatientService().getPatients("Sarah Levin");
 		Assert.assertEquals(1, patient.size());
 		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
 		Assert.assertEquals(1, oddDocuments.size());
-		
-		// Generate the odd
-		try {
-	        ClinicalDocument generatedDocument = this.m_oddService.generateOnDemandDocument(oddDocuments.get(0));
-	        // Assert a few items in the generated document
-        }
-        catch (Exception e) {
-        	fail(e.getMessage());
-        }
-		
 	}
+	
+	
 }

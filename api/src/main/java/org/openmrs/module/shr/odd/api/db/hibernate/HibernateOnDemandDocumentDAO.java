@@ -14,7 +14,7 @@ import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
 /**
  * On-demand document DAO class
  */
-public class OnDemandDocumentDAOImpl implements OnDemandDocumentDAO {
+public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
 	
 	// Hibernate session factory
 	private SessionFactory m_sessionFactory;
@@ -100,7 +100,7 @@ public class OnDemandDocumentDAOImpl implements OnDemandDocumentDAO {
 	 */
 	@Override
 	public OnDemandDocumentType saveOnDemandDocumentType(OnDemandDocumentType documentType) {
-		this.m_sessionFactory.getCurrentSession().save(documentType);
+		this.m_sessionFactory.getCurrentSession().saveOrUpdate(documentType);
 		return documentType;
 	}
 	
@@ -124,7 +124,7 @@ public class OnDemandDocumentDAOImpl implements OnDemandDocumentDAO {
 	 */
 	@Override
 	public OnDemandDocumentEncounterLink saveOnDemandDocumentEncounterLink(OnDemandDocumentEncounterLink link) {
-		this.m_sessionFactory.getCurrentSession().save(link);
+		this.m_sessionFactory.getCurrentSession().saveOrUpdate(link);
 		return link;
 	}
 
@@ -139,6 +139,7 @@ public class OnDemandDocumentDAOImpl implements OnDemandDocumentDAO {
     /**
      * Get class by UUID
      */
+    @SuppressWarnings("unchecked")
     private <T> T getClassByUuid(Class<T> clazz, String uuid)
     {
     	return (T)this.m_sessionFactory.getCurrentSession().createCriteria(clazz).add(Restrictions.eq("uuid", uuid)).uniqueResult();

@@ -11,8 +11,8 @@
 			</not>
 		</preConditions>
 		<comment>Create On-Demand Documents Type Table</comment>
-		<createTable tableName="odd_reg">
-			<column name="odd_type_id" type="int" autoIncrement="true">
+		<createTable tableName="odd_type">
+			<column name="type_id" type="int" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false"/>
 			</column>
 			<column name="uuid" type="string(48)" defaultValueComputed="uuid()">
@@ -70,7 +70,7 @@
 	   		</column>
 	   		<column name="date_changed" type="date"/>
 	   		<column name="date_voided" type="date"/>
-	   		<column name="accessionNumber" type="string(255)">
+	   		<column name="accession_number" type="string(255)">
 	   			<constraints unique="true"/>
 	   		</column>
 	   		<column name="patient_id" type="int">

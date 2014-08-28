@@ -19,7 +19,7 @@
 	<!-- Required Modules -->
 	<require_modules>
 																
-		<require_module version="">
+		<require_module version="0.1.0">
 			org.openmrs.module.shr-cdahandler
 		</require_module>
 			
@@ -27,12 +27,12 @@
 	<!-- / Required Modules -->
 	
 	<!-- Module Activator -->
-	<activator>org.openmrs.module.shr-odd.shr-oddActivator</activator>
+	<activator>org.openmrs.module.shr-odd.shr.odd.OnDemandDocumentsActivator</activator>
 	
 	
 	<!-- Maps hibernate file's, if present -->
 	<mappingFiles>
-				
+		OnDemandDocument.hbm.xml			
 	</mappingFiles>
 
 	<!-- Internationalization -->

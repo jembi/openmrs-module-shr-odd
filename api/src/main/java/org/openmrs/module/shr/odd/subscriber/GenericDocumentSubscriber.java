@@ -1,10 +1,19 @@
 package org.openmrs.module.shr.odd.subscriber;
 
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.openmrs.Visit;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.api.CdaImportSubscriber;
 import org.openmrs.module.shr.odd.OnDemandDocumentConstants;
+import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
+import org.openmrs.module.shr.odd.configuration.OnDemandDocumentConfiguration;
+import org.openmrs.module.shr.odd.exception.OnDemandDocumentException;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
+import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
 import org.openmrs.module.shr.odd.util.OddMetadataUtil;
 
 /**
@@ -13,11 +22,21 @@ import org.openmrs.module.shr.odd.util.OddMetadataUtil;
  */
 public class GenericDocumentSubscriber implements CdaImportSubscriber {
 	
+	
+	
+	// Singleton stuff
 	private static Object s_lockObject = new Object();
 	private static GenericDocumentSubscriber s_instance;
 	
-	// Meta-data utility
+	// Meta-data utilities & configuration
 	protected final OddMetadataUtil m_metaDataUtil = OddMetadataUtil.getInstance();
+	protected final OnDemandDocumentConfiguration m_configuration = OnDemandDocumentConfiguration.getInstance();
+	
+	// ODD service
+	protected final OnDemandDocumentService m_oddService = Context.getService(OnDemandDocumentService.class);
+	
+	// Get the log 
+	protected final Log log = LogFactory.getLog(this.getClass());
 	
 	/**
 	 * Private ctor for singleton
@@ -45,13 +64,31 @@ public class GenericDocumentSubscriber implements CdaImportSubscriber {
 	@Override
 	public void onDocumentImported(ClinicalDocument rawDocument, Visit processedVisit) {
 		
-		// Document was imported, and it was a generic document! 
-		// So we'll register an ODD for the patient
-		OnDemandDocumentRegistration registration = new OnDemandDocumentRegistration();
-		registration.setPatient(processedVisit.getPatient());
-		registration.setType(m_metaDataUtil.getOddType(OnDemandDocumentConstants.ODD_TYPE_CCD_UUID));
+		// Get the document type
+		OnDemandDocumentType documentType = this.m_metaDataUtil.getOddType(OnDemandDocumentConstants.ODD_TYPE_CCD_UUID);
+		if(documentType == null)
+			throw new OnDemandDocumentException("CCD Document Type not registered");
 		
+		// Generate the accession number
+		String accessionNumber = String.format("%s.%s.%s", this.m_configuration.getOnDemandDocumentRoot(), documentType.getId(), processedVisit.getPatient().getId());
+		log.info(String.format("Storing document with AN %s", accessionNumber));
 		
+		// Find already registered
+		List<OnDemandDocumentRegistration> existingDocs = this.m_oddService.getOnDemandDocumentRegistrationsByAccessionNumber(accessionNumber);
+		OnDemandDocumentRegistration registration = null;
+		if(existingDocs.size() == 1) // update
+		{
+			registration = existingDocs.get(0);
+		}
+		else
+		{
+			registration = new OnDemandDocumentRegistration();
+			registration.setPatient(processedVisit.getPatient());
+			registration.setAccessionNumber(accessionNumber);
+			registration.setType(documentType);
+		}
+		
+		this.m_oddService.saveOnDemandDocument(registration);
 	}
 	
 }

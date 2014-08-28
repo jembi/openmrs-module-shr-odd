@@ -1,5 +1,6 @@
 package org.openmrs.module.shr.odd.model;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.openmrs.Auditable;
@@ -21,7 +22,9 @@ public class OnDemandDocumentRegistration extends BaseOpenmrsData implements Aud
 	// The name of the class which generates the ODD
 	private OnDemandDocumentType type;
 	// Encounter links 
-	private Set<OnDemandDocumentEncounterLink> encounterLinks;
+	private Set<OnDemandDocumentEncounterLink> encounterLinks = new HashSet<OnDemandDocumentEncounterLink>();
+	// Accession number for the ODD
+	private String accessionNumber;
 	
 	/**
 	 * Gets the unique identifier for this registration
@@ -71,6 +74,38 @@ public class OnDemandDocumentRegistration extends BaseOpenmrsData implements Aud
      */
     public void setType(OnDemandDocumentType type) {
     	this.type = type;
+    }
+
+	
+    /**
+     * @return the encounterLinks
+     */
+    public Set<OnDemandDocumentEncounterLink> getEncounterLinks() {
+    	return encounterLinks;
+    }
+
+	
+    /**
+     * @param encounterLinks the encounterLinks to set
+     */
+    public void setEncounterLinks(Set<OnDemandDocumentEncounterLink> encounterLinks) {
+    	this.encounterLinks = encounterLinks;
+    }
+
+	
+    /**
+     * @return the accessionNumber
+     */
+    public String getAccessionNumber() {
+    	return accessionNumber;
+    }
+
+	
+    /**
+     * @param accessionNumber the accessionNumber to set
+     */
+    public void setAccessionNumber(String accessionNumber) {
+    	this.accessionNumber = accessionNumber;
     }
 
 }

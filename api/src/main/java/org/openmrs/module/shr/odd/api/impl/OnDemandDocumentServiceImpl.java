@@ -11,7 +11,6 @@ import org.openmrs.module.shr.odd.generator.CdaGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The On-demand document service implementation
@@ -19,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements OnDemandDocumentService {
 	
 	// Dao
-	@Autowired
 	private OnDemandDocumentDAO dao;
 
 	/**
@@ -127,6 +125,14 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	@Override
     public List<OnDemandDocumentEncounterLink> getOnDemandDocumentEncounters(OnDemandDocumentRegistration oddRegistration) {
 		return this.dao.getOnDemandDocumentEncounterLinks(oddRegistration, false);
+    }
+
+	
+    /**
+     * @param dao the dao to set
+     */
+    public void setDao(OnDemandDocumentDAO dao) {
+    	this.dao = dao;
     }
 	
 	

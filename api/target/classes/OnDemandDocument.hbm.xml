@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="org.openmrs.module.shr.odd.model">
+
+	<!--  On Demand Document Type  -->
+	<class name="OnDemandDocumentType" table="odd_type">
+		<id name="typeId" type="int" column="type_id" unsaved-value="0">
+			<generator class="native">
+				<param name="sequence">odd_type_id_seq</param>
+			</generator>
+		</id>
+		<discriminator column="type_id" insert="false" />
+		<property name="uuid" type="java.lang.String"
+			column="uuid" length="38" unique="true" />
+		<property name="dateCreated" type="java.util.Date" column="date_created" not-null="true" length="19"/>
+		<property name="retired" type="java.lang.Boolean" column="retired" length="1" not-null="true"/>
+		<property name="dateRetired" type="java.util.Date" column="date_retired" length="19"/>
+		<property name="retiredReason" type="java.lang.String" column="retired_reason" length="255"/>
+		<property name="javaClassName" type="java.lang.String" column="java_class_name"/>
+		<property name="name" type="java.lang.String" column="name"/>
+		<!-- bi-directional many-to-one association to User -->
+		<many-to-one name="retiredBy" class="org.openmrs.User" column="retired_by" />
+		<!-- bi-directional many-to-one association to User -->
+		<many-to-one name="creator" class="org.openmrs.User" not-null="true" />
+	</class>
+
+	<!--  On Demand Document -->
+	<class name="OnDemandDocumentRegistration" table="odd_reg">
+		<id name="oddId" type="int" column="odd_id" unsaved-value="0">
+			<generator class="native">
+				<param name="sequence">odd_reg_id_seq</param>
+			</generator>
+		</id>
+		<discriminator column="odd_id" insert="false" />
+		<property name="uuid" type="java.lang.String"
+			column="uuid" length="38" unique="true" />
+		
+		<property name="dateCreated" type="java.util.Date"
+			column="date_created" not-null="true" length="19" />
+		<property name="voided" type="java.lang.Boolean" column="voided"
+			length="1" not-null="true" />
+		<property name="dateVoided" type="java.util.Date"
+			column="date_voided" length="19" />
+		<property name="voidReason" type="java.lang.String"
+			column="void_reason" length="255" />
+		<property name="dateChanged" type="java.util.Date" 
+			column="date_changed" not-null="false" length="19" />
+
+		<!-- Associations -->
+		<!-- bi-directional many-to-one association to User -->
+		<many-to-one name="changedBy" class="org.openmrs.User" not-null="false">
+			<column name="changed_by" />
+		</many-to-one>
+
+		<!-- bi-directional many-to-one association to Patient -->
+		<many-to-one name="patient" class="org.openmrs.Patient" not-null="true">
+			<column name="patient_id" />
+		</many-to-one>
+
+		<!-- bi-directional many-to-one association to type -->
+		<many-to-one name="type" class="OnDemandDocumentType" not-null="true">
+			<column name="type_id" />
+		</many-to-one>
+		
+		<!-- bi-directional one-to-many association to Encounter links -->
+		<set name="encounterLinks" inverse="true" cascade="all" order-by="encounter_id" access="field" batch-size="25">
+			<key column="odd_id" />
+			<one-to-many class="OnDeamndDocumentEncounterLink" />
+		</set>
+		
+		<!-- bi-directional many-to-one association to User -->
+		<many-to-one name="creator" class="org.openmrs.User" not-null="true">
+			<column name="creator" />
+		</many-to-one>
+		
+		<many-to-one name="voidedBy" class="org.openmrs.User">
+			<column name="voided_by" />
+		</many-to-one>
+	</class>
+
+	<!--  On Demand Document -->
+	<class name="OnDemandDocumentRegistration" table="odd_encounter">
+		<id name="link" type="int" column="link_id" unsaved-value="0">
+			<generator class="native">
+				<param name="sequence">odd_encounter_id_seq</param>
+			</generator>
+		</id>
+		<discriminator column="link_id" insert="false" />
+		
+		<property name="dateCreated" type="java.util.Date"
+			column="date_created" not-null="true" length="19" />
+		<property name="voided" type="java.lang.Boolean" column="voided"
+			length="1" not-null="true" />
+		<property name="dateVoided" type="java.util.Date"
+			column="date_voided" length="19" />
+		<property name="voidReason" type="java.lang.String"
+			column="void_reason" length="255" />
+		<property name="dateChanged" type="java.util.Date" 
+			column="date_changed" not-null="false" length="19" />
+
+		<!-- Associations -->
+		<!-- bi-directional many-to-one association to User -->
+		<many-to-one name="changedBy" class="org.openmrs.User" not-null="false">
+			<column name="changed_by" />
+		</many-to-one>
+		
+		<!-- bi-directional many-to-one association to User -->
+		<many-to-one name="creator" class="org.openmrs.User" not-null="true">
+			<column name="creator" />
+		</many-to-one>
+		
+		<many-to-one name="voidedBy" class="org.openmrs.User">
+			<column name="voided_by" />
+		</many-to-one>
+		
+		<!--  Link to the odd -->
+		<many-to-one name="registration" class="OnDemandDocumentRegistration">
+			<column name="odd_id"/>
+		</many-to-one>
+		
+		<!--  Link to the encounter -->
+		<many-to-one name="registration" class="org.openmrs.Encounter">
+			<column name="encounter_id"/>
+		</many-to-one>
+	</class>
+</hibernate-mapping>

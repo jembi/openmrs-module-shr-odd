@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+	<!--  Creates the On-Demand Document Types Table  -->
+	<changeSet dbms="mysql" id="shr-odd-type-create" author="justin">
+		<preConditions>
+			<not>
+				<tableExists tableName="odd_type"/>
+			</not>
+		</preConditions>
+		<comment>Create On-Demand Documents Type Table</comment>
+		<createTable tableName="odd_reg">
+			<column name="odd_type_id" type="int" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="uuid" type="string(48)" defaultValueComputed="uuid()">
+				<constraints nullable="false"/>
+			</column>
+			<column name="creator" type="int">
+	   			<constraints nullable="false"/>
+	   		</column>
+	   		<column name="retired_by" type="int"/>
+	   		<column name="date_created" type="date" defaultValueComputed="now()">
+	   			<constraints nullable="false"/>
+	   		</column>
+	   		<column name="date_retired" type="date"/>
+	   		<column name="retired_reason" type="string(255)"/>
+	   		<column name="retired" type="boolean" defaultValueBoolean="false">
+	   			<constraints nullable="false"/>
+	   		</column>
+	   		<column name="name" type="string(255)">
+	   			<constraints nullable="false"/>
+			</column>
+	   		<column name="java_class_name" type="string(255)">
+	   			<constraints nullable="false"/>
+	   		</column>
+ 		</createTable>
+		<addForeignKeyConstraint constraintName="odd_type_creator_id_fk" referencedTableName="users" baseColumnNames="creator" baseTableName="odd_type" referencedColumnNames="user_id"/>
+	   	<addForeignKeyConstraint constraintName="odd_type_changed_by_fk" referencedTableName="users" baseColumnNames="changed_by" baseTableName="odd_type" referencedColumnNames="user_id"/>
+	   	<addForeignKeyConstraint constraintName="odd_type_voided_by_fk" referencedTableName="users" baseColumnNames="voided_by" baseTableName="odd_type" referencedColumnNames="user_id"/>
+ 		
+	</changeSet>
+	
+	<!--  Creates the On-Demand Documents Registration Table -->
+	<changeSet dbms="mysql" id="shr-odd-reg-create" author="justin">
+	   	<preConditions>
+		   	<not>
+	   			<tableExists tableName="odd_reg"/>
+	   		</not>
+	   	</preConditions>
+	   	<comment>Create On-Demand Documents Table</comment>
+	   	<createTable tableName="odd_reg">
+	   		<column name="odd_id" type="int" autoIncrement="true">
+	   			<constraints primaryKey="true" nullable="false"/>
+	   		</column>
+	   		<column name="uuid" type="string(48)" defaultValueComputed="uuid()">
+	 		   	<constraints nullable="false"/>
+	   		</column>
+	   		<column name="creator" type="int">
+	   			<constraints nullable="false"/>
+	   		</column>
+	   		<column name="changed_by" type="int"/>
+	   		<column name="voided_by" type="int"/>
+ 			<column name="void_reason" type="string(255)"/>
+	   		<column name="voided" type="boolean" defaultValueBoolean="false"/>
+	   		<column name="date_created" type="date" defaultValueComputed="now()">
+	   			<constraints nullable="false"/>
+	   		</column>
+	   		<column name="date_changed" type="date"/>
+	   		<column name="date_voided" type="date"/>
+	   		<column name="accessionNumber" type="string(255)">
+	   			<constraints unique="true"/>
+	   		</column>
+	   		<column name="patient_id" type="int">
+	   			<constraints nullable="false"/>
+	   		</column>
+	   		<column name="type_id" type="int">
+	   			<constraints nullable="false"/>
+	   		</column>
+	   	</createTable>
+	   	<addForeignKeyConstraint constraintName="odd_reg_type_id_fk" referencedTableName="odd_type" baseColumnNames="type_id" baseTableName="odd_reg" referencedColumnNames="type_id"/>
+	   	<addForeignKeyConstraint constraintName="odd_reg_creator_id_fk" referencedTableName="users" baseColumnNames="creator" baseTableName="odd_reg" referencedColumnNames="user_id"/>
+	   	<addForeignKeyConstraint constraintName="odd_reg_changed_by_fk" referencedTableName="users" baseColumnNames="changed_by" baseTableName="odd_reg" referencedColumnNames="user_id"/>
+	   	<addForeignKeyConstraint constraintName="odd_reg_voided_by_fk" referencedTableName="users" baseColumnNames="voided_by" baseTableName="odd_reg" referencedColumnNames="user_id"/>
+   </changeSet>
+
+	<!--  Creates the On-Demand Documents Registration to Encounters Link Table -->
+	<changeSet dbms="mysql" id="shr-odd-enc-link-create" author="justin">
+	   	<preConditions>
+		   	<not>
+	   			<tableExists tableName="odd_encounter"/>
+	   		</not>
+	   	</preConditions>
+	   	<comment>Create On-Demand Documents to Encounter Table</comment>
+	   	<createTable tableName="odd_encounter">
+	   		<!--  Surrogate PK -->
+	   		<column name="link_id" type="int">
+	   			<constraints primaryKey="true" nullable="false"/>
+	   		</column>
+	   		<column name="odd_id" type="int">
+	   			<constraints nullable="false"/>
+	   		</column>
+	   		<column name="encounter_id" type="int">
+	   			<constraints nullable="false"/>
+	   		</column>
+	   		<column name="creator" type="int">
+	   			<constraints nullable="false"/>
+	   		</column>
+	   		<column name="changed_by" type="int"/>
+	   		<column name="voided_by" type="int"/>
+	   		<column name="void_reason" type="string(255)"/>
+	   		<column name="voided" type="boolean" defaultValueBoolean="false"/>
+	   		<column name="date_created" type="date" defaultValueComputed="now()">
+	   			<constraints nullable="false"/>
+	   		</column>
+	   		<column name="date_changed" type="date"/>
+	   		<column name="date_voided" type="date"/>
+	   	</createTable>
+	   	<addUniqueConstraint tableName="odd_encounter" columnNames="odd_id,encounter_id,date_voided"/>
+	   	<addForeignKeyConstraint constraintName="odd_encounter_odd_id_fk" referencedTableName="odd_reg" baseColumnNames="odd_id" baseTableName="odd_encounter" referencedColumnNames="odd_id"/>
+	   	<addForeignKeyConstraint constraintName="odd_encounter_encounter_id_fk" referencedTableName="encounter" baseColumnNames="encounter_id" baseTableName="odd_encounter" referencedColumnNames="encounter_id"/>
+	   	<addForeignKeyConstraint constraintName="odd_encounter_creator_id_fk" referencedTableName="users" baseColumnNames="creator" baseTableName="odd_encounter" referencedColumnNames="user_id"/>
+	   	<addForeignKeyConstraint constraintName="odd_encounter_changed_by_fk" referencedTableName="users" baseColumnNames="changed_by" baseTableName="odd_encounter" referencedColumnNames="user_id"/>
+	   	<addForeignKeyConstraint constraintName="odd_encounter_voided_by_fk" referencedTableName="users" baseColumnNames="voided_by" baseTableName="odd_encounter" referencedColumnNames="user_id"/>
+   </changeSet>
+
+</databaseChangeLog>

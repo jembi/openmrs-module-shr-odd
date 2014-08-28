@@ -14,30 +14,72 @@
 package org.openmrs.module.shr.odd;
 
 
-import org.apache.commons.logging.Log; 
+import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openmrs.module.Activator;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.ModuleActivator;
+import org.openmrs.module.shr.cdahandler.api.CdaImportService;
+import org.openmrs.module.shr.odd.subscriber.GenericDocumentSubscriber;
 
 /**
  * This class contains the logic that is run every time this module is either started or stopped.
  */
-public class OnDemandDocumentsActivator implements Activator {
+public class OnDemandDocumentsActivator implements ModuleActivator {
 	
 	protected Log log = LogFactory.getLog(getClass());
+	
+	/**
+	 * Register subscribers
+	 */
+	private void registerSubscribers()
+	{
+		CdaImportService importService = Context.getService(CdaImportService.class);
+		importService.subscribeImport(null, GenericDocumentSubscriber.getInstance());
+	}
+	
+	/**
+	 * @see ModuleActivator#contextRefreshed()
+	 */
+	public void contextRefreshed() {
+		this.registerSubscribers();
+		log.info("SHR ODD Module refreshed");
+	}
+	
+	/**
+	 * @see ModuleActivator#started()
+	 */
+	public void started() {
+		this.registerSubscribers();
+		log.info("SHR ODD Module started");
 		
-	/**
-	 * @see Activator#startup()
-	 */
-	public void startup() {
-		log.info("Starting shr-odd");
 	}
 	
 	/**
-	 * @see Activator#shutdown()
+	 * @see ModuleActivator#stopped()
 	 */
-	public void shutdown() {
-		log.info("Shutting down shr-odd");
+	public void stopped() {
+		log.info("SHR ODD Module stopped");
 	}
 	
+	/**
+	 * @see ModuleActivator#willRefreshContext()
+	 */
+	public void willRefreshContext() {
+		log.info("Refreshing SHR ODD Module");
+	}
+	
+	/**
+	 * @see ModuleActivator#willStart()
+	 */
+	public void willStart() {
+		log.info("Starting SHR ODD Module");
+	}
+	
+	/**
+	 * @see ModuleActivator#willStop()
+	 */
+	public void willStop() {
+		log.info("Stopping SHR ODD Module");
+	}
 		
 }

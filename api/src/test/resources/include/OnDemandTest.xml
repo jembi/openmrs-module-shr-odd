@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <active_list_type active_list_type_id="1" name="Allergy" description="Dude" date_created="2010-05-25 12:00:00" creator="1" retired="0" uuid="1234567890"/>
+  <active_list_type active_list_type_id="2" name="Problem" description="Massive" date_created="2010-05-25 12:00:00" creator="1" retired="0" uuid="0123456789"/>
+  <active_list active_list_id="1" voided="0" active_list_type_id="1" concept_id="18" person_id="2" creator="1" date_created="2010-05-25 12:00:00" start_date="2010-05-25 12:00:00" uuid="1234567987"/>
+  <active_list active_list_id="2" voided="0" active_list_type_id="2" concept_id="18" person_id="2" creator="1" date_created="2010-05-25 12:00:00" start_date="2010-05-25 12:00:00" uuid="1234567760"/>
+  <active_list_allergy active_list_id="1" allergy_type="POLLEN" severity="MILD"/>
+  <active_list_problem active_list_id="2" sort_weight="1"/>
+  
+  <concept_class concept_class_id="40" retired="0" description="Terms automatically created by the SHR" uuid="4ccac411-eb8e-45d6-8ec1-f6e09602449f" name="Automatically Created" creator="2" date_created="2014-05-02"/>
+  <concept_class concept_class_id="41" retired="0" description="Drug forms" uuid="b56429ef-1000-42d4-9a9f-01443455b9a6" name="Drug Form" creator="2" date_created="2014-05-02"/>
+  <order_type order_type_id="40" description="Request to perform a procedure" retired="0" uuid="9506c6fe-d517-4707-a0c8-e72da23ff16d" name="Procedure Order" creator="2" date_created="2014-05-02" java_class_name="org.openmrs.module.shr.cdahandler.order.ProcedureOrder"/>
+  <order_type order_type_id="41" description="Request to perform an observation" retired="0" uuid="7f14cf98-8452-42c0-acac-2ba96c8e66ce" name="Observation Order" creator="2" date_created="2014-05-02" java_class_name="org.openmrs.module.shr.cdahandler.order.ObservationOrder"/>
+</dataset>

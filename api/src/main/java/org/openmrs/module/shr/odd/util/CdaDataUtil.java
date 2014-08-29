@@ -1,16 +1,27 @@
 package org.openmrs.module.shr.odd.util;
 
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.openmrs.Concept;
 import org.openmrs.EncounterRole;
 import org.openmrs.ImplementationId;
 import org.openmrs.Location;
+import org.openmrs.LocationAttribute;
+import org.openmrs.Patient;
+import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonAddress;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonName;
 import org.openmrs.Provider;
+import org.openmrs.ProviderAttribute;
+import org.openmrs.Relationship;
 import org.openmrs.Visit;
 import org.openmrs.VisitAttribute;
 import org.openmrs.api.context.Context;
@@ -26,10 +37,21 @@ import org.marc.everest.exceptions.FormatterException;
 import org.marc.everest.formatters.FormatterUtil;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssignedAuthor;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssignedEntity;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssociatedEntity;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Author;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AuthoringDevice;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.CustodianOrganization;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Organization;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.OrganizationPartOf;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Participant1;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.PatientRole;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Person;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.RecordTarget;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.AdministrativeGender;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.ContextControl;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.RoleClassAssociative;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.RoleClassPart;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.RoleStatus;
 
 /**
  * The On-Demand document metadata util
@@ -46,7 +68,12 @@ public final class CdaDataUtil {
 	private final OnDemandDocumentConfiguration m_oddConfiguration = OnDemandDocumentConfiguration.getInstance();
 	private final OddMetadataUtil m_metaDataUtil = OddMetadataUtil.getInstance();
 	
+	// NOK codes
+	private static final List<String> s_nextOfKinRelations = Arrays.asList("MTH", "FTH", "GRMTH", "GRFTH", "SIB", "CHILD",
+	    "AUNT", "UNCLE", "PGRMTH", "MGRMTH", "PGRFTH", "MGRFTH", "SON", "DAU", "BRO", "SIS", "DOMPART", "FAMMEMB");
+	
 	private final Pattern m_idPattern = Pattern.compile(m_oddConfiguration.getIdRegex(), Pattern.CASE_INSENSITIVE);
+	
 	/**
 	 * Private ctor
 	 */
@@ -78,6 +105,8 @@ public final class CdaDataUtil {
 		if(matcher.matches())
 		{
 			retVal.setExtension(matcher.group(1));
+			if(retVal.getExtension() == "null")
+				retVal.setExtension(null);
 			retVal.setRoot(matcher.group(2));
 		}
 		return retVal;
@@ -134,24 +163,25 @@ public final class CdaDataUtil {
 
 		// Telecoms
 		retVal.setTelecom(this.createTelecomSet(pvdr.getPerson()));
-		// Get the address 
-		retVal.setAddr(new SET<AD>());
-		for(PersonAddress addr : pvdr.getPerson().getAddresses())
-			retVal.getAddr().add(this.createAD(addr));
+		
+		
+		// Get the address
+		retVal.setAddr(this.createAddressSet(pvdr.getPerson()));
 		
 		// Get names
-		retVal.setAssignedPerson(new Person());
-		retVal.getAssignedPerson().setName(new SET<PN>());
-		for(PersonName name : pvdr.getPerson().getNames())
-			retVal.getAssignedPerson().getName().add(this.createPN(name));
+		retVal.setAssignedPerson(new Person(this.createNameSet(pvdr.getPerson())));
 		
+		PersonAttribute orgAttribute = pvdr.getPerson().getAttribute(CdaHandlerConstants.ATTRIBUTE_NAME_ORGANIZATION);
+		if(orgAttribute != null)
+			retVal.setRepresentedOrganization(this.createOrganization((Location)orgAttribute.getHydratedObject()));
+
 		return retVal;
     }
 
 	/**
 	 * Creates a set of telecoms
 	 */
-	private SET<TEL> createTelecomSet(org.openmrs.Person person) {
+	public SET<TEL> createTelecomSet(org.openmrs.Person person) {
 		SET<TEL> retVal = new SET<TEL>();
 		for(PersonAttribute patt : person.getAttributes())
 		{
@@ -160,7 +190,10 @@ public final class CdaDataUtil {
 				TEL tel = new TEL();
 				if(patt.getValue().contains(":"))
 				{
-					String[] parts = patt.getValue().split(":");
+					String[] parts = {
+							patt.getValue().substring(0, patt.getValue().indexOf(":")),
+							patt.getValue().substring(patt.getValue().indexOf(":") + 1)
+					};
 					tel.setValue(parts[1]);
 					try {
 	                    tel.setUse((SET<CS<TelecommunicationsAddressUse>>) FormatterUtil.fromWireFormat(parts[0], AssignedEntity.class.getMethod("getTelecom", null).getGenericReturnType(), false));
@@ -189,8 +222,6 @@ public final class CdaDataUtil {
 
 		if(name.getPreferred())
 			retVal.setUse(SET.createSET(new CS<EntityNameUse>(EntityNameUse.Legal)));
-		else
-			retVal.setUse(SET.createSET(new CS<EntityNameUse>(EntityNameUse.Search)));
 		
 		// Middle name
 		if(name.getMiddleName() != null)
@@ -232,6 +263,14 @@ public final class CdaDataUtil {
 		AD retVal = AD.fromSimpleAddress(null, addr.getAddress1(), addr.getAddress2(), addr.getCityVillage(), addr.getStateProvince(), addr.getCountry(), addr.getPostalCode());
 		if(addr.getVoided())
 			retVal.setUse(SET.createSET(new CS<PostalAddressUse>(PostalAddressUse.BadAddress)));
+		
+		if(addr.getAddress3() != null)
+			retVal.getPart().add(2, new ADXP(addr.getAddress3(), AddressPartType.AddressLine));
+		if(addr.getAddress4() != null)
+			retVal.getPart().add(3, new ADXP(addr.getAddress4(), AddressPartType.AddressLine));
+		if(addr.getAddress5() != null)
+			retVal.getPart().add(4, new ADXP(addr.getAddress5(), AddressPartType.AddressLine));
+
 		return retVal;
 		
 		
@@ -252,16 +291,62 @@ public final class CdaDataUtil {
 		// Set telecom
 		retVal.setTelecom(this.createTelecomSet(pvdr.getPerson()));
 		
-		// Get the address 
-		retVal.setAddr(new SET<AD>());
-		for(PersonAddress addr : pvdr.getPerson().getAddresses())
-			retVal.getAddr().add(this.createAD(addr));
+		// Get the address
+		retVal.setAddr(this.createAddressSet(pvdr.getPerson()));
 		
 		// Get names
-		retVal.setAssignedAuthorChoice(new Person());
-		retVal.getAssignedAuthorChoiceIfAssignedPerson().setName(new SET<PN>());
-		for(PersonName name : pvdr.getPerson().getNames())
-			retVal.getAssignedAuthorChoiceIfAssignedPerson().getName().add(this.createPN(name));
+		retVal.setAssignedAuthorChoice(new Person(this.createNameSet(pvdr.getPerson())));
+		
+		PersonAttribute orgAttribute = pvdr.getPerson().getAttribute(CdaHandlerConstants.ATTRIBUTE_NAME_ORGANIZATION);
+		if(orgAttribute != null)
+			retVal.setRepresentedOrganization(this.createOrganization((Location)orgAttribute.getHydratedObject()));
+ 
+		return retVal;
+    }
+
+	/**
+	 * Create organization from location
+	 */
+	public Organization createOrganization(Location location) {
+		Organization retVal = new Organization();
+		
+		// Identifiers
+		retVal.setId(new SET<II>());
+		LocationAttribute externalId = this.m_metaDataUtil.getLocationAttribute(location, CdaHandlerConstants.ATTRIBUTE_NAME_EXTERNAL_ID);
+		if(externalId != null)
+			retVal.getId().add(this.parseIIFromString(externalId.getValue().toString()));
+		retVal.getId().add(new II(this.m_cdaConfiguration.getLocationRoot(), location.getId().toString()));
+		
+		// Name , etc. ?
+		if(location.getName() != null)
+			retVal.setName(SET.createSET(new ON((EntityNameUse)null, Arrays.asList(new ENXP(location.getName())))));
+		
+		// Address
+		AD address = AD.fromSimpleAddress(null, location.getAddress1(), location.getAddress2(), location.getCityVillage(), location.getStateProvince(), location.getCountry(), location.getPostalCode());
+		if(location.getAddress3() != null)
+			address.getPart().add(2, new ADXP(location.getAddress3(), AddressPartType.AddressLine));
+		if(location.getAddress4() != null)
+			address.getPart().add(3, new ADXP(location.getAddress4(), AddressPartType.AddressLine));
+		if(location.getAddress5() != null)
+			address.getPart().add(4, new ADXP(location.getAddress5(), AddressPartType.AddressLine));
+		if(address.getPart().size() > 0)
+			retVal.setAddr(SET.createSET(address));
+		
+		if(location.getParentLocation() != null)
+		{
+			retVal.setAsOrganizationPartOf(new OrganizationPartOf());
+			retVal.getAsOrganizationPartOf().setClassCode(RoleClassPart.Part);
+			retVal.getAsOrganizationPartOf().setId(new SET<II>());
+			externalId = this.m_metaDataUtil.getLocationAttribute(location.getParentLocation(), CdaHandlerConstants.ATTRIBUTE_NAME_EXTERNAL_ID);
+			if(externalId != null)
+				retVal.getAsOrganizationPartOf().getId().add(this.parseIIFromString(externalId.getValue().toString()));
+			retVal.getAsOrganizationPartOf().getId().add(new II(this.m_cdaConfiguration.getLocationRoot(), location.getParentLocation().getId().toString()));
+			
+			if(location.getParentLocation().getRetired())
+				retVal.getAsOrganizationPartOf().setStatusCode(RoleStatus.Terminated);
+			else
+				retVal.getAsOrganizationPartOf().setStatusCode(RoleStatus.Active);
+		}
 		
 		return retVal;
     }
@@ -285,14 +370,13 @@ public final class CdaDataUtil {
 		}
 		else
 		{
-			AuthoringDevice device = new AuthoringDevice();
-			device.setSoftwareName(new SC("OpenSHR"));
-			device.setManufacturerModelName(new SC(OpenmrsConstants.OPENMRS_VERSION));
 			// Set Id
-			// TODO: Get root for OpenMRS root oids
 			retVal.getAssignedAuthor().setId(SET.createSET(new II(this.m_cdaConfiguration.getShrRoot(), implementation.getImplementationId())));
 		}
-
+		AuthoringDevice device = new AuthoringDevice();
+		device.setSoftwareName(new SC("OpenSHR"));
+		device.setManufacturerModelName(new SC(OpenmrsConstants.OPENMRS_VERSION));
+		retVal.getAssignedAuthor().setAssignedAuthorChoice(device);
 		return retVal;
 
     }
@@ -325,4 +409,118 @@ public final class CdaDataUtil {
 		}
 		return retVal;
 	}
+
+	/**
+	 * Create the record target
+	 */
+	public RecordTarget createRecordTarget(Patient patient) {
+		RecordTarget retVal = new RecordTarget(ContextControl.OverridingPropagating);
+		PatientRole patientRole = new PatientRole();
+		org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Patient hl7Patient = new org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Patient();
+		
+		retVal.setPatientRole(patientRole);
+		patientRole.setPatient(hl7Patient);
+		// Identifiers
+		patientRole.setId(new SET<II>());
+		for(PatientIdentifier pid : patient.getActiveIdentifiers())
+			patientRole.getId().add(new II(pid.getIdentifierType().getName(), pid.getIdentifier()));
+		patientRole.getId().add(new II(this.m_cdaConfiguration.getPatientRoot(), patient.getId().toString()));
+		
+		// Address?
+		patientRole.setAddr(this.createAddressSet(patient));
+		
+		// Telecom?
+		patientRole.setTelecom(this.createTelecomSet(patient));
+		
+		// Marital status?
+		PersonAttribute civilStatusCode = patient.getAttribute(CdaHandlerConstants.ATTRIBUTE_NAME_CIVIL_STATUS);
+		if(civilStatusCode != null)
+			hl7Patient.setMaritalStatusCode(this.m_metaDataUtil.getStandardizedCode((Concept)civilStatusCode.getHydratedObject(), CdaHandlerConstants.CODE_SYSTEM_MARITAL_STATUS, CE.class));
+			
+		// Names
+		hl7Patient.setName(this.createNameSet(patient));
+		
+		// Gender and birth
+		hl7Patient.setAdministrativeGenderCode(new AdministrativeGender(patient.getGender(), AdministrativeGender.Male.getCodeSystem()));
+		hl7Patient.setBirthTime(this.createTS(patient.getBirthdate()));
+		hl7Patient.getBirthTime().setDateValuePrecision(TS.DAY);
+		return retVal;
+    }
+
+	/**
+	 * Create a TS from a date
+	 */
+	public TS createTS(Date date) {
+		if(date == null)
+		{
+			TS retVal = new TS();
+			retVal.setNullFlavor(NullFlavor.NoInformation);
+			return retVal;
+		}
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		return new TS(cal); 
+    }
+
+	/**
+	 * Related person
+	 */
+	public Participant1 createRelatedPerson(Relationship relatedPerson, Patient recordTarget) {
+		Participant1 retVal = new Participant1();
+		
+		// Now we want to expose the related person
+		retVal.setTime(this.createTS(relatedPerson.getStartDate()), this.createTS(relatedPerson.getEndDate()));
+		if(retVal.getTime().getLow().isNull() && retVal.getTime().getHigh().isNull()) // collapse null flavor
+			retVal.getTime().setNullFlavor(NullFlavor.NoInformation);
+		
+		
+		// Now we want to expose the person
+		retVal.setAssociatedEntity(new AssociatedEntity());
+		retVal.getAssociatedEntity().setCode(this.parseCodeFromString(relatedPerson.getRelationshipType().getDescription(), CE.class));
+		if(s_nextOfKinRelations.contains(retVal.getAssociatedEntity().getCode().getCode()))
+			retVal.getAssociatedEntity().setClassCode(RoleClassAssociative.NextOfKin);
+		else
+			retVal.getAssociatedEntity().setClassCode(RoleClassAssociative.PersonalRelationship);
+		
+		// Now for the entity themselves
+		org.openmrs.Person relatedToPerson = relatedPerson.getPersonA();
+		if(relatedToPerson.getId().equals(recordTarget))
+			relatedToPerson = relatedPerson.getPersonB();
+		
+		// Create telecoms
+		retVal.getAssociatedEntity().setTelecom(this.createTelecomSet(relatedToPerson));
+		
+		// Set addresses
+		retVal.getAssociatedEntity().setAddr(this.createAddressSet(relatedToPerson));
+		
+		// Set name
+		retVal.getAssociatedEntity().setAssociatedPerson(new Person(this.createNameSet(relatedToPerson)));
+
+		return retVal;
+    }
+
+	/**
+	 * Create address set
+	 */
+	public SET<AD> createAddressSet(org.openmrs.Person person) {
+		SET<AD> retVal = new SET<AD>();
+		for(PersonAddress addr : person.getAddresses())
+			retVal.add(this.createAD(addr));
+		if(retVal.size() > 0)
+			return retVal;
+		return null;
+	}
+
+	/**
+	 * Create address set
+	 */
+	public SET<PN> createNameSet(org.openmrs.Person person) {
+		SET<PN> retVal = new SET<PN>();
+		for(PersonName name : person.getNames())
+			retVal.add(this.createPN(name));
+		if(retVal.size() > 0)
+			return retVal;
+		return null;
+	}
+
 }

@@ -7,9 +7,12 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.marc.everest.datatypes.II;
 import org.marc.everest.datatypes.NullFlavor;
 import org.marc.everest.datatypes.TS;
 import org.marc.everest.datatypes.generic.CE;
+import org.marc.everest.datatypes.generic.CS;
+import org.marc.everest.datatypes.generic.SET;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssignedAuthor;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssignedCustodian;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Authenticator;
@@ -17,9 +20,11 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Author;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Custodian;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.DocumentationOf;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.LegalAuthenticator;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Performer1;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.RelatedDocument;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ServiceEvent;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.BindingRealm;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ContextControl;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ParticipationFunction;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipDocument;
@@ -27,6 +32,7 @@ import org.marc.everest.rmim.uv.cdar2.vocabulary.x_BasicConfidentialityKind;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ServiceEventPerformer;
 import org.openmrs.EncounterRole;
 import org.openmrs.Provider;
+import org.openmrs.Relationship;
 import org.openmrs.VisitAttribute;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
@@ -58,10 +64,14 @@ public abstract class CdaGeneratorImpl implements CdaGenerator {
 	{
 
 		ClinicalDocument retVal = new ClinicalDocument();
+		retVal.setTypeId(new II("2.16.840.1.113883.1.3", "POCD_HD000040"));
+		retVal.setRealmCode(SET.createSET(new CS<BindingRealm>(BindingRealm.UniversalRealmOrContextUsedInEveryInstance)));
 		
 		// Identifier is the SHR root of the odd document ODD ID + Current Time (making the UUID of the ODD)
+		TS idDate = TS.now();
+		idDate.setDateValuePrecision(TS.SECONDNOTIMEZONE);
 		String oddRoot = String.format("%s.%s", this.m_configuration.getOnDemandDocumentRoot(), oddRegistration.getType().getId()),
-				oddExtension = String.format("%s-%s", oddRegistration.getPatient().getId(), TS.now().toString());
+				oddExtension = String.format("%s-%s", oddRegistration.getPatient().getId(), idDate.toString());
 		log.info(String.format("Preparing document %s^^^&%s&ISO", oddExtension, oddRoot));
 		
 		// Set core properties
@@ -70,7 +80,7 @@ public abstract class CdaGeneratorImpl implements CdaGenerator {
 		
 		// Set to Normal, anything above a normal will not be included in the extract
 		retVal.setConfidentialityCode(new CE<x_BasicConfidentialityKind>(x_BasicConfidentialityKind.Normal));
-		retVal.setLanguageCode(Context.getLocale().toString());
+		retVal.setLanguageCode(Context.getLocale().toLanguageTag()); // CONF-5
 		
 		// Custodian
 		Custodian custodian = new Custodian();
@@ -83,17 +93,17 @@ public abstract class CdaGeneratorImpl implements CdaGenerator {
 		
 		// Create documentation of
 		// TODO: Do we only need one of these for all events that occur in the CDA or one for each?
-		ServiceEvent event = new ServiceEvent();
+		ServiceEvent event = new ServiceEvent(new CS<String>("PCPR")); // CCD CONF-3 & CONF-2
 		Date earliestRecord = new Date(),
 				lastRecord = new Date(0);
 		
+		// Assign data form the encounters
 		for(OnDemandDocumentEncounterLink elnk : oddRegistration.getEncounterLinks())
 		{
-			if(elnk.getEncounter().getEncounterDatetime().before(earliestRecord))
-				earliestRecord = elnk.getEncounter().getEncounterDatetime();
-			if(elnk.getEncounter().getEncounterDatetime().after(lastRecord))
-				lastRecord = elnk.getEncounter().getEncounterDatetime();
-			
+			if(elnk.getEncounter().getVisit().getStartDatetime().before(earliestRecord))
+				earliestRecord = elnk.getEncounter().getVisit().getStartDatetime();
+			if(elnk.getEncounter().getVisit().getStopDatetime().after(lastRecord))
+				lastRecord = elnk.getEncounter().getVisit().getStopDatetime();
 			
 			// Now add participants
 			for(Entry<EncounterRole, Set<Provider>> encounterProvider : elnk.getEncounter().getProvidersByRoles().entrySet())
@@ -106,8 +116,9 @@ public abstract class CdaGeneratorImpl implements CdaGenerator {
 						aut.setTime(new TS());
 						aut.getTime().setNullFlavor(NullFlavor.NoInformation);
 						aut.setAssignedAuthor(this.m_cdaDatatypeUtil.createAuthorPerson(pvdr));
+						retVal.getAuthor().add(aut);
 					}
-				else if(encounterProvider.getKey().getName().equals("LA"))
+				else if(encounterProvider.getKey().getName().equals("LA")) // There technically are no "legal" attesters to the document here as it is an auto-generated document
 					;
 				else
 					for(Provider pvdr : encounterProvider.getValue())
@@ -121,14 +132,26 @@ public abstract class CdaGeneratorImpl implements CdaGenerator {
 		}
 		
 		// Set the effective time of records
-		Calendar earliestCal = Calendar.getInstance(),
+		Calendar earliestCal = Calendar.getInstance(), 
 				latestCal = Calendar.getInstance();
 		earliestCal.setTime(earliestRecord);
 		latestCal.setTime(lastRecord);
-		event.setEffectiveTime(new TS(earliestCal), new TS(latestCal));
+		event.setEffectiveTime(new TS(earliestCal), new TS(latestCal)); // CCD CONF-4
 		
 		// Documentation of
 		retVal.getDocumentationOf().add(new DocumentationOf(event));
+		
+		// Record target
+		retVal.getRecordTarget().add(this.m_cdaDatatypeUtil.createRecordTarget(oddRegistration.getPatient()));
+		
+		// NOK (those within the time covered by this document)
+		for(Relationship relatedPerson : Context.getPersonService().getRelationshipsByPerson(oddRegistration.getPatient()))
+		{
+			// Periodic hull
+			if((relatedPerson.getEndDate() == null || earliestRecord.before(relatedPerson.getEndDate()) || earliestRecord.equals(relatedPerson.getEndDate())) &&
+					(relatedPerson.getStartDate() == null || lastRecord.after(relatedPerson.getStartDate()) || lastRecord.equals(relatedPerson.getStartDate())))
+					retVal.getParticipant().add(this.m_cdaDatatypeUtil.createRelatedPerson(relatedPerson, oddRegistration.getPatient()));
+		}
 		
 		return retVal;
 	}

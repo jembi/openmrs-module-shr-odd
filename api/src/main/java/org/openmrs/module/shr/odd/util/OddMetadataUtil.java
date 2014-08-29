@@ -1,5 +1,11 @@
 package org.openmrs.module.shr.odd.util;
 
+import org.openmrs.Location;
+import org.openmrs.LocationAttribute;
+import org.openmrs.Person;
+import org.openmrs.PersonAttribute;
+import org.openmrs.Visit;
+import org.openmrs.VisitAttribute;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
@@ -40,11 +46,32 @@ public final class OddMetadataUtil {
 	}
 	
 	/**
+	 * Get the specified visit attribute
+	 */
+	public VisitAttribute getVisitAttribute(Visit visit, String attributeName)
+	{
+		for(VisitAttribute att : visit.getActiveAttributes())
+			if(att.getAttributeType().getName().equals(attributeName))
+				return att;
+		return null;
+	}
+	
+	/**
 	 * Get or create an ODD type
 	 */
 	public OnDemandDocumentType getOddType(String typeUuid)
 	{
 		return this.m_oddService.getOnDemandDocumentTypeByUud(typeUuid);
 	}
+
+	/**
+	 * Get a location attribute
+	 */
+	public LocationAttribute getLocationAttribute(Location location, String attributeName) {
+		for(LocationAttribute att : location.getActiveAttributes())
+			if(att.getAttributeType().getName().equals(attributeName))
+				return att;
+		return null;
+    }
 	
 }

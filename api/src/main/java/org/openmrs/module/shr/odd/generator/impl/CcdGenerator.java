@@ -11,7 +11,7 @@ public class CcdGenerator extends CdaGeneratorImpl {
 	@Override
 	public ClinicalDocument generateDocument(OnDemandDocumentRegistration oddRegistration) {
 		// TODO Auto-generated method stub
-		return null;
+		return super.createHeader(oddRegistration);
 	}
 	
 }

@@ -16,12 +16,26 @@ public final class OnDemandDocumentConfiguration {
 	// Some data is borrowed from the cdaImport configuration
 	private CdaHandlerConfiguration m_cdaImportConfiguration = CdaHandlerConfiguration.getInstance();
 	
+	// Configuration constants
+    public static final String PROP_ID_REGEX = "shr-odd.id.regex";
+
+    // Id regex
+    private String m_idRegex = "^(.*)?\\^\\^\\^\\&(.*)?\\&ISO$";
+    
 	// Private Ctor
 	private OnDemandDocumentConfiguration()
 	{
 		
 	}
 
+	/**
+	 * Gets the id regex for parsing IDs from string
+	 */
+	public String getIdRegex()
+	{
+		return this.m_idRegex;
+	}
+	
 	/**
      * Creates or gets the instance of the configuration
      */
@@ -67,5 +81,6 @@ public final class OnDemandDocumentConfiguration {
     private void initialize()
     {
     	
+    	this.m_idRegex = this.getOrCreateGlobalProperty(PROP_ID_REGEX, this.m_idRegex);
     }
 }

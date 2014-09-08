@@ -1,5 +1,7 @@
 package org.openmrs.module.shr.odd.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -9,11 +11,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.stream.XMLInputFactory;
+
 import org.openmrs.Concept;
 import org.openmrs.EncounterRole;
 import org.openmrs.ImplementationId;
 import org.openmrs.Location;
 import org.openmrs.LocationAttribute;
+import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonAddress;
@@ -30,8 +35,13 @@ import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.configuration.OnDemandDocumentConfiguration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
+import org.openmrs.obs.ComplexData;
 import org.openmrs.util.OpenmrsConstants;
+import org.jfree.util.Log;
 import org.marc.everest.datatypes.*;
+import org.marc.everest.datatypes.doc.StructDocElementNode;
+import org.marc.everest.datatypes.doc.StructDocNode;
+import org.marc.everest.datatypes.doc.StructDocTextNode;
 import org.marc.everest.datatypes.generic.*;
 import org.marc.everest.exceptions.FormatterException;
 import org.marc.everest.formatters.FormatterUtil;
@@ -49,9 +59,11 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Person;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.RecordTarget;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.AdministrativeGender;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ContextControl;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.ParticipationType;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.RoleClassAssociative;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.RoleClassPart;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.RoleStatus;
+import org.marc.everest.xml.XMLStateStreamReader;
 
 /**
  * The On-Demand document metadata util
@@ -153,6 +165,7 @@ public final class CdaDataUtil {
 	 */
 	@SuppressWarnings("unchecked")
     public AssignedEntity createAssignedEntity(Provider pvdr) {
+		
 		AssignedEntity retVal = new AssignedEntity();
 		
 		// Get the ID
@@ -163,7 +176,6 @@ public final class CdaDataUtil {
 
 		// Telecoms
 		retVal.setTelecom(this.createTelecomSet(pvdr.getPerson()));
-		
 		
 		// Get the address
 		retVal.setAddr(this.createAddressSet(pvdr.getPerson()));
@@ -176,6 +188,7 @@ public final class CdaDataUtil {
 			retVal.setRepresentedOrganization(this.createOrganization((Location)orgAttribute.getHydratedObject()));
 
 		return retVal;
+		
     }
 
 	/**
@@ -194,7 +207,7 @@ public final class CdaDataUtil {
 							patt.getValue().substring(0, patt.getValue().indexOf(":")),
 							patt.getValue().substring(patt.getValue().indexOf(":") + 1)
 					};
-					tel.setValue(parts[1]);
+					tel.setValue(parts[1].trim());
 					try {
 	                    tel.setUse((SET<CS<TelecommunicationsAddressUse>>) FormatterUtil.fromWireFormat(parts[0], AssignedEntity.class.getMethod("getTelecom", null).getGenericReturnType(), false));
                     }
@@ -468,6 +481,7 @@ public final class CdaDataUtil {
 	public Participant1 createRelatedPerson(Relationship relatedPerson, Patient recordTarget) {
 		Participant1 retVal = new Participant1();
 		
+		retVal.setTypeCode(ParticipationType.IND);
 		// Now we want to expose the related person
 		retVal.setTime(this.createTS(relatedPerson.getStartDate()), this.createTS(relatedPerson.getEndDate()));
 		if(retVal.getTime().getLow().isNull() && retVal.getTime().getHigh().isNull()) // collapse null flavor
@@ -477,6 +491,12 @@ public final class CdaDataUtil {
 		// Now we want to expose the person
 		retVal.setAssociatedEntity(new AssociatedEntity());
 		retVal.getAssociatedEntity().setCode(this.parseCodeFromString(relatedPerson.getRelationshipType().getDescription(), CE.class));
+		
+		if(recordTarget == relatedPerson.getPersonA())
+			retVal.getAssociatedEntity().getCode().setDisplayName(relatedPerson.getRelationshipType().getbIsToA());
+		else
+			retVal.getAssociatedEntity().getCode().setDisplayName(relatedPerson.getRelationshipType().getaIsToB());
+		
 		if(s_nextOfKinRelations.contains(retVal.getAssociatedEntity().getCode().getCode()))
 			retVal.getAssociatedEntity().setClassCode(RoleClassAssociative.NextOfKin);
 		else
@@ -522,5 +542,56 @@ public final class CdaDataUtil {
 			return retVal;
 		return null;
 	}
+
+	/**
+	 * Create text node from XML string data
+	 */
+	public StructDocNode createText(Obs obs) {
+
+		if(obs.isComplex())
+		{
+			obs = Context.getObsService().getComplexObs(obs.getId(), null);
+			byte[] data = (byte[]) obs.getComplexData().getData();
+			XMLInputFactory fact = XMLInputFactory.newInstance();
+			try
+			{
+				XMLStateStreamReader reader = new XMLStateStreamReader(fact.createXMLStreamReader(new ByteArrayInputStream(data)));
+				
+				// Go to an element
+				while(!reader.isStartElement() && reader.hasNext())
+					reader.next();
+				
+				StructDocElementNode elementNode = new StructDocElementNode();
+				elementNode.readXml(reader);
+				return elementNode;
+			}
+			catch(Exception e)
+			{
+				return new StructDocTextNode(e.getMessage());
+			}
+		}
+		else
+			return new StructDocTextNode(obs.getValueAsString(Context.getLocale()));
+		
+    }
+
+	/**
+	 * Scrub identifiers
+	 */
+	public StructDocNode scrubIDs(StructDocNode node) {
+		if(node instanceof StructDocElementNode)
+		{
+			StructDocElementNode element = (StructDocElementNode)node;
+			for(int i = 0; i < element.getChildren().size(); i++)
+			{
+				StructDocNode childNode = element.getChildren().get(i);
+				if(childNode != null && "ID".equals(childNode.getName()))
+					element.getChildren().remove(i);
+				else if(childNode instanceof StructDocElementNode)
+					this.scrubIDs(childNode);
+			}
+		}
+		return node;
+    }
 
 }

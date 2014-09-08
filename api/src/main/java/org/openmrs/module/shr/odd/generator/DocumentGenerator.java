@@ -6,7 +6,7 @@ import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 /**
  * Represents a class which is capable of generating a CDA
  */
-public interface CdaGenerator {
+public interface DocumentGenerator {
 	
 	/**
 	 * Generates a document given the on-demand document registration entry

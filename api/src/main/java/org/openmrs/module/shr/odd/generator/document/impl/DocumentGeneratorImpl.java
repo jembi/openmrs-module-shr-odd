@@ -1,12 +1,15 @@
-package org.openmrs.module.shr.odd.generator.impl;
+package org.openmrs.module.shr.odd.generator.document.impl;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.marc.everest.datatypes.BL;
 import org.marc.everest.datatypes.II;
 import org.marc.everest.datatypes.NullFlavor;
 import org.marc.everest.datatypes.TS;
@@ -18,12 +21,15 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssignedCustodian;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Authenticator;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Author;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Component3;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Custodian;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.DocumentationOf;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.LegalAuthenticator;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Performer1;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.RelatedDocument;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Section;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ServiceEvent;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.ActRelationshipHasComponent;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.BindingRealm;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ContextControl;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ParticipationFunction;
@@ -39,7 +45,9 @@ import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.processor.util.OpenmrsDataUtil;
 import org.openmrs.module.shr.cdahandler.processor.util.OpenmrsMetadataUtil;
 import org.openmrs.module.shr.odd.configuration.OnDemandDocumentConfiguration;
-import org.openmrs.module.shr.odd.generator.CdaGenerator;
+import org.openmrs.module.shr.odd.generator.DocumentGenerator;
+import org.openmrs.module.shr.odd.generator.SectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.SectionGeneratorFactory;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.util.CdaDataUtil;
@@ -48,7 +56,7 @@ import org.openmrs.module.shr.odd.util.OddMetadataUtil;
 /**
  * Represents an abstract implementation of a CdaGenerator 
  */
-public abstract class CdaGeneratorImpl implements CdaGenerator {
+public abstract class DocumentGeneratorImpl implements DocumentGenerator {
 
 	// odd configuration
 	protected final OnDemandDocumentConfiguration m_configuration = OnDemandDocumentConfiguration.getInstance();
@@ -155,5 +163,26 @@ public abstract class CdaGeneratorImpl implements CdaGenerator {
 		
 		return retVal;
 	}
+
+	/**
+	 * Add sections to the document
+	 */
+	public List<Component3> generateSections(OnDemandDocumentRegistration documentRegistration, Class<? extends SectionGenerator>... generatorClazzes) {
+		
+		List<Component3> retVal = new ArrayList<Component3>();
+
+		// Iterate through the generator classes and generate / add the section
+		for(Class<? extends SectionGenerator> clazz : generatorClazzes)
+		{
+			SectionGenerator generator = SectionGeneratorFactory.getOrCreateInstance(clazz);
+			if(generator == null) continue; // cannot create this generator
+			
+			// Now generate the section
+			Section generatedSection = generator.generateSection(documentRegistration);
+			retVal.add(new Component3(ActRelationshipHasComponent.HasComponent, BL.TRUE, generatedSection));
+		}
+		
+		return retVal;
+    }
 	
 }

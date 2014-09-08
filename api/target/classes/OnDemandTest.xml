@@ -12,7 +12,7 @@
   <order_type order_type_id="40" description="Request to perform a procedure" retired="0" uuid="9506c6fe-d517-4707-a0c8-e72da23ff16d" name="Procedure Order" creator="2" date_created="2014-05-02" java_class_name="org.openmrs.module.shr.cdahandler.order.ProcedureOrder"/>
   <order_type order_type_id="41" description="Request to perform an observation" retired="0" uuid="7f14cf98-8452-42c0-acac-2ba96c8e66ce" name="Observation Order" creator="2" date_created="2014-05-02" java_class_name="org.openmrs.module.shr.cdahandler.order.ObservationOrder"/>
   
-  <odd_type uuid="85c89cb3-7547-418d-a3d7-1a4666b38c5d" name="CCD" type_id="1" retired="0" creator="2" date_created="2014-04-05" java_class_name="org.openmrs.module.shr.odd.generator.impl.CcdGenerator"/>
+  <odd_type uuid="85c89cb3-7547-418d-a3d7-1a4666b38c5d" name="CCD" type_id="1" retired="0" creator="2" date_created="2014-04-05" java_class_name="org.openmrs.module.shr.odd.generator.document.impl.CcdGenerator"/>
   
   <location location_id="1" name="Elbonia Shared Health Authority DC" creator="1" retired="0"  />
 	<location_attribute_type location_attribute_type_id="1" name="ExternalId" creator="1" min_occurs="0" max_occurs="1" datatype="org.openmrs.customdatatype.datatype.FreeTextDatatype" retired="0" date_created="2014-05-02"/>

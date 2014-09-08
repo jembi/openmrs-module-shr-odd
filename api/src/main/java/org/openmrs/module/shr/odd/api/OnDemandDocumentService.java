@@ -66,6 +66,6 @@ public interface OnDemandDocumentService extends OpenmrsService {
 	 * Get an on-demand document registration number by accession number
 	 */
 	public List<OnDemandDocumentRegistration> getOnDemandDocumentRegistrationsByAccessionNumber(String accessionNumber);
-	
+
 	
 }

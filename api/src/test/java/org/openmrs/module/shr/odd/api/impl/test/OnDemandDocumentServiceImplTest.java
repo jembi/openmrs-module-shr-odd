@@ -13,6 +13,7 @@ import junit.framework.Assert;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.marc.everest.formatters.FormatterUtil;
@@ -24,10 +25,12 @@ import org.openmrs.Patient;
 import org.openmrs.Visit;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
+import org.openmrs.module.shr.cdahandler.api.impl.test.util.CdaDocumentCreatorUtil;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
 import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
 import org.openmrs.module.shr.cdahandler.exception.DocumentValidationException;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
+import org.openmrs.module.shr.odd.api.test.CdaLoggingUtils;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.subscriber.GenericDocumentSubscriber;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
@@ -60,6 +63,8 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 		this.m_importService = Context.getService(CdaImportService.class);
 
 		GlobalProperty saveDir = new GlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_COMPLEX_OBS_DIR, "C:\\data\\");
+		
+		Context.getAdministrationService().setGlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_DEFAULT_LOCATION_NAME, "Elbonia Shared Health Authority DC");
 		Context.getAdministrationService().setGlobalProperty(CdaHandlerConfiguration.PROP_VALIDATE_CONCEPT_STRUCTURE, "false");
 		Context.getAdministrationService().setGlobalProperty("order.nextOrderNumberSeed", "1");
 		Context.getAdministrationService().setGlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_FALSE_CONCEPT, "1066");
@@ -106,7 +111,7 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 	}
 	
 	/**
-	 * Test the generation of an APS document
+	 * Test that the trigger event was fired
 	 */
 	@Test
 	public void testWasTriggerFired()
@@ -122,5 +127,28 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 		Assert.assertEquals(1, oddDocuments.size());
 	}
 	
+	/**
+	 * Test the generation of an CCD document
+	 */
+	@Test
+	public void testGenerateCCDDocument()
+	{
+		// First import the APS document
+		Visit visit = this.doParseCda("/validAphpSampleFullSections.xml");
+		// Get patient information by name
+		List<Patient> patient = Context.getPatientService().getPatients("Sarah Levin");
+		Assert.assertEquals(1, patient.size());
+		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
+		Assert.assertEquals(1, oddDocuments.size());
+		// Generate CCD
+		try {
+	        ClinicalDocument doc = this.m_oddService.generateOnDemandDocument(oddDocuments.get(0));
+	        log.error(CdaLoggingUtils.getCdaAsString(doc));
+        }
+        catch (Exception e) {
+	        log.error("Error generated", e);
+	        fail(e.getMessage());
+        }
+	}
 	
 }

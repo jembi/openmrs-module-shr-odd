@@ -1,13 +1,15 @@
 package org.openmrs.module.shr.odd.api.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.openmrs.Patient;
+import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.api.db.OnDemandDocumentDAO;
-import org.openmrs.module.shr.odd.generator.CdaGenerator;
+import org.openmrs.module.shr.odd.generator.DocumentGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
@@ -26,6 +28,8 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 */
 	@Override
     public OnDemandDocumentRegistration saveOnDemandDocument(OnDemandDocumentRegistration registrationEntry) {
+		registrationEntry.setDateChanged(new Date());
+		registrationEntry.setChangedBy(Context.getAuthenticatedUser());
 		return this.dao.saveOnDemandDocumentRegistration(registrationEntry);
     }
 
@@ -47,10 +51,10 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 		
 		// Get the class listed in the registration of type
         @SuppressWarnings("unchecked")
-        Class<? extends CdaGenerator> clazz = (Class<? extends CdaGenerator>)Class.forName(registrationEntry.getType().getJavaClassName());
+        Class<? extends DocumentGenerator> clazz = (Class<? extends DocumentGenerator>)Class.forName(registrationEntry.getType().getJavaClassName());
 
         // Now instantiate and generate
-        CdaGenerator generatorInstance = clazz.newInstance();
+        DocumentGenerator generatorInstance = clazz.newInstance();
         return generatorInstance.generateDocument(registrationEntry);
 		
     }
@@ -115,6 +119,8 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 */
 	@Override
     public OnDemandDocumentType saveOnDemandDocumentType(OnDemandDocumentType documentType) {
+		documentType.setDateChanged(new Date());
+		documentType.setChangedBy(Context.getAuthenticatedUser());
 		return this.dao.saveOnDemandDocumentType(documentType);
     }
 

@@ -2,6 +2,9 @@ package org.openmrs.module.shr.odd.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -11,9 +14,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.activation.URLDataSource;
 import javax.xml.stream.XMLInputFactory;
 
 import org.openmrs.Concept;
+import org.openmrs.ConceptDatatype;
+import org.openmrs.ConceptNumeric;
 import org.openmrs.EncounterRole;
 import org.openmrs.ImplementationId;
 import org.openmrs.Location;
@@ -30,8 +36,10 @@ import org.openmrs.Relationship;
 import org.openmrs.Visit;
 import org.openmrs.VisitAttribute;
 import org.openmrs.api.context.Context;
+import org.openmrs.api.db.ConceptDAO;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
+import org.openmrs.module.shr.cdahandler.processor.util.OpenmrsConceptUtil;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.configuration.OnDemandDocumentConfiguration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
@@ -51,6 +59,7 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssociatedEntity;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Author;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AuthoringDevice;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.CustodianOrganization;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Organization;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.OrganizationPartOf;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Participant1;
@@ -79,6 +88,7 @@ public final class CdaDataUtil {
 	private final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfiguration.getInstance();
 	private final OnDemandDocumentConfiguration m_oddConfiguration = OnDemandDocumentConfiguration.getInstance();
 	private final OddMetadataUtil m_metaDataUtil = OddMetadataUtil.getInstance();
+	private final OpenmrsConceptUtil m_conceptUtil = OpenmrsConceptUtil.getInstance();
 	
 	// NOK codes
 	private static final List<String> s_nextOfKinRelations = Arrays.asList("MTH", "FTH", "GRMTH", "GRFTH", "SIB", "CHILD",
@@ -117,7 +127,7 @@ public final class CdaDataUtil {
 		if(matcher.matches())
 		{
 			retVal.setExtension(matcher.group(1));
-			if(retVal.getExtension() == "null")
+			if(retVal.getExtension().equals("null"))
 				retVal.setExtension(null);
 			retVal.setRoot(matcher.group(2));
 		}
@@ -298,9 +308,11 @@ public final class CdaDataUtil {
 		// Get the ID
 		retVal.setId(SET.createSET(
 			this.parseIIFromString(pvdr.getIdentifier()),
-			new II(this.m_cdaConfiguration.getProviderRoot(), pvdr.getId().toString())
+			new II(this.m_cdaConfiguration.getProviderRoot(), pvdr.getId().toString()),
+			new II(this.m_cdaConfiguration.getUserRoot(), Context.getUserService().getUsersByPerson(pvdr.getPerson(), false).get(0).getId().toString())
 		));
 
+		
 		// Set telecom
 		retVal.setTelecom(this.createTelecomSet(pvdr.getPerson()));
 		
@@ -592,6 +604,66 @@ public final class CdaDataUtil {
 			}
 		}
 		return node;
+    }
+
+	/**
+	 * Create an observation VALUE from an Obs
+	 */
+	public ANY getObservationValue(Obs obs) {
+		String conceptDatatypeUuid = obs.getConcept().getDatatype().getUuid();
+		if(ConceptDatatype.BOOLEAN_UUID.equals(conceptDatatypeUuid))
+			return new BL(obs.getValueAsBoolean());
+		else if(ConceptDatatype.CODED_UUID.equals(conceptDatatypeUuid))
+			return this.m_metaDataUtil.getStandardizedCode(obs.getValueCoded(), CdaHandlerConstants.CODE_SYSTEM_CIEL, CD.class);
+		else if(ConceptDatatype.COMPLEX_UUID.equals(conceptDatatypeUuid))
+		{
+			obs = Context.getObsService().getComplexObs(obs.getId(), null);
+			byte[] data = (byte[]) obs.getComplexData().getData();
+			
+			// Binary data?
+			String mimeType = null,
+					obsTitle = obs.getComplexData().getTitle();
+			if(obsTitle.contains("--"))
+			{
+				int sPos = obsTitle.indexOf("--") + 3,
+						count = obsTitle.lastIndexOf(".") - sPos;
+				mimeType = URLDecoder.decode(obsTitle.substring(sPos, count));
+			}
+			
+			ED retVal = new ED(data, mimeType);
+			retVal.setData(data);
+			return retVal;
+			
+		}
+		else if(ConceptDatatype.DATE_UUID.equals(conceptDatatypeUuid))
+			return this.createTS(obs.getValueDate());
+		else if(ConceptDatatype.DATETIME_UUID.equals(conceptDatatypeUuid))
+			return this.createTS(obs.getValueDatetime());
+		else if(ConceptDatatype.N_A_UUID.equals(conceptDatatypeUuid)) // This is most likely an indicator!
+			return null; // TODO: indicators
+		else if(ConceptDatatype.NUMERIC_UUID.equals(conceptDatatypeUuid)) // Numeric!
+		{
+			ConceptNumeric numConcept = Context.getConceptService().getConceptNumeric(obs.getConcept().getId());
+			if(numConcept.getUnits() == "" || numConcept.getUnits() == null)
+			{
+				// Are there decimals?
+				if(Math.ceil(obs.getValueNumeric()) == Math.floor(obs.getValueNumeric())) 
+					return new INT(obs.getValueNumeric().intValue());
+				else
+					return new REAL(obs.getValueNumeric());
+			}
+			else
+				return new PQ(BigDecimal.valueOf(obs.getValueNumeric()), this.m_conceptUtil.getUcumUnitCode(numConcept));
+		}
+		else if(ConceptDatatype.TEXT_UUID.equals(conceptDatatypeUuid))
+		{
+			// TEXT could be MO or RTO
+			// TODO: Yeah, this could be sticky...
+			return new ANY();
+		}
+		else
+			return new ANY() {{ setNullFlavor(NullFlavor.Other); }};
+		
     }
 
 }

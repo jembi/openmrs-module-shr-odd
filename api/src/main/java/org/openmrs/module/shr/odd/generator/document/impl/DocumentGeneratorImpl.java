@@ -178,7 +178,8 @@ public abstract class DocumentGeneratorImpl implements DocumentGenerator {
 			if(generator == null) continue; // cannot create this generator
 			
 			// Now generate the section
-			Section generatedSection = generator.generateSection(documentRegistration);
+			generator.setRegistration(documentRegistration);
+			Section generatedSection = generator.generateSection();
 			retVal.add(new Component3(ActRelationshipHasComponent.HasComponent, BL.TRUE, generatedSection));
 		}
 		

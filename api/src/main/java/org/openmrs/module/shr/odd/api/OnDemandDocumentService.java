@@ -3,6 +3,8 @@ package org.openmrs.module.shr.odd.api;
 import java.util.List;
 
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
+import org.openmrs.Concept;
+import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
@@ -67,5 +69,18 @@ public interface OnDemandDocumentService extends OpenmrsService {
 	 */
 	public List<OnDemandDocumentRegistration> getOnDemandDocumentRegistrationsByAccessionNumber(String accessionNumber);
 
+	/**
+	 * For some reason the getGroupMembers() doesn't correctly work
+	 */
+	public List<Obs> getObsGroupMembers(Obs group);
 	
+	/**
+	 * For some reason the getGroupMembers() doesn't correctly work
+	 */
+	public List<Obs> getObsGroupMembers(Obs group, List<Concept> concept);
+	
+	/**
+	 * For some reason the getGroupMembers() doesn't correctly work
+	 */
+	public List<Obs> getObsGroupMembers(List<Obs> group, List<Concept> concept);
 }

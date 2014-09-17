@@ -1,10 +1,13 @@
 package org.openmrs.module.shr.odd.api.db.hibernate;
 
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
+import org.openmrs.Concept;
+import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.module.shr.odd.api.db.OnDemandDocumentDAO;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
@@ -143,5 +146,24 @@ public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
     private <T> T getClassByUuid(Class<T> clazz, String uuid)
     {
     	return (T)this.m_sessionFactory.getCurrentSession().createCriteria(clazz).add(Restrictions.eq("uuid", uuid)).uniqueResult();
+    }
+
+    /**
+     * Get obs group members
+     */
+	@Override
+    public List<Obs> getObsGroupMembers(Obs containerObs) {
+		Criteria crit = this.m_sessionFactory.getCurrentSession().createCriteria(Obs.class)
+				.add(Restrictions.eq("obsGroup", containerObs)).add(Restrictions.eq("voided", false));
+		return (List<Obs>)crit.list();
+    }
+
+	@Override
+    public List<Obs> getObsGroupMembers(List<Obs> containerObs, List<Concept> concept) {
+		Criteria crit = this.m_sessionFactory.getCurrentSession().createCriteria(Obs.class)
+				.add(Restrictions.in("obsGroup", containerObs))
+				.add(Restrictions.eq("voided", false))
+				.add(Restrictions.in("concept", concept));
+		return (List<Obs>)crit.list();
     }
 }

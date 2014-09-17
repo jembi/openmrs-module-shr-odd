@@ -1,9 +1,12 @@
 package org.openmrs.module.shr.odd.api.impl;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
+import org.openmrs.Concept;
+import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
@@ -140,7 +143,33 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
     public void setDao(OnDemandDocumentDAO dao) {
     	this.dao = dao;
     }
+
+    /**
+     * Get obs group members
+     * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getObsGroupMembers(org.openmrs.Obs)
+     */
+	@Override
+    public List<Obs> getObsGroupMembers(Obs group) {
+		return this.dao.getObsGroupMembers(group);
+    }
+
+	/**
+	 * Get obs group members
+	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getObsGroupMembers(org.openmrs.Obs, java.util.List)
+	 */
+	@Override
+    public List<Obs> getObsGroupMembers(Obs group, List<Concept> concept) {
+	    return this.dao.getObsGroupMembers(Arrays.asList(group), concept);
+    }
 	
+	/**
+	 * Get obs group members
+	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getObsGroupMembers(org.openmrs.Obs, java.util.List)
+	 */
+	@Override
+    public List<Obs> getObsGroupMembers(List<Obs> group, List<Concept> concept) {
+	    return this.dao.getObsGroupMembers(group, concept);
+    }
 	
 	
 }

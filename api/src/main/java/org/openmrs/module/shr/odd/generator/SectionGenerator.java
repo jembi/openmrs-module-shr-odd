@@ -11,6 +11,11 @@ public interface SectionGenerator {
 	/**
 	 * Generate a section from the specified grouping of observations
 	 */
-	public Section generateSection(OnDemandDocumentRegistration documentRegistration);
+	public Section generateSection();
 
+	/**
+	 * Sets the context of this section generator
+	 * @param context
+	 */
+	public void setRegistration(OnDemandDocumentRegistration context);
 }

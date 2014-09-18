@@ -18,9 +18,11 @@ public final class OnDemandDocumentConfiguration {
 	
 	// Configuration constants
     public static final String PROP_ID_REGEX = "shr-odd.id.regex";
+    public static final String PROP_REPOSITORY_UUID = "xds-b-repository.xdsrepository.uniqueId";
 
     // Id regex
     private String m_idRegex = "^(.*)?\\^\\^\\^\\&(.*)?\\&ISO$";
+    private String m_repositoryUniqueId = "0.1.2.3.4.5";
     
 	// Private Ctor
 	private OnDemandDocumentConfiguration()
@@ -80,7 +82,14 @@ public final class OnDemandDocumentConfiguration {
      */
     private void initialize()
     {
-    	
+    	this.m_repositoryUniqueId = this.getOrCreateGlobalProperty(PROP_REPOSITORY_UUID, this.m_repositoryUniqueId);
     	this.m_idRegex = this.getOrCreateGlobalProperty(PROP_ID_REGEX, this.m_idRegex);
+    }
+
+    /**
+     * Get the repository unique id
+     */
+	public String getRepositoryUniqueId() {
+		return this.m_repositoryUniqueId;
     }
 }

@@ -13,7 +13,8 @@ public class OnDemandDocumentType extends BaseOpenmrsMetadata {
 	private String javaClassName;
 	// The name of the type
 	private String name;
-	
+	// Format code
+	private String formatCode;
     /**
      * @return the id
      */
@@ -55,6 +56,22 @@ public class OnDemandDocumentType extends BaseOpenmrsMetadata {
      */
     public void setName(String name) {
     	this.name = name;
+    }
+
+	
+    /**
+     * @return the formatCode
+     */
+    public String getFormatCode() {
+    	return formatCode;
+    }
+
+	
+    /**
+     * @param formatCode the formatCode to set
+     */
+    public void setFormatCode(String formatCode) {
+    	this.formatCode = formatCode;
     }
 	
 	

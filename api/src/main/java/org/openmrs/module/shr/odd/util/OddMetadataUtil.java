@@ -83,7 +83,7 @@ public final class OddMetadataUtil {
 	 */
 	public OnDemandDocumentType getOddType(String typeUuid)
 	{
-		return this.m_oddService.getOnDemandDocumentTypeByUud(typeUuid);
+		return this.m_oddService.getOnDemandDocumentTypeByUuid(typeUuid);
 	}
 
 	/**

@@ -1,19 +1,18 @@
 package org.openmrs.module.shr.odd.api.impl.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.List;
-import java.util.Set;
 
 import junit.framework.Assert;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.marc.everest.formatters.FormatterUtil;
@@ -25,7 +24,6 @@ import org.openmrs.Patient;
 import org.openmrs.Visit;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
-import org.openmrs.module.shr.cdahandler.api.impl.test.util.CdaDocumentCreatorUtil;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
 import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
 import org.openmrs.module.shr.cdahandler.exception.DocumentValidationException;
@@ -35,7 +33,6 @@ import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.subscriber.GenericDocumentSubscriber;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.util.OpenmrsConstants;
-import org.slf4j.LoggerFactory;
 
 /**
  * On Demand Document module test

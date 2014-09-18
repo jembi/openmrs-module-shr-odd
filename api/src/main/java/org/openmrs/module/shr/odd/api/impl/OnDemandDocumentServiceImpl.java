@@ -12,6 +12,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.api.db.OnDemandDocumentDAO;
+import org.openmrs.module.shr.odd.exception.OnDemandDocumentException;
 import org.openmrs.module.shr.odd.generator.DocumentGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
@@ -44,7 +45,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#generateOnDemandDocument(org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration)
 	 */
 	@Override
-    public ClinicalDocument generateOnDemandDocument(OnDemandDocumentRegistration registrationEntry) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public ClinicalDocument generateOnDemandDocument(OnDemandDocumentRegistration registrationEntry) {
 		
 		// Validate
 		if(registrationEntry == null)
@@ -54,10 +55,12 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 		
 		// Get the class listed in the registration of type
         @SuppressWarnings("unchecked")
-        Class<? extends DocumentGenerator> clazz = (Class<? extends DocumentGenerator>)Class.forName(registrationEntry.getType().getJavaClassName());
 
         // Now instantiate and generate
-        DocumentGenerator generatorInstance = clazz.newInstance();
+        DocumentGenerator generatorInstance = this.getDocumentGenerator(registrationEntry.getType());
+        
+        if(generatorInstance == null)
+        	throw new OnDemandDocumentException("Could not create document generator");
         return generatorInstance.generateDocument(registrationEntry);
 		
     }
@@ -109,10 +112,10 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 
 	/**
 	 * Get an on-demand document registration type by uuid
-	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getOnDemandDocumentTypeByUud(java.lang.String)
+	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getOnDemandDocumentTypeByUuid(java.lang.String)
 	 */
 	@Override
-    public OnDemandDocumentType getOnDemandDocumentTypeByUud(String uuid) {
+    public OnDemandDocumentType getOnDemandDocumentTypeByUuid(String uuid) {
 		return this.dao.getOnDemandDocumentTypeByUuid(uuid);
     }
 
@@ -169,6 +172,24 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	@Override
     public List<Obs> getObsGroupMembers(List<Obs> group, List<Concept> concept) {
 	    return this.dao.getObsGroupMembers(group, concept);
+    }
+
+	/**
+	 * Get the document generator
+	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getDocumentGenerator(org.openmrs.module.shr.odd.model.OnDemandDocumentType)
+	 */
+	@Override
+    public DocumentGenerator getDocumentGenerator(OnDemandDocumentType type) {
+        
+        try {
+        	Class<? extends DocumentGenerator> clazz= (Class<? extends DocumentGenerator>)Class.forName(type.getJavaClassName());
+	        // Now instantiate and generate
+	        return clazz.newInstance();
+        }
+        catch (Exception e) {
+        	return null;
+        }
+
     }
 	
 	

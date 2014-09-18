@@ -33,6 +33,9 @@
 	   		<column name="name" type="string(255)">
 	   			<constraints nullable="false"/>
 			</column>
+			<column name="format_code" type="string(255)">
+				<constraints nullable="false"/>
+			</column>
 	   		<column name="java_class_name" type="string(255)">
 	   			<constraints nullable="false"/>
 	   		</column>
@@ -40,7 +43,16 @@
 		<addForeignKeyConstraint constraintName="odd_type_creator_id_fk" referencedTableName="users" baseColumnNames="creator" baseTableName="odd_type" referencedColumnNames="user_id"/>
 	   	<addForeignKeyConstraint constraintName="odd_type_changed_by_fk" referencedTableName="users" baseColumnNames="changed_by" baseTableName="odd_type" referencedColumnNames="user_id"/>
 	   	<addForeignKeyConstraint constraintName="odd_type_voided_by_fk" referencedTableName="users" baseColumnNames="voided_by" baseTableName="odd_type" referencedColumnNames="user_id"/>
- 		
+ 		<insert tableName="odd_type">
+ 			<column name="uuid" value="85c89cb3-7547-418d-a3d7-1a4666b38c5d"/>
+ 			<column name="name" value="Continuity of Care Document"/>
+ 			<column name="type_id" valueNumeric="1"/>
+ 			<column name="retired" valueNumeric="0"/>
+ 			<column name="creator" valueNumeric="2"/>
+ 			<column name="date_created" valueComputed="now()"/>
+ 			<column name="java_class_name" value="org.openmrs.module.shr.odd.generator.document.impl.CcdGenerator"/>
+ 			<column name="format_code" value="2.16.840.1.113883.10.20.1^^^&amp;HL7&amp;ISO"/>
+ 		</insert>
 	</changeSet>
 	
 	<!--  Creates the On-Demand Documents Registration Table -->

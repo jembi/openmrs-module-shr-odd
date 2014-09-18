@@ -7,6 +7,7 @@ import org.openmrs.Concept;
 import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.api.OpenmrsService;
+import org.openmrs.module.shr.odd.generator.DocumentGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
@@ -27,8 +28,13 @@ public interface OnDemandDocumentService extends OpenmrsService {
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
-	public ClinicalDocument generateOnDemandDocument(OnDemandDocumentRegistration registrationEntry) throws ClassNotFoundException, InstantiationException, IllegalAccessException;
+	public ClinicalDocument generateOnDemandDocument(OnDemandDocumentRegistration registrationEntry);
 
+	/**
+	 * Gets the generator for the specified type of document
+	 */
+	public DocumentGenerator getDocumentGenerator(OnDemandDocumentType type);
+	
 	/**
 	 * Returns true if the on-demand document is already registered
 	 */
@@ -52,7 +58,7 @@ public interface OnDemandDocumentService extends OpenmrsService {
 	/**
 	 * Gets the on-demand document type by its UUID
 	 */
-	public OnDemandDocumentType getOnDemandDocumentTypeByUud(String uuid);
+	public OnDemandDocumentType getOnDemandDocumentTypeByUuid(String uuid);
 
 	/**
 	 * Saves the on-demand document type

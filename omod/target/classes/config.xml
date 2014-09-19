@@ -32,7 +32,7 @@
 	<!-- / Required Modules -->
 	
 	<!-- Module Activator -->
-	<activator>org.openmrs.module.shr-odd.shr.odd.OnDemandDocumentsActivator</activator>
+	<activator>org.openmrs.module.shr.odd.OnDemandDocumentsActivator</activator>
 	
 	
 	<!-- Maps hibernate file's, if present -->

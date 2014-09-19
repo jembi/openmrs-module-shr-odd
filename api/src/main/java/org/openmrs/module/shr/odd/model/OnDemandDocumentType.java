@@ -1,12 +1,14 @@
 package org.openmrs.module.shr.odd.model;
 
+import java.util.UUID;
+
 import org.openmrs.BaseOpenmrsMetadata;
 
 /**
  * Identifies a type of ODD
  */
 public class OnDemandDocumentType extends BaseOpenmrsMetadata {
-	
+
 	// The Id of the ODD type
 	private Integer typeId;
 	// The name of the class 

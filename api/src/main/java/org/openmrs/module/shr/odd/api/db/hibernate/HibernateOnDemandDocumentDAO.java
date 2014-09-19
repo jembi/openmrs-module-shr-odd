@@ -1,22 +1,33 @@
 package org.openmrs.module.shr.odd.api.db.hibernate;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
+import org.dcm4chee.xds2.infoset.rim.RegistryObjectType;
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
+import org.openmrs.Auditable;
+import org.openmrs.BaseOpenmrsData;
+import org.openmrs.BaseOpenmrsObject;
 import org.openmrs.Concept;
 import org.openmrs.Obs;
+import org.openmrs.OpenmrsData;
 import org.openmrs.Patient;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.odd.api.db.OnDemandDocumentDAO;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * On-demand document DAO class
  */
+@Transactional(readOnly = true)
 public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
 	
 	// Hibernate session factory
@@ -28,10 +39,25 @@ public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
 	 */
 	@Override
 	public OnDemandDocumentRegistration saveOnDemandDocumentRegistration(OnDemandDocumentRegistration document) {
+		this.updateAuditableProperties(document);
 		this.m_sessionFactory.getCurrentSession().saveOrUpdate(document);
 		return document;
 	}
 	
+	/**
+	 * Update auditable object properties
+	 */
+	private void updateAuditableProperties(Auditable data) {
+		if(data.getUuid() == null)
+			data.setUuid(UUID.randomUUID().toString());
+		if(data.getCreator() == null)
+		{
+			data.setCreator(Context.getAuthenticatedUser());
+			data.setDateCreated(new Date());
+		}
+		data.setDateChanged(new Date());
+    }
+
 	/**
 	 * Get an on demand document registration by ID
 	 * @see org.openmrs.module.shr.odd.api.db.OnDemandDocumentDAO#getOnDemandDocumentRegistrationById(java.lang.Integer)
@@ -103,6 +129,7 @@ public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
 	 */
 	@Override
 	public OnDemandDocumentType saveOnDemandDocumentType(OnDemandDocumentType documentType) {
+		this.updateAuditableProperties(documentType);
 		this.m_sessionFactory.getCurrentSession().saveOrUpdate(documentType);
 		return documentType;
 	}
@@ -127,6 +154,7 @@ public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
 	 */
 	@Override
 	public OnDemandDocumentEncounterLink saveOnDemandDocumentEncounterLink(OnDemandDocumentEncounterLink link) {
+		this.updateAuditableProperties(link);
 		this.m_sessionFactory.getCurrentSession().saveOrUpdate(link);
 		return link;
 	}
@@ -153,6 +181,8 @@ public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
      */
 	@Override
     public List<Obs> getObsGroupMembers(Obs containerObs) {
+		if(containerObs == null)
+			return new ArrayList<Obs>();
 		Criteria crit = this.m_sessionFactory.getCurrentSession().createCriteria(Obs.class)
 				.add(Restrictions.eq("obsGroup", containerObs)).add(Restrictions.eq("voided", false));
 		return (List<Obs>)crit.list();
@@ -160,6 +190,8 @@ public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
 
 	@Override
     public List<Obs> getObsGroupMembers(List<Obs> containerObs, List<Concept> concept) {
+		if(containerObs.size() == 0 || concept.size() == 0)
+			return new ArrayList<Obs>();
 		Criteria crit = this.m_sessionFactory.getCurrentSession().createCriteria(Obs.class)
 				.add(Restrictions.in("obsGroup", containerObs))
 				.add(Restrictions.eq("voided", false))

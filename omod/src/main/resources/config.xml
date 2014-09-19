@@ -32,7 +32,7 @@
 	<!-- / Required Modules -->
 	
 	<!-- Module Activator -->
-	<activator>${project.parent.groupId}.${project.parent.artifactId}.shr.odd.OnDemandDocumentsActivator</activator>
+	<activator>${project.parent.groupId}.shr.odd.OnDemandDocumentsActivator</activator>
 	
 	
 	<!-- Maps hibernate file's, if present -->

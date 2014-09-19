@@ -7,14 +7,17 @@ import org.openmrs.Concept;
 import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.api.OpenmrsService;
+import org.openmrs.module.shr.odd.exception.OnDemandDocumentException;
 import org.openmrs.module.shr.odd.generator.DocumentGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The OnDemandDocumentService provides methods for retrieving and storing OnDemandDocument instances
  */
+@Transactional
 public interface OnDemandDocumentService extends OpenmrsService {
 	
 	/**
@@ -24,11 +27,12 @@ public interface OnDemandDocumentService extends OpenmrsService {
 
 	/**
 	 * Generates the on-demand document
+	 * @throws OnDemandDocumentException 
 	 * @throws ClassNotFoundException 
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
-	public ClinicalDocument generateOnDemandDocument(OnDemandDocumentRegistration registrationEntry);
+	public ClinicalDocument generateOnDemandDocument(OnDemandDocumentRegistration registrationEntry) throws OnDemandDocumentException;
 
 	/**
 	 * Gets the generator for the specified type of document

@@ -39,13 +39,14 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 
 	/**
 	 * Generate an on-demand document
+	 * @throws OnDemandDocumentException 
 	 * @throws ClassNotFoundException 
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#generateOnDemandDocument(org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration)
 	 */
 	@Override
-    public ClinicalDocument generateOnDemandDocument(OnDemandDocumentRegistration registrationEntry) {
+    public ClinicalDocument generateOnDemandDocument(OnDemandDocumentRegistration registrationEntry) throws OnDemandDocumentException {
 		
 		// Validate
 		if(registrationEntry == null)
@@ -53,9 +54,6 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 		else if(registrationEntry.getType() == null)
 			throw new IllegalStateException("registrationEntry must carry type");
 		
-		// Get the class listed in the registration of type
-        @SuppressWarnings("unchecked")
-
         // Now instantiate and generate
         DocumentGenerator generatorInstance = this.getDocumentGenerator(registrationEntry.getType());
         
@@ -182,7 +180,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
     public DocumentGenerator getDocumentGenerator(OnDemandDocumentType type) {
         
         try {
-        	Class<? extends DocumentGenerator> clazz= (Class<? extends DocumentGenerator>)Class.forName(type.getJavaClassName());
+        	Class<? extends DocumentGenerator> clazz= (Class<? extends DocumentGenerator>)Context.loadClass(type.getJavaClassName());
 	        // Now instantiate and generate
 	        return clazz.newInstance();
         }

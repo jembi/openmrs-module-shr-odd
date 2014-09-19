@@ -427,10 +427,15 @@ public final class CdaDataUtil {
 			retVal.setName(new ON());
 			retVal.getName().getParts().add(new ENXP(shrLocation.getName()));
 			// TODO: Get a root assigned for OpenMRS implementation IDs? Or make the id long enough for an OID
-			II id = this.parseIIFromString(this.m_metaDataUtil.getLocationAttribute(shrLocation, CdaHandlerConstants.ATTRIBUTE_NAME_EXTERNAL_ID).getValue().toString());
-			retVal.setId(SET.createSET(
-				id,
-				new II(this.m_cdaConfiguration.getLocationRoot(), shrLocation.getId().toString())));
+			LocationAttribute idAttribute = this.m_metaDataUtil.getLocationAttribute(shrLocation, CdaHandlerConstants.ATTRIBUTE_NAME_EXTERNAL_ID);
+			if(idAttribute != null)
+				retVal.setId(SET.createSET(
+					this.parseIIFromString(idAttribute.getValue().toString()),
+					new II(this.m_cdaConfiguration.getLocationRoot(), shrLocation.getId().toString())));
+			else
+				retVal.setId(SET.createSET(
+					new II(this.m_cdaConfiguration.getLocationRoot(), shrLocation.getId().toString())));
+
 		}
 		return retVal;
 	}

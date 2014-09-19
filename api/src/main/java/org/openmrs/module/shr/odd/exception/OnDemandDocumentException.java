@@ -3,7 +3,7 @@ package org.openmrs.module.shr.odd.exception;
 /**
  * Represents an exception caused by the generation or registration of an ODD
  */
-public class OnDemandDocumentException extends RuntimeException {
+public class OnDemandDocumentException extends Exception {
 
 	/**
      * Serialization id

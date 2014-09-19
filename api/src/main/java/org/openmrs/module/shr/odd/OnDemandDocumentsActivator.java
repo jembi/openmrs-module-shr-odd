@@ -50,10 +50,11 @@ public class OnDemandDocumentsActivator implements ModuleActivator {
 		// Register the format codes
 		ContentHandlerService contentHandler = Context.getService(ContentHandlerService.class);
 		try {
-	        contentHandler.registerContentHandler("none/none", OnDemandDocumentContentHandler.getInstance());
+			if(contentHandler.getContentHandler("application/xml+hl7-cda-odd") == null)
+				contentHandler.registerContentHandler("application/xml+hl7-cda-odd", OnDemandDocumentContentHandler.getInstance());
         }
         catch (Exception e) {
-        	throw new OnDemandDocumentException(e.getMessage(), e);
+        	log.error("Could not register handler", e);
         }
 	}
 

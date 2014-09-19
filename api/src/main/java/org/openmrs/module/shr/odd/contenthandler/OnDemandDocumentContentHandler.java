@@ -66,31 +66,34 @@ public class OnDemandDocumentContentHandler implements ContentHandler {
 	 */
 	@Override
 	public Content fetchContent(String arg0) {
-		OnDemandDocumentService oddService = Context.getService(OnDemandDocumentService.class);
-		
-		// Get the ODD registration
-		List<OnDemandDocumentRegistration> registrations = oddService.getOnDemandDocumentRegistrationsByAccessionNumber(arg0);
-		if(registrations.size() == 0)
-			throw new OnDemandDocumentException(String.format("On-Demand Document with id %s not found", arg0));
-		else
-		{
-			try {
-	            ClinicalDocument generatedCda = oddService.generateOnDemandDocument(registrations.get(0));
+		try {
+			OnDemandDocumentService oddService = Context.getService(OnDemandDocumentService.class);
+			
+			// Get the ODD registration
+			List<OnDemandDocumentRegistration> registrations = oddService.getOnDemandDocumentRegistrationsByAccessionNumber(arg0);
+			if(registrations.size() == 0)
+				throw new OnDemandDocumentException(String.format("On-Demand Document with id %s not found", arg0));
+			else
+			{
+
+				ClinicalDocument generatedCda = oddService.generateOnDemandDocument(registrations.get(0));
 	            
 	            // Create the formatter and format to a stream
 	            XmlIts1Formatter fmtr = EverestUtil.createFormatter();
 	            ByteArrayOutputStream bos = new ByteArrayOutputStream();
 	            fmtr.graph(bos, generatedCda);
 	            String strPayload = new String(bos.toByteArray());
-	            
+	            log.info(String.format("Generated ODD:\r\n%s", strPayload));
 	            // Now set the return content
-	            Content retVal = new Content(arg0, strPayload, null, null, null);
+	            Content retVal = new Content(arg0, strPayload, null, null, "text/xml");
+	            
 	            return retVal;
-            }
-            catch (Exception e) {
-            	throw new OnDemandDocumentException(e.getMessage(), e);
-            }
-		}
+			}
+        }
+        catch (OnDemandDocumentException e) {
+        	log.error("Error retrieving content", e);
+        	throw new RuntimeException(e.getMessage(), e);
+        }
 	}
 	
 	/**

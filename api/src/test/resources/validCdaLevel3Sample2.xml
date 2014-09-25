@@ -1,0 +1,407 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type='text/xsl' href='https://www.capmed.net/public/stylesheet/ccd.xsl'?>
+<ClinicalDocument xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="CDA.xsd" xmlns:voc="urn:hl7-org:v3/voc"
+	xmlns="urn:hl7-org:v3">
+	<realmCode code="US" xmlns="urn:hl7-org:v3" />
+	<typeId root="2.16.840.1.113883.1.3" extension="POCD_HD000040"
+		xmlns="urn:hl7-org:v3" />
+	<templateId root="2.16.840.1.113883.10" extension="MPL_CDAR2_LEVEL1-2REF_US_I2_2005SEP"
+		xmlns="urn:hl7-org:v3" />
+	<templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.1" xmlns="urn:hl7-org:v3" />
+	<templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.2" xmlns="urn:hl7-org:v3" />
+	<templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.5" xmlns="urn:hl7-org:v3" />
+	<templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.7" xmlns="urn:hl7-org:v3" />
+	<id root="2.16.840.1.113883.3.106.2.209932089" extension="151e233f2b154b099128249b05fc3007"
+		xmlns="urn:hl7-org:v3" />
+	<code displayName="Summary Of Episode Note" codeSystemName="LOINC"
+		codeSystem="2.16.840.1.113883.6.1" code="34133-9" xmlns="urn:hl7-org:v3" />
+	<title xmlns="urn:hl7-org:v3">CapMed XPHR Extract: PHR_CAPMED, PHR_Extract</title>
+	<effectiveTime value="20090116115636-0600" xmlns="urn:hl7-org:v3" />
+	<confidentialityCode code="N" codeSystem="2.16.840.1.113883.5.25"
+		xmlns="urn:hl7-org:v3" />
+	<languageCode code="en-US" xmlns="urn:hl7-org:v3" />
+	<recordTarget xmlns="urn:hl7-org:v3">
+		<patientRole>
+			<id extension="34" root="2.16.840.1.113883.3.106.1.1006135757" />
+			<addr>
+				<streetAddressLine>123 Main ln</streetAddressLine>
+				<city>Philadelphia</city>
+				<state>PA</state>
+				<postalCode>19020</postalCode>
+				<country>USA</country>
+			</addr>
+			<patient>
+				<name>
+					<family>PHR_CAPMED</family>
+					<given>PHR_Extract</given>
+				</name>
+				<administrativeGenderCode code="M"
+					codeSystem="2.16.840.1.113883.5.1" />
+				<birthTime value="19840704" />
+			</patient>
+		</patientRole>
+	</recordTarget>
+	<author xmlns="urn:hl7-org:v3">
+		<time value="20090116115636-0600" />
+		<assignedAuthor>
+			<id root="2.16.840.1.113883.3.106.1.1006135757" extension="7f55b512-ce3e-4b93-af98-f6f19a00caab" />
+			<addr>
+				<streetAddressLine>123 Main ln</streetAddressLine>
+				<city>Philadelphia</city>
+				<state>PA</state>
+				<postalCode>19020</postalCode>
+				<country>USA</country>
+			</addr>
+			<assignedPerson>
+				<name>
+					<family>PHR_CAPMED</family>
+					<given>PHR_Extract</given>
+				</name>
+			</assignedPerson>
+			<representedOrganization nullFlavor="NA" />
+		</assignedAuthor>
+	</author>
+	<dataEnterer xmlns="urn:hl7-org:v3">
+		<time value="20090116115636-0600" />
+		<assignedEntity>
+			<id root="2.16.840.1.113883.3.106.1.1006135757" extension="7f55b512-ce3e-4b93-af98-f6f19a00caab" />
+		</assignedEntity>
+	</dataEnterer>
+	<custodian xmlns="urn:hl7-org:v3">
+		<assignedCustodian>
+			<representedCustodianOrganization>
+				<id root="1.3.6.1.4.1.21367.2007.1.2.133" extension="1102c4448a4240eabd19d56495f3c6e1" />
+				<name>CapMed a division of BioImaging Technologies</name>
+				<addr>
+					<addressLine>826 Newtown-Yardley Rd. Newtown, PA 18940
+					</addressLine>
+					<country>USA</country>
+				</addr>
+			</representedCustodianOrganization>
+		</assignedCustodian>
+	</custodian>
+	<documentationOf typeCode="DOC" xmlns="urn:hl7-org:v3">
+		<serviceEvent classCode="CONS" moodCode="EVN">
+			<id root="4409f505-7bcd-4651-a85d-379d5c9fcead" />
+			<effectiveTime>
+				<low value="20090116115636-0600" />
+				<high value="20090126115636-0600" />
+			</effectiveTime>
+		</serviceEvent>
+	</documentationOf>
+	<authorization xmlns="urn:hl7-org:v3">
+		<consent>
+			<code code="1.3.6.1.4.1.21367.2006.7.108" displayName="Normal Sharing Plus Research Use" />
+			<statusCode code="completed" />
+		</consent>
+	</authorization>
+	<component xmlns="urn:hl7-org:v3">
+		<structuredBody>
+			<templateId root="2.16.840.1.113883.10" extension="MPL_CDAR2_LEVEL1-2REF_US_I2_2005SEP" />
+			<component>
+				<section>
+					<templateId root="1.3.6.1.4.1.19376.1.5.3.1.3.6" />
+					<templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.5.3.3" />
+					<code code="11450-4" codeSystem="2.16.840.1.113883.6.1"
+						codeSystemName="LOINC" displayName="PROBLEM LIST" />
+					<title>PROBLEM LIST</title>
+					<text>
+						<table>
+							<thead>
+								<tr>
+									<th>Problem</th>
+									<th>Date</th>
+									<th>Status</th>
+									<th>Comments</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td
+										ID="ref_ab5adeab2d214b41b432464dff992447_phrCondition_Name_Active_1">Ear Infection</td>
+									<td>01-Oct-2006</td>
+									<td>Active</td>
+									<td>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</text>
+					<entry>
+						<act classCode="ACT" moodCode="EVN">
+							<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.5.2" />
+							<id root="1b35c683-e82b-4c9b-9b59-4207a4ec2d84" />
+							<code nullFlavor="NA" />
+							<statusCode code="active" />
+							<effectiveTime>
+								<low value="20061001141437" />
+							</effectiveTime>
+							<entryRelationship typeCode="SUBJ">
+								<observation classCode="OBS" moodCode="EVN"
+									negationInd="true">
+									<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.5" />
+									<id root="dcf00bbe-e2a1-43b7-8949-0f7b6a5e97cc" />
+									<code code="PROBLEM" codeSystem="1.3.6.1.4.1.19376.1.5.3.2"
+										codeSystemName="IHEActCode" />
+									<statusCode code="completed" />
+									<effectiveTime>
+										<low value="20061001141437" />
+									</effectiveTime>
+									<value xsi:type="CD" code="95882006" codeSystem="2.16.840.1.113883.6.96" displayName="Ear Infection">
+										<originalText>
+											<reference
+												value="#ref_ab5adeab2d214b41b432464dff992447_phrCondition_Name_Active_1" />
+										</originalText>
+									</value>
+								</observation>
+							</entryRelationship>
+						</act>
+					</entry>
+				</section>
+			</component>
+			<component>
+				<section>
+					<templateId root="1.3.6.1.4.1.19376.1.5.3.1.3.13" />
+					<code code="48765-2" codeSystem="2.16.840.1.113883.6.1"
+						codeSystemName="LOINC" displayName="HISTORY OF ALLERGIES" />
+					<title>Allergies and Adverse Reactions</title>
+					<text>
+						<table>
+							<thead>
+								<tr>
+									<th>Allergen </th>
+									<th>Reaction </th>
+									<th>Comments</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td ID="ref_ef1f904ffb85468db0bc41bbe4c99c75_phrAllergy_Name_1">Iodinated contrast materials</td>
+									<td
+										ID="ref_ef1f904ffb85468db0bc41bbe4c99c75_phrAllergy_Name_reaction1">Unknown Unknown</td>
+									<td>Reaction: laryngeal oedema
+										Reaction occurs within 10 minutes
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</text>
+					<entry>
+						<act classCode='ACT' moodCode='EVN'>
+							<templateId root='2.16.840.1.113883.10.20.1.27' />
+							<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.5.1' />
+							<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.5.3' />
+							<id root='1.2.3.4.5.3.4.5.4.6' extension='4534' />
+							<code nullFlavor='NA' />
+							<statusCode code='active' />
+							<effectiveTime>
+								<low value="20070115141530" />
+							</effectiveTime>
+							<entryRelationship typeCode='SUBJ'>
+								<observation classCode="COND" moodCode="EVN"
+									negationInd="false">
+									<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.5" />
+									<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.6" />
+									<id root="7aea1b00-b972-48e8-acb6-adc0e9cef77b" />
+									<code code="ALG" codeSystem="2.16.840.1.113883.5.4"
+										codeSystemName="ObservationIntoleranceType" />
+									<statusCode code="completed" />
+									<effectiveTime>
+										<low value="20070115141530" />
+									</effectiveTime>
+									<value xsi:type="CD" code="426722004" codeSystem="2.16.840.1.113883.6.96" displayName="Iodinated contrast media">
+										<originalText>
+											<reference
+												value="#ref_ef1f904ffb85468db0bc41bbe4c99c75_phrAllergy_Name_1" />
+										</originalText>
+									</value>
+									<participant typeCode="CSM">
+										<participantRole classCode="MANU">
+											<playingEntity classCode="MMAT">
+												<code code="426722004" codeSystem="2.16.840.1.113883.6.96">
+													<originalText>
+														<reference
+															value="#ref_ef1f904ffb85468db0bc41bbe4c99c75_phrAllergy_Name_1" />
+													</originalText>
+												</code>
+											</playingEntity>
+										</participantRole>
+									</participant>
+									<entryRelationship typeCode="MFST">
+										<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.6.1" />
+										<observation classCode="OBS" moodCode="EVN"
+											negationInd="false">
+											<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.5" />
+											<id root="853845cb-9f28-4185-a452-96153137e59b" />
+											<code code="PROBLEM" codeSystem="1.3.6.1.4.1.19376.1.5.3.2"
+												codeSystemName="IHEActCode" />
+											<statusCode code="completed" />
+											<value xsi:type="CD" code="82966003" codeSystem="2.16.840.1.113883.6.96" >
+												<originalText>
+													<reference
+														value="#ref_ef1f904ffb85468db0bc41bbe4c99c75_phrAllergy_Name_reaction1" />
+												</originalText>
+											</value>
+										</observation>
+									</entryRelationship>
+								</observation>
+							</entryRelationship>
+						</act>
+
+					</entry>
+				</section>
+			</component>
+			<component>
+				<section>
+					<templateId root="1.3.6.1.4.1.19376.1.5.3.1.3.19" />
+					<code code="10160-0" codeSystem="2.16.840.1.113883.6.1"
+						codeSystemName="LOINC" displayName="HISTORY OF MEDICATION USE" />
+					<title>Medications</title>
+					<text>
+						<table>
+							<thead>
+								<tr>
+									<th>Medication</th>
+									<th>Frequency</th>
+									<th>Route</th>
+									<th>Dates of Use</th>
+									<th>Dosage</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td ID="ref_8882b001721b45cca952e3cdfee688f6_phrMed_Name_1">Amoxicillin</td>
+									<td ID="ref_8882b001721b45cca952e3cdfee688f6_phrMed_Name__fr_1">Every 8 hours</td>
+									<td ID="ref_8882b001721b45cca952e3cdfee688f6_phrMed_Name__route_1">
+									</td>
+									<td>01-Oct-2006 - present</td>
+									<td
+										ID="ref_8882b001721b45cca952e3cdfee688f6_phrMed_Name__dosage_1">250 mg</td>
+								</tr>
+							</tbody>
+						</table>
+					</text>
+					<entry>
+						<substanceAdministration classCode="SBADM"
+							moodCode="EVN">
+							<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.7" />
+							<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.7.1" />
+							<id root="fdd550e2-feee-4106-8b05-c3f645762ad4" />
+							<code>
+								<originalText>
+									<reference
+										value="#ref_8882b001721b45cca952e3cdfee688f6_phrMed_Name_1" />
+								</originalText>
+							</code>
+							<statusCode code="completed" />
+							<effectiveTime xsi:type="IVL_TS">
+								<low value="20061001141645" />
+							</effectiveTime>
+							<effectiveTime xsi:type="PIVL_TS">
+								<period value="8" unit="h"/>
+							</effectiveTime>
+							<routeCode nullFlavor="UNK" />
+							<doseQuantity value="250" unit="mg" />
+							<rateQuantity nullFlavor="UNK" />
+							<consumable>
+								<manufacturedProduct>
+									<manufacturedLabeledDrug>
+										<code>
+											<originalText>
+												<reference
+													value="#ref_8882b001721b45cca952e3cdfee688f6_phrMed_Name_1" />
+											</originalText>
+										</code>
+									</manufacturedLabeledDrug>
+								</manufacturedProduct>
+							</consumable>
+						</substanceAdministration>
+					</entry>
+				</section>
+			</component>
+			<component>
+				<section>
+					<templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.5.3.2" />
+					<code code="8716-3" codeSystem="2.16.840.1.113883.6.1"
+						codeSystemName="LOINC" />
+					<title>VITAL SIGNS</title>
+					<text>
+						<table border="1">
+							<thead>
+								<tr>
+									<th>Date</th>
+									<th ID="ref_27f3940c128340f4a869b627fd651e6c987228613-2131367818">15-Jan-2007</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td ID="ref_27f3940c128340f4a869b627fd651e6cHeight">Height</td>
+									<td
+										ID="ref_27f3940c128340f4a869b627fd651e6c987228613-2131367818Height">1778 mm</td>
+								</tr>
+								<tr>
+									<td ID="ref_27f3940c128340f4a869b627fd651e6cTime">Time</td>
+									<td
+										ID="ref_27f3940c128340f4a869b627fd651e6c987228613-2131367818Time">02:18 PM </td>
+								</tr>
+								<tr>
+									<td ID="ref_27f3940c128340f4a869b627fd651e6cWeight">Weight</td>
+									<td
+										ID="ref_27f3940c128340f4a869b627fd651e6c987228613-2131367818Weight">82 kg</td>
+								</tr>
+							</tbody>
+						</table>
+					</text>
+					<entry>
+						<observation classCode="OBS" moodCode="EVN">
+							<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13" />
+							<id root="746ab309-2a6e-4baa-b0c7-8c3960be47d1" />
+							<code code="3141-9" displayName="BODY WEIGHT (MEASURED)"
+								codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC">
+								<originalText>
+									<reference value="#ref_27f3940c128340f4a869b627fd651e6cWeight" />
+								</originalText>
+							</code>
+							<text>
+								<reference
+									value="#ref_27f3940c128340f4a869b627fd651e6c987228613-2131367818Weight" />
+							</text>
+							<statusCode code="completed" />
+							<effectiveTime value="20070115000000" />
+							<value xsi:type="PQ" unit="kg" value="82" />
+						</observation>
+					</entry>
+					<entry>
+						<observation classCode="OBS" moodCode="EVN">
+							<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13" />
+							<id root="ad189ec2-e179-402e-8497-75b17c613c52" />
+							<code code="8302-2" displayName="BODY HEIGHT (MEASURED)"
+								codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC">
+								<originalText>
+									<reference value="#ref_27f3940c128340f4a869b627fd651e6cHeight" />
+								</originalText>
+							</code>
+							<text>
+								<reference
+									value="#ref_27f3940c128340f4a869b627fd651e6c987228613-2131367818Height" />
+							</text>
+							<statusCode code="completed" />
+							<effectiveTime value="20070115000000" />
+							<value xsi:type="PQ" unit="mm" value="1778" />
+						</observation>
+					</entry>
+				</section>
+			</component>
+			<component>
+				<section>
+					<templateId root="1.3.6.1.4.1.19376.1.5.3.1.3.23" />
+					<code code="11369-6" codeSystem="2.16.840.1.113883.6.1"
+						codeSystemName="LOINC" displayName="HISTORY OF IMMUNIZATIONS" />
+					<title>IMMUNIZATIONS</title>
+					<text>Something</text>
+				</section>
+			</component>
+		</structuredBody>
+	</component>
+</ClinicalDocument>

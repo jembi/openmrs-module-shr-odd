@@ -88,7 +88,9 @@ public class VitalSignsSectionGenerator extends SectionGeneratorImpl {
 			// get the sub code type
 			try {
 				// Get all the observations within the encounter belonging 
-				List<Concept> vitalSignTypes = this.m_conceptUtil.getConcept(m_organizerCode).getSetMembers();
+				List<Concept> vitalSignTypes = this.m_conceptUtil.getOrCreateConcept(m_organizerCode).getSetMembers();
+				if(vitalSignTypes.size() == 0)
+					vitalSignTypes = this.m_conceptUtil.getOrCreateConcept(m_sectionCode).getSetMembers();
 				// Get all obs in organizers (that were created properly)
 				List<Obs> candidateObsInOrganizers = this.m_service.getObsGroupMembers(super.getAllObservationsOfType(this.m_conceptUtil.getConcept(m_organizerCode)), vitalSignTypes);
 				// Get all obs in just the sections if needed
@@ -167,10 +169,15 @@ public class VitalSignsSectionGenerator extends SectionGeneratorImpl {
 			
 			retVal.setText(super.generateLevel3Text(retVal));
 		}
-		else
+		else if(super.getSectionObs().size() > 0)
 		{
 			// No: We want to only report as level 2 using the text 
 			super.generateLevel2Content(retVal);
+		}
+		else
+		{
+			retVal.setText(new SD(SD.createText("No content recorded")));
+
 		}
 		return retVal;
 	}

@@ -80,16 +80,13 @@ public final class XdsUtil {
 		// Create the extrinsic object data  
 		SubmitObjectsRequest registryRequest = new SubmitObjectsRequest();
 		registryRequest.setRegistryObjectList(new RegistryObjectListType());
-		ExtrinsicObjectType oddRegistryObject = new ExtrinsicObjectType() {{
-			setId(String.format("Document%s", registration.getId().toString()));
-			setMimeType("text/xml");
-			setObjectType(XDSConstants.UUID_XDSDocumentEntry);
-			setName(new InternationalStringType(){{
-				getLocalizedString().add(new LocalizedStringType() {{
-					setValue(registration.getType().getName());
-				}});
-			}});
-		}};
+		ExtrinsicObjectType oddRegistryObject = new ExtrinsicObjectType();
+		oddRegistryObject.setId(String.format("Document%s", registration.getId().toString()));
+		oddRegistryObject.setMimeType("text/xml");
+		oddRegistryObject.setObjectType(XDSConstants.UUID_XDSDocumentEntry);
+		oddRegistryObject.setName(new InternationalStringType());
+		oddRegistryObject.getName().getLocalizedString().add(new LocalizedStringType());
+		oddRegistryObject.getName().getLocalizedString().get(0).setValue(registration.getType().getName());
 		
 		// Add repository UUID
 		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_REPOSITORY_UNIQUE_ID, this.m_configuration.getRepositoryUniqueId());
@@ -135,9 +132,8 @@ public final class XdsUtil {
 		TS now = TS.now();
 		now.setDateValuePrecision(TS.SECONDNOTIMEZONE);
 		
-		RegistryPackageType regPackage = new RegistryPackageType() {{
-			setId(String.format("SubmissionSet%s", registration.getId().toString()));
-		}};
+		RegistryPackageType regPackage = new RegistryPackageType();
+		regPackage.setId(String.format("SubmissionSet%s", registration.getId().toString()));
 		InfosetUtil.addOrOverwriteSlot(regPackage, XDSConstants.SLOT_NAME_SUBMISSION_TIME, now.getValue());
 		regPackage.setName(oddRegistryObject.getName());
 		this.addCodedValueClassification(regPackage, XDSConstants.UUID_XDSSubmissionSet_contentTypeCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystem());
@@ -179,12 +175,11 @@ public final class XdsUtil {
 			);
 		
 		// Add an association
-		AssociationType1 association = 	new AssociationType1() {{
-			setId("as01");
-			setAssociationType("HasMember");
-			setSourceObject(String.format("SubmissionSet%s", registration.getId().toString()));
-			setTargetObject(String.format("Document%s", registration.getId().toString()));
-		}};
+		AssociationType1 association = 	new AssociationType1();
+		association.setId("as01");
+		association.setAssociationType("HasMember");
+		association.setSourceObject(String.format("SubmissionSet%s", registration.getId().toString()));
+		association.setTargetObject(String.format("Document%s", registration.getId().toString()));
 		InfosetUtil.addOrOverwriteSlot(association, XDSConstants.SLOT_NAME_SUBMISSIONSET_STATUS, "Original");
 		registryRequest.getRegistryObjectList().getIdentifiable().add(
 			new JAXBElement<AssociationType1>(
@@ -207,11 +202,10 @@ public final class XdsUtil {
 	 * @throws JAXBException 
 	 */
 	private ClassificationType addCodedValueClassification(final RegistryObjectType classifiedObj, final String uuid, final String code, final String scheme) throws JAXBException {
-	    ClassificationType retVal = new ClassificationType() {{
-	    	setClassifiedObject(classifiedObj.getId());
-	    	setClassificationScheme(uuid);
-	    	setNodeRepresentation(code);
-	    }};
+	    ClassificationType retVal = new ClassificationType();
+	    retVal.setClassifiedObject(classifiedObj.getId());
+	    retVal.setClassificationScheme(uuid);
+	    retVal.setNodeRepresentation(code);
 	    
 	    retVal.setId(String.format("cl%s",retVal.hashCode()));
 	    InfosetUtil.addOrOverwriteSlot(retVal, "codingScheme", scheme);

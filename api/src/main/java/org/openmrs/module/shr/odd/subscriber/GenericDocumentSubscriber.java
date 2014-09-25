@@ -116,8 +116,8 @@ public class GenericDocumentSubscriber implements CdaImportSubscriber {
 			this.m_oddService.saveOnDemandDocument(registration);
 	
 			// Register the pnr
-			if(existingDocs.size() == 0) // Register new only TODO: Update this to support update
-				XdsUtil.getInstance().registerDocumentSet(registration);
+			//if(existingDocs.size() == 0) // Register new only TODO: Update this to support update
+			//	XdsUtil.getInstance().registerDocumentSet(registration);
         }
         catch (Exception e) {
 	        // TODO Auto-generated catch block

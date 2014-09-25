@@ -26,6 +26,7 @@ import org.openmrs.ProviderAttribute;
 import org.openmrs.Visit;
 import org.openmrs.VisitAttribute;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
 import org.openmrs.module.shr.cdahandler.processor.util.OpenmrsConceptUtil;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
@@ -123,7 +124,8 @@ public final class OddMetadataUtil {
 	        	{
 	        		ConceptReferenceTerm candidateTerm = mapping.getConceptReferenceTerm();
 	        		if(candidateTerm.getConceptSource().getHl7Code().equals(targetCodeSystem) || 
-	        				candidateTerm.getConceptSource().getName().equals(targetCodeSystemName))
+	        				candidateTerm.getConceptSource().getName().equals(targetCodeSystemName) ||
+	        				targetCodeSystem == null)
 	        			preferredCodes.add(candidateTerm);
 	        		else
 	        			equivalentCodes.add(candidateTerm);

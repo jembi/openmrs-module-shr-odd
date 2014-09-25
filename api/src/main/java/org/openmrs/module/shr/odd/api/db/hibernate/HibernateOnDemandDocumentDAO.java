@@ -188,6 +188,20 @@ public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
 		return (List<Obs>)crit.list();
     }
 
+    /**
+     * Get obs group members
+     */
+	@Override
+    public List<Obs> getObsGroupMembers(List<Obs> containerObs) {
+		if(containerObs.size() == 0)
+			return new ArrayList<Obs>();
+		Criteria crit = this.m_sessionFactory.getCurrentSession().createCriteria(Obs.class)
+				.add(Restrictions.in("obsGroup", containerObs))
+				.add(Restrictions.eq("voided", false));
+		return (List<Obs>)crit.list();
+
+    }
+	
 	@Override
     public List<Obs> getObsGroupMembers(List<Obs> containerObs, List<Concept> concept) {
 		if(containerObs.size() == 0 || concept.size() == 0)

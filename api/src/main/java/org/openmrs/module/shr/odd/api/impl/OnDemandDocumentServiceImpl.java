@@ -17,10 +17,12 @@ import org.openmrs.module.shr.odd.generator.DocumentGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The On-demand document service implementation
  */
+@Transactional
 public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements OnDemandDocumentService {
 	
 	// Dao
@@ -77,6 +79,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getOnDemandDocumentRegistrationById(java.lang.Integer)
 	 */
 	@Override
+	@Transactional(readOnly = true)
     public OnDemandDocumentRegistration getOnDemandDocumentRegistrationById(Integer id) {
 		return this.dao.getOnDemandDocumentRegistrationById(id);
     }
@@ -86,6 +89,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getOnDemandDocumentRegistrationByUuid(java.lang.String)
 	 */
 	@Override
+	@Transactional(readOnly = true)
     public OnDemandDocumentRegistration getOnDemandDocumentRegistrationByUuid(String uuid) {
 		return this.dao.getOnDemandDocumentRegistrationByUuid(uuid);
     }
@@ -95,6 +99,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getOnDemandDocumentRegistrationByAccessionNumber(java.lang.String)
 	 */
 	@Override
+	@Transactional(readOnly = true)
     public List<OnDemandDocumentRegistration> getOnDemandDocumentRegistrationsByAccessionNumber(String accessionNumber) {
 		return this.dao.getOnDemandDocumentRegistrationsByAccessionNumber(accessionNumber, false);
     }
@@ -104,6 +109,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getOnDemandDocumentRegistrationsByPatient(org.openmrs.Patient)
 	 */
 	@Override
+	@Transactional(readOnly = true)
     public List<OnDemandDocumentRegistration> getOnDemandDocumentRegistrationsByPatient(Patient patient) {
 		return this.dao.getOnDemandDocumentRegistrationsByPatient(patient, false);
     }
@@ -113,6 +119,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getOnDemandDocumentTypeByUuid(java.lang.String)
 	 */
 	@Override
+	@Transactional(readOnly = true)
     public OnDemandDocumentType getOnDemandDocumentTypeByUuid(String uuid) {
 		return this.dao.getOnDemandDocumentTypeByUuid(uuid);
     }
@@ -133,6 +140,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getOnDemandDocumentEncounters(org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration)
 	 */
 	@Override
+	@Transactional(readOnly = true)
     public List<OnDemandDocumentEncounterLink> getOnDemandDocumentEncounters(OnDemandDocumentRegistration oddRegistration) {
 		return this.dao.getOnDemandDocumentEncounterLinks(oddRegistration, false);
     }
@@ -150,6 +158,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
      * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getObsGroupMembers(org.openmrs.Obs)
      */
 	@Override
+	@Transactional(readOnly = true)
     public List<Obs> getObsGroupMembers(Obs group) {
 		return this.dao.getObsGroupMembers(group);
     }
@@ -159,6 +168,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getObsGroupMembers(org.openmrs.Obs, java.util.List)
 	 */
 	@Override
+	@Transactional(readOnly = true)
     public List<Obs> getObsGroupMembers(Obs group, List<Concept> concept) {
 	    return this.dao.getObsGroupMembers(Arrays.asList(group), concept);
     }
@@ -168,6 +178,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getObsGroupMembers(org.openmrs.Obs, java.util.List)
 	 */
 	@Override
+	@Transactional(readOnly = true)
     public List<Obs> getObsGroupMembers(List<Obs> group, List<Concept> concept) {
 	    return this.dao.getObsGroupMembers(group, concept);
     }
@@ -188,6 +199,15 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
         	return null;
         }
 
+    }
+
+	/**
+	 * Get the obs group members of any of the provided obs
+	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getObsGroupMembers(java.util.List)
+	 */
+	@Override
+    public List<Obs> getObsGroupMembers(List<Obs> sectionObs) {
+		return this.dao.getObsGroupMembers(sectionObs);
     }
 	
 	

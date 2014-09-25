@@ -10,6 +10,7 @@ import org.marc.everest.formatters.xml.datatypes.r1.R1FormatterCompatibilityMode
 import org.marc.everest.formatters.xml.its1.XmlIts1Formatter;
 import org.marc.everest.interfaces.IResultDetail;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
+import org.openmrs.module.shr.cdahandler.everest.EverestUtil;
 
 /**
  * Utilities for logging CDA documents
@@ -22,9 +23,8 @@ public class CdaLoggingUtils {
 	public static final String getCdaAsString(ClinicalDocument document)
 	{
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		XmlIts1Formatter fmtr = new XmlIts1Formatter();
-		fmtr.getGraphAides().add(new DatatypeFormatter(R1FormatterCompatibilityMode.ClinicalDocumentArchitecture));
-		fmtr.setValidateConformance(false);
+		
+		XmlIts1Formatter fmtr = EverestUtil.createFormatter();
 		IFormatterGraphResult result = fmtr.graph(bos, document);
 		for(IResultDetail dtl : result.getDetails())
 			if(dtl.getException() != null)

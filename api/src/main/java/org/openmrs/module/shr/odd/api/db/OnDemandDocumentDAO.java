@@ -60,7 +60,10 @@ public interface OnDemandDocumentDAO {
 	 * Get all obs members in the obs group
 	 */
 	public List<Obs> getObsGroupMembers(Obs containerObs);
-	
+	/**
+	 * Get all obs members in the obs group
+	 */
+	public List<Obs> getObsGroupMembers(List<Obs> containerObs);
 	/**
 	 * Get all obs members in the obs group having the defined concept
 	 */

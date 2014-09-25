@@ -93,4 +93,9 @@ public interface OnDemandDocumentService extends OpenmrsService {
 	 * For some reason the getGroupMembers() doesn't correctly work
 	 */
 	public List<Obs> getObsGroupMembers(List<Obs> group, List<Concept> concept);
+
+	/**
+	 * Get all obs group members within the specified group of obs
+	 */
+	public List<Obs> getObsGroupMembers(List<Obs> sectionObs);
 }

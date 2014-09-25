@@ -1,0 +1,268 @@
+<ClinicalDocument xmlns="urn:hl7-org:v3" xmlns:mif="urn:hl7-org:v3/mif"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:hl7-org:v3 CDA.xsd">
+
+	<typeId extension="POCD_HD000040" root="2.16.840.1.113883.1.3" />
+	<templateId root='1.3.6.1.4.1.19376.1.5.3.1.1.16.1.4' />
+	<templateId root='1.3.6.1.4.1.19376.1.5.3.1.1.16.1.1' />
+
+	<id root='1.2.3.2.2.2.2' extension='1' />
+
+	<code code='34117-2' displayName='HISTORY AND PHYSICAL'
+		codeSystem='2.16.840.1.113883.6.1' codeSystemName='LOINC' />
+
+	<title>Antepartum History and Physical</title>
+
+	<effectiveTime value='20140609012005' />
+
+	<confidentialityCode code='N' displayName='Normal'
+		codeSystem='2.16.840.1.113883.5.25' codeSystemName='Confidentiality' />
+
+	<languageCode code='en-US' />
+
+	<recordTarget>
+		<patientRole>
+			<id extension="12348" root="2.16.840.1.113883.19.5" />
+			<addr>
+				<streetAddressLine>45 Chunn Dr.</streetAddressLine>
+				<city>Spring Hill</city>
+				<state>TN</state>
+				<postalCode>37174</postalCode>
+				<country>USA</country>
+			</addr>
+			<patient>
+				<name>
+					<given>Mary</given>
+					<family>Levin</family>
+				</name>
+				<administrativeGenderCode code="F"
+					codeSystem="2.16.840.1.113883.5.1" />
+				<birthTime value="19820924" />
+			</patient>
+			<providerOrganization>
+				<id root="2.16.840.1.113883.19.5" />
+				<name>Organization Name</name>
+			</providerOrganization>
+		</patientRole>
+	</recordTarget>
+
+	<author>
+		<time value="20140607121000" />
+		<assignedAuthor>
+			<id extension="123456789" root="2.16.840.1.113883.19.5.1" />
+			<assignedPerson>
+				<name>
+					<given>Robert</given>
+					<family>Dolin</family>
+					<suffix>MD</suffix>
+				</name>
+			</assignedPerson>
+			<representedOrganization>
+				<id root="2.16.840.1.113883.19.5" />
+				<name>Organization Name</name>
+			</representedOrganization>
+		</assignedAuthor>
+	</author>
+
+	<participant typeCode="IND">
+		<associatedEntity classCode="NOK">
+			<code code="xx-fatherofbaby" displayName="Father of Baby"
+				codeSystem="2.16.840.1.113883.6.96" codeSystemName="SNOMED CT" />
+			<addr>
+				<streetAddressLine>18 Oak Valley Dr.</streetAddressLine>
+				<city>Monteagle</city>
+				<state>TN</state>
+				<postalCode>37205</postalCode>
+				<country>USA</country>
+			</addr>
+			<telecom value="tel:(999)555-1212" use="WP" />
+			<associatedPerson>
+				<name>
+					<prefix>Mr.</prefix>
+					<given>Thomas</given>
+					<family>Caster</family>
+				</name>
+			</associatedPerson>
+		</associatedEntity>
+	</participant>
+
+	<custodian>
+		<assignedCustodian>
+			<representedCustodianOrganization>
+				<id root="2.16.840.1.113883.19.5" />
+				<name>Organization Name</name>
+			</representedCustodianOrganization>
+		</assignedCustodian>
+	</custodian>
+
+	<component>
+		<structuredBody>
+
+			<component>
+				<section>
+					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.1.13.2.1' />
+					<!-- Required Chief Complaint Section content -->
+					<id root='1.3' extension='2' />
+					<code code='10154-3' displayName='CHIEF COMPLAINT' codeSystem='2.16.840.1.113883.6.1'
+						codeSystemName='LOINC' />
+					<text>
+						Text as described above
+					</text>
+				</section>
+			</component>
+
+			<component>
+				<section>
+					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.3.4' />
+					<!-- Required History of Present Illness Section content -->
+					<id root='4.3' extension='2' />
+					<code code='10164-2' displayName='HISTORY OF PRESENT ILLNESS'
+						codeSystem='2.16.840.1.113883.6.1' codeSystemName='LOINC' />
+					<text>
+						Text as described above
+					</text>
+				</section>
+			</component>
+
+			<component>
+				<section>
+					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.3.8' />
+					<!-- Required History of Past Illness Section content -->
+					<id root='4.1' extension='3' />
+					<code code='11348-0' displayName='HISTORY OF PAST ILLNESS'
+						codeSystem='2.16.840.1.113883.6.1' codeSystemName='LOINC' />
+					<text>
+						Text as described above
+					</text>
+				</section>
+			</component>
+
+			<component>
+				<section>
+					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.1.16.2.1.1' />
+					<id root='4.11' extension='5' />
+					<code code='XX-HistoryOfInfection' displayName='HISTORY OF INFECTION'
+						codeSystem='2.16.840.1.113883.6.1' codeSystemName='LOINC' />
+					<text>
+						Text as described above
+					</text>
+
+				</section>
+			</component>
+
+			<component>
+				<section>
+					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.1.5.3.4' />
+					<!-- Required Pregnancy History Section content -->
+					<id root='4.1' extension='254' />
+					<code code='10162-6' displayName='HISTORY OF PREGNANCIES'
+						codeSystem='2.16.840.1.113883.6.1' codeSystemName='LOINC' />
+					<text>
+						Text as described above
+					</text>
+										<entry>
+						<!-- Required Pregnancy Observation element -->
+						<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13.5' />
+						<observation classCode="OBS" moodCode="EVN">
+							<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13' />
+							<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13.5" />
+							<id root='4.1' extension='245' />
+							<code code='49051-6' displayName='GESTATIONAL AGE'
+								codeSystem='2.16.840.1.113883.6.1' codeSystemName='LOINC' />
+							<statusCode code='completed' />
+							<effectiveTime value="20140609" />
+							<value  xsi:type="PQ" value="25" unit="wk" />
+							<!-- <value xsi:type='INT' value='1'/> -->
+							<interpretationCode code="N" />
+						</observation>
+					</entry>
+					<entry>
+						<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13.5' />
+						<observation classCode="OBS" moodCode="EVN">
+							<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13' />
+							<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13.5" />
+							<id root='4.11' extension='334' />
+							<code code='45371-2' displayName='MULTIPLE PREGNANCY' codeSystem='2.16.840.1.113883.6.1'
+								codeSystemName='LOINC' />
+							<statusCode code='completed' />
+							<effectiveTime value="20140609" />
+							<value xsi:type='BL' value="false"/>
+							<interpretationCode code="N" />
+						</observation>
+					</entry>
+
+				</section>
+			</component>
+			<component>
+				<section>
+					<templateId root='2.16.840.1.113883.10.20.1.15' />
+					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.3.16' />
+					<!-- Required Social History Section content -->
+					<id root='4.31' extension='423422' />
+					<code code='29762-2' displayName='SOCIAL HISTORY' codeSystem='2.16.840.1.113883.6.1'
+						codeSystemName='LOINC' />
+					<title>boink</title>
+					<text>
+						Text as described above
+					</text>
+				</section>
+			</component>
+
+			<component>
+				<section>
+					<templateId root='2.16.840.1.113883.10.20.1.4' />
+					<!-- Required Coded Family Medical History Section content -->
+					<id root='4.31' extension='22342' />
+					<code code='10157-6' displayName='HISTORY OF FAMILY MEMBER DISEASES'
+						codeSystem='2.16.840.1.113883.6.1' codeSystemName='LOINC' />
+					<title>boink</title>
+					<text>
+						Text as described above
+					</text>
+				</section>
+			</component>
+
+			<component>
+				<section>
+					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.3.18' />
+					<!-- Required Review of Systems Section content -->
+					<id root='4.1' extension='22132' />
+					<code code='10187-3' displayName='REVIEW OF SYSTEMS'
+						codeSystem='2.16.840.1.113883.6.1' codeSystemName='LOINC' />
+					<text>
+						Text as described above
+					</text>
+				</section>
+			</component>
+
+			<component>
+				<section>
+					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.3.24' />
+					<!-- Required Physical Examination Section content -->
+					<id root='4.1' extension='2234' />
+					<code code='29545-1' displayName='PHYSICAL EXAMINATION'
+						codeSystem='2.16.840.1.113883.6.1' codeSystemName='LOINC' />
+					<text>
+						Text as described above
+					</text>
+				</section>
+			</component>
+
+			<component>
+				<section>
+					<templateId root='2.16.840.1.113883.10.20.1.16' />
+					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.3.25' />
+					<!-- Conditional Vital Signs Section content -->
+					<id root='4.1' extension='21242354' />
+					<code code='8716-3' displayName='VITAL SIGNS' codeSystem='2.16.840.1.113883.6.1'
+						codeSystemName='LOINC' />
+					<title>boink</title>
+					<text>
+						Text as described above
+					</text>
+				</section>
+			</component>
+
+		</structuredBody>
+	</component>
+</ClinicalDocument>

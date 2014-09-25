@@ -88,9 +88,159 @@ None of the following address elements are specifically required by HITSP C32, s
 			</associatedPerson>
 		</associatedEntity>
 	</participant>
+
 	<component>
 		<structuredBody>
-			<component>
+			<component typeCode="COMP" contextConductionInd="true">
+				<section classCode="DOCSECT" moodCode="EVN">
+					<templateId root="2.16.840.1.113883.10.20.1.16" />
+					<templateId root="1.3.6.1.4.1.19376.1.5.3.1.3.25" />
+					<templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.5.3.2" />
+					<code code="8716-3" codeSystem="2.16.840.1.113883.6.1"
+						codeSystemName="LOINC" displayName="Vital Signs" />
+					<title language="en-CA">Vital Signs</title>
+					<text language="en-CA">
+						<table xmlns:ns2="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0"
+							xmlns="urn:hl7-org:v3" xmlns:ns4="urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0"
+							xmlns:ns3="urn:oasis:names:tc:ebxml-regrep:xsd:query:3.0"
+							xmlns:ns5="urn:oasis:names:tc:ebxml-regrep:xsd:lcm:3.0">
+							<thead>
+								<tr>
+									<th>Measurement</th>
+									<th>Value</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ID="VitalSignsSection0">
+									<td>BODY WEIGHT (MEASURED)</td>
+									<td>BODY WEIGHT (MEASURED): 110 kg</td>
+								</tr>
+								<tr ID="VitalSignsSection1">
+									<td>BODY HEIGHT (MEASURED)</td>
+									<td>BODY HEIGHT (MEASURED): 95 cm</td>
+								</tr>
+								<tr ID="VitalSignsSection2">
+									<td>INTRAVASCULAR SYSTOLIC</td>
+									<td>INTRAVASCULAR SYSTOLIC: 110 mmHg</td>
+								</tr>
+								<tr ID="VitalSignsSection3">
+									<td>INTRAVASCULAR DIASTOLIC</td>
+									<td>INTRAVASCULAR DIASTOLIC: 60 mmHg</td>
+								</tr>
+							</tbody>
+						</table>
+					</text>
+					<entry typeCode="DRIV" contextConductionInd="true">
+						<organizer classCode="BATTERY" moodCode="EVN">
+							<templateId root="2.16.840.1.113883.10.20.1.32" />
+							<templateId root="2.16.840.1.113883.10.20.1.35" />
+							<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13.1' />
+							<id root="da19e063-d74b-4924-9a50-ab5207e290a2" />
+							<code code="46680005" codeSystem="2.16.840.1.113883.6.96"
+								codeSystemName="SNOMED_CT" displayName="Vital Signs" />
+							<statusCode code="completed" />
+							<effectiveTime value="20140303000000.000-0500" />
+							<component typeCode="COMP" contextConductionInd="true">
+								<observation classCode="OBS" moodCode="EVN">
+									<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13' />
+									<templateId root='2.16.840.1.113883.10.20.1.31' />
+									<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13.2' />
+									<id root="7e28d9b1-3732-4dad-ad1c-aed5c9806c1c" />
+									<code code="3141-9" codeSystem="2.16.840.1.113883.6.1"
+										codeSystemName="LOINC" displayName="BODY WEIGHT (MEASURED)" />
+									<text>
+										<reference value="#VitalSignsSection0" />
+									</text>
+									<statusCode code="completed" />
+									<value xsi:type="PQ" unit="kg" value="98" />
+								</observation>
+							</component>
+						</organizer>
+					</entry>
+					<entry typeCode="DRIV" contextConductionInd="true">
+						<organizer classCode="BATTERY" moodCode="EVN">
+							<templateId root="2.16.840.1.113883.10.20.1.32" />
+							<templateId root="2.16.840.1.113883.10.20.1.35" />
+							<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13.1' />
+							<id root="b9bd5f19-9042-40eb-b36e-306e528a6b0c" />
+							<code code="46680005" codeSystem="2.16.840.1.113883.6.96"
+								codeSystemName="SNOMED_CT" displayName="Vital Signs" />
+							<statusCode code="completed" />
+							<effectiveTime value="20140303000000.000-0500" />
+							<component typeCode="COMP" contextConductionInd="true">
+								<observation classCode="OBS" moodCode="EVN">
+									<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13' />
+									<templateId root='2.16.840.1.113883.10.20.1.31' />
+									<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13.2' />
+									<id root="22bee931-f51f-4033-bf81-f5f3185b0196" />
+									<code code="8302-2" codeSystem="2.16.840.1.113883.6.1"
+										codeSystemName="LOINC" displayName="BODY HEIGHT (MEASURED)" />
+									<text>
+										<reference value="#VitalSignsSection1" />
+									</text>
+									<statusCode code="completed" />
+									<value xsi:type="PQ" unit="cm" value="182" />
+								</observation>
+							</component>
+						</organizer>
+					</entry>
+					<entry typeCode="DRIV" contextConductionInd="true">
+						<organizer classCode="BATTERY" moodCode="EVN">
+							<templateId root="2.16.840.1.113883.10.20.1.32" />
+							<templateId root="2.16.840.1.113883.10.20.1.35" />
+							<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13.1' />
+							<id root="6f7e00e1-d60f-4efd-81fc-8c8db7f19a48" />
+							<code code="46680005" codeSystem="2.16.840.1.113883.6.96"
+								codeSystemName="SNOMED_CT" displayName="Vital Signs" />
+							<statusCode code="completed" />
+							<effectiveTime value="20140303000000.000-0500" />
+							<component typeCode="COMP" contextConductionInd="true">
+								<observation classCode="OBS" moodCode="EVN">
+									<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13' />
+									<templateId root='2.16.840.1.113883.10.20.1.31' />
+									<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13.2' />
+									<id root="1bdc29aa-9b62-4d29-8036-fbf205a13129" />
+									<code code="8480-6" codeSystem="2.16.840.1.113883.6.1"
+										codeSystemName="LOINC" displayName="INTRAVASCULAR SYSTOLIC" />
+									<text>
+										<reference value="#VitalSignsSection2" />
+									</text>
+									<statusCode code="completed" />
+									<value xsi:type="PQ" unit="mm[Hg]" value="110" />
+								</observation>
+							</component>
+						</organizer>
+					</entry>
+					<entry typeCode="DRIV" contextConductionInd="true">
+						<organizer classCode="BATTERY" moodCode="EVN">
+							<templateId root="2.16.840.1.113883.10.20.1.32" />
+							<templateId root="2.16.840.1.113883.10.20.1.35" />
+							<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13.1' />
+
+							<id root="12b8f398-bb9d-4d28-b9b5-780d1d633007" />
+							<code code="46680005" codeSystem="2.16.840.1.113883.6.96"
+								codeSystemName="SNOMED_CT" displayName="Vital Signs" />
+							<statusCode code="completed" />
+							<effectiveTime value="20140303000000.000-0500" />
+							<component typeCode="COMP" contextConductionInd="true">
+								<observation classCode="OBS" moodCode="EVN">
+									<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13' />
+									<templateId root='2.16.840.1.113883.10.20.1.31' />
+									<templateId root='1.3.6.1.4.1.19376.1.5.3.1.4.13.2' />
+									<id root="f437b712-298a-4706-8d69-8e9f17688e57" />
+									<code code="8462-4" codeSystem="2.16.840.1.113883.6.1"
+										codeSystemName="LOINC" displayName="INTRAVASCULAR DIASTOLIC" />
+									<text>
+										<reference value="#VitalSignsSection3" />
+									</text>
+									<statusCode code="completed" />
+									<value xsi:type="PQ" unit="mm[Hg]" value="60" />
+								</observation>
+							</component>
+						</organizer>
+					</entry>
+				</section>
+			</component>			<component>
 				<!--Allergies-->
 				<section>
 					<templateId root="2.16.840.1.113883.3.88.11.83.102" assigningAuthorityName="HITSP/C83"/>
@@ -1051,6 +1201,130 @@ None of the following address elements are specifically required by HITSP C32, s
 					</entry>
 				</section>
 			</component>
+	<component>
+			<section>
+				<templateId root="2.16.840.1.113883.10.20.1.4"/> <!-- Family history section template -->
+				<templateId root="1.3.6.1.4.1.19376.1.5.3.1.3.14" /> <!-- Family history section template -->
+				<templateId root="1.3.6.1.4.1.19376.1.5.3.1.3.15" /> <!-- Family history section template -->
+				<code code="10157-6" codeSystem="2.16.840.1.113883.6.1"/>
+				<title>Family history</title>
+				<text>
+					<paragraph>Father (deceased)</paragraph>
+					<table border="1" width="100%">
+						<thead>
+							<tr><th>Diagnosis</th><th>Age At Onset</th></tr>
+						</thead>
+						<tbody>
+							<tr><td>Myocardial Infarction (cause of death)</td><td>57</td></tr>
+							<tr><td>Hypertension</td><td>40</td></tr>
+						</tbody>
+					</table>
+					<paragraph>Mother (alive)</paragraph>
+					<table border="1" width="100%">
+						<thead>
+							<tr><th>Diagnosis</th><th>Age At Onset</th></tr>
+						</thead>
+						<tbody>
+							<tr><td>Asthma</td><td>30</td></tr>
+						</tbody>
+					</table>
+				</text>
+				<entry typeCode="DRIV">
+					<organizer moodCode="EVN" classCode="CLUSTER">
+						<templateId root="2.16.840.1.113883.10.20.1.23"/> <!-- Family history organizer template -->
+						<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.15"/>
+						<statusCode code="completed"/>
+						<subject>
+							<relatedSubject classCode="PRS">
+								<code code="FTH" codeSystem="2.16.840.1.113883.5.111" displayName="Biological father"/>
+								<subject>
+									<sdtc:id xmlns:sdtc="urn:hl7-org:sdtc" root="1.2.3.4.5" extension="12304"/>
+									<administrativeGenderCode code="M" codeSystem="2.16.840.1.113883.5.1" displayName="Male"/>
+									<birthTime value="1912"/>
+								</subject>
+							</relatedSubject>
+						</subject>
+						<component>
+							<observation classCode="OBS" moodCode="EVN">
+								<templateId root="2.16.840.1.113883.10.20.1.42"/> <!-- Family history cause of death observation template -->
+								<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13.3"/>					
+								<id root="d42ebf70-5c89-11db-b0de-0800200c9a66"/>
+								<code code="ASSERTION" codeSystem="2.16.840.1.113883.5.4"/>		
+								<statusCode code="completed"/>						
+								<value xsi:type="CD" code="22298006" codeSystem="2.16.840.1.113883.6.96" displayName="MI"/>
+								<entryRelationship typeCode="CAUS">
+									<observation classCode="OBS" moodCode="EVN">
+										<id root="6898fae0-5c8a-11db-b0de-0800200c9a66"/>
+										<code code="ASSERTION" codeSystem="2.16.840.1.113883.5.4"/>
+										<statusCode code="completed"/>
+										<value xsi:type="CD" code="419099009" codeSystem="2.16.840.1.113883.6.96" displayName="Dead"/>
+									</observation>
+								</entryRelationship>
+								<entryRelationship typeCode="SUBJ" inversionInd="true">
+									<observation classCode="OBS" moodCode="EVN">
+										<templateId root="2.16.840.1.113883.10.20.1.38"/> <!-- Age observation template -->
+										<code code="397659008" codeSystem="2.16.840.1.113883.6.96" displayName="Age"/>
+										<statusCode code="completed"/>
+										<value xsi:type="INT" value="57"/>
+									</observation>
+								</entryRelationship>
+							</observation>
+						</component>
+						<component>
+							<observation classCode="OBS" moodCode="EVN">
+								<templateId root="2.16.840.1.113883.10.20.1.22"/> <!-- Family history observation template -->
+								<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13.3"/>
+								<id root="5bfe3ec0-5c8b-11db-b0de-0800200c9a66"/>
+								<code code="ASSERTION" codeSystem="2.16.840.1.113883.5.4"/>
+								<statusCode code="completed"/>
+								<value xsi:type="CD" code="59621000" codeSystem="2.16.840.1.113883.6.96" displayName="HTN"/>
+								<entryRelationship typeCode="SUBJ" inversionInd="true">
+									<observation classCode="OBS" moodCode="EVN">
+										<templateId root="2.16.840.1.113883.10.20.1.38"/> <!-- Age observation template -->
+										<code code="397659008" codeSystem="2.16.840.1.113883.6.96" displayName="Age"/>
+										<statusCode code="completed"/>
+										<value xsi:type="INT" value="40"/>
+									</observation>
+								</entryRelationship>
+							</observation>
+						</component>
+					</organizer>
+				</entry>
+				<entry typeCode="DRIV">
+					<organizer moodCode="EVN" classCode="CLUSTER">
+						<templateId root="2.16.840.1.113883.10.20.1.23"/> <!-- Family history organizer template -->
+						<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.15"/>
+						<statusCode code="completed"/>
+						<subject>
+							<relatedSubject classCode="PRS">
+								<code code="MTH" codeSystem="2.16.840.1.113883.5.111" displayName="Biological mother"/>
+								<subject>
+									<sdtc:id xmlns:sdtc="urn:hl7-org:sdtc" root="1.2.3.4.5" extension="12687"/>
+									<administrativeGenderCode code="F" codeSystem="2.16.840.1.113883.5.1" displayName="Female"/>
+									<birthTime value="1912"/>
+								</subject>
+							</relatedSubject>
+						</subject>
+						<component>
+							<observation classCode="OBS" moodCode="EVN">
+								<templateId root="2.16.840.1.113883.10.20.1.22"/> <!-- Family history observation template -->
+								<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13.3"/>
+								<id root="a13c6160-5c8b-11db-b0de-0800200c9a66"/>
+								<code code="ASSERTION" codeSystem="2.16.840.1.113883.5.4"/>								
+								<statusCode code="completed"/>
+								<effectiveTime>
+									<low value="1942"/>
+								</effectiveTime>
+								<value xsi:type="CD" code="195967001" codeSystem="2.16.840.1.113883.6.96" displayName="Asthma"/>
+							</observation>
+						</component>
+					</organizer>
+				</entry>
+			</section>
+		</component>
+
+
 		</structuredBody>
 	</component>
+	
 </ClinicalDocument>

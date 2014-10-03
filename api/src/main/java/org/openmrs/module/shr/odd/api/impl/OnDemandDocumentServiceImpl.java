@@ -6,7 +6,9 @@ import java.util.List;
 
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.openmrs.Concept;
+import org.openmrs.Encounter;
 import org.openmrs.Obs;
+import org.openmrs.Order;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
@@ -48,6 +50,7 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#generateOnDemandDocument(org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration)
 	 */
 	@Override
+	@Transactional(readOnly = true)
     public ClinicalDocument generateOnDemandDocument(OnDemandDocumentRegistration registrationEntry) throws OnDemandDocumentException {
 		
 		// Validate
@@ -208,6 +211,24 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	@Override
     public List<Obs> getObsGroupMembers(List<Obs> sectionObs) {
 		return this.dao.getObsGroupMembers(sectionObs);
+    }
+
+	/**
+	 * Get all orders for the listed encounters
+	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getEncounterOrders(java.util.List)
+	 */
+	@Override
+    public List<Order> getEncounterOrders(List<Encounter> docEncounters) {
+		return this.dao.getEncounterOrders(docEncounters);
+    }
+
+	/**
+	 * Get all orders of the specified type in the specified encounters
+	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getEncounterOrders(java.util.List, java.lang.Class)
+	 */
+	@Override
+    public List<Order> getEncounterOrders(List<Encounter> docEncounters, Class<? extends Order> orderType) {
+		return this.dao.getEncounterOrders(docEncounters, orderType);
     }
 	
 	

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.marc.everest.datatypes.ED;
 import org.marc.everest.datatypes.NullFlavor;
 import org.marc.everest.datatypes.generic.CD;
@@ -37,6 +39,8 @@ import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
  */
 public final class OddMetadataUtil {
 	
+	protected Log log = LogFactory.getLog(getClass());
+
 	
 	// Singleton stuff
 	private static final Object s_lockObject = new Object();
@@ -123,9 +127,9 @@ public final class OddMetadataUtil {
 	        	if(mapping.getConceptMapType().getName().equalsIgnoreCase("SAME-AS"))
 	        	{
 	        		ConceptReferenceTerm candidateTerm = mapping.getConceptReferenceTerm();
-	        		if(candidateTerm.getConceptSource().getHl7Code().equals(targetCodeSystem) || 
-	        				candidateTerm.getConceptSource().getName().equals(targetCodeSystemName) ||
-	        				targetCodeSystem == null)
+	        		if(targetCodeSystem == null ||
+	        				targetCodeSystemName.equals(candidateTerm.getConceptSource().getName()) ||
+	        				targetCodeSystem.equals(candidateTerm.getConceptSource().getHl7Code()))
 	        			preferredCodes.add(candidateTerm);
 	        		else
 	        			equivalentCodes.add(candidateTerm);
@@ -172,6 +176,7 @@ public final class OddMetadataUtil {
         	return retVal;
         }
         catch (Exception e) {
+        	log.error("Error creating code", e);
         	return null;
         }
 	    
@@ -188,7 +193,8 @@ public final class OddMetadataUtil {
 	    	if(retVal instanceof CV)
 	    	{
 	    		((CV<?>)retVal).setDisplayName(referenceTerm.getDescription());
-	    		((CV<?>)retVal).setOriginalText(new ED(originalConcept.getPreferredName(Context.getLocale()).getName(), Context.getLocale().toLanguageTag()));
+	    		if(originalConcept.getPreferredName(Context.getLocale()) != null)
+	    			((CV<?>)retVal).setOriginalText(new ED(originalConcept.getPreferredName(Context.getLocale()).getName(), Context.getLocale().toLanguageTag()));
 	    		((CV<?>)retVal).setCodeSystemName(referenceTerm.getConceptSource().getName());
 	    		((CV<?>)retVal).setCodeSystem(this.m_conceptUtil.mapConceptSourceNameToOid(referenceTerm.getConceptSource().getName()));
 	    	}
@@ -197,6 +203,7 @@ public final class OddMetadataUtil {
 		}
 		catch(Exception e)
 		{
+			log.error("Error creating code", e);
 			return null;
 		}
     }

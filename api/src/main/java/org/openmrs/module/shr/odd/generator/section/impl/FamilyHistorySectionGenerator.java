@@ -77,7 +77,7 @@ public class FamilyHistorySectionGenerator extends SectionGeneratorImpl {
 			"section.familyHistory.title", 
 			this.m_sectionCode);
 		
-		if(super.allEncountersHaveDiscreteComponents())
+		if(super.allEncountersHaveDiscreteComponentObs())
 		{
 			// Create level 3
 			retVal.getTemplateId().add(new II(CdaHandlerConstants.SCT_TEMPLATE_CODED_FAMILY_MEDICAL_HISTORY));
@@ -88,6 +88,8 @@ public class FamilyHistorySectionGenerator extends SectionGeneratorImpl {
 			Concept familyMemberRelationConcept = Context.getConceptService().getConcept(1560);
 			for(Obs familyHistoryListObs : encounterFamilyHistoryObs)
 			{
+				if(familyHistoryListObs.getVoided()) continue;
+				
 				List<Obs> familyRelationObs = super.m_service.getObsGroupMembers(familyHistoryListObs, Arrays.asList(familyMemberRelationConcept));
 				if(familyRelationObs.size() == 0) 
 					continue;
@@ -119,11 +121,14 @@ public class FamilyHistorySectionGenerator extends SectionGeneratorImpl {
 					ActStatus.Completed, 
 					null);
 				organizer.getAuthor().add(super.createAuthorPointer(familyHistoryTuple.getValue().get(0)));
-				retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, organizer));
 				
 				// Iterate through the tuples of family history data as these become components for the family history
 				for(Obs historyItem : familyHistoryTuple.getValue())
 				{
+					
+					if(historyItem.getVoided())
+						continue;
+					
 					// Get all the sub-obs
 					List<Obs> historyItemDetail = super.m_service.getObsGroupMembers(historyItem);
 
@@ -255,8 +260,14 @@ public class FamilyHistorySectionGenerator extends SectionGeneratorImpl {
 								historyObservation.setValue(super.m_cdaDataUtil.getObservationValue(detailItem));
 								break;
 						}
-					}
-				}
+					} // for
+					
+					
+				} // for history item
+				
+				if(organizer.getComponent().size() > 0)
+					retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, organizer));
+
 			}
 			
 			retVal.setText(super.generateLevel3Text(retVal));

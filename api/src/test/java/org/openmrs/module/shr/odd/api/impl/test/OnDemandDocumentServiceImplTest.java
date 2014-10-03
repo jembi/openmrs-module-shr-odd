@@ -212,33 +212,5 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 		
 	}
 	
-	/**
-	 * Test the generation of a CCD document with problems and meds
-	 *
-	 */
-	@Test
-	public void testGenerateCCDFullProblemsAndMedsAlt()
-	{
-		// Register the handler for a generic
-		this.m_importService.subscribeImport(null, GenericDocumentSubscriber.getInstance());
-		// First import the APS document
-		Visit visit1 = this.doParseCda("/validCdaLevel3Sample2.xml");
-		// Get patient information by name
-		List<Patient> patient = Context.getPatientService().getPatients("PHR_Extract PHR_CAPMED");
-		Assert.assertEquals(1, patient.size());
-		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
-		Assert.assertEquals(1, oddDocuments.size());
-		Assert.assertEquals(1, oddDocuments.get(0).getEncounterLinks().size());
-		
-		// Generate CCD
-		try {
-	        ClinicalDocument doc = this.m_oddService.generateOnDemandDocument(oddDocuments.get(0));
-	        log.error(CdaLoggingUtils.getCdaAsString(doc));
-        }
-        catch (Exception e) {
-	        log.error("Error generated", e);
-	        fail(e.getMessage());
-        }
-		
-	}
+
 }

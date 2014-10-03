@@ -6,6 +6,7 @@ import java.util.Set;
 import org.openmrs.Concept;
 import org.openmrs.Encounter;
 import org.openmrs.Obs;
+import org.openmrs.Order;
 import org.openmrs.Patient;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
@@ -68,5 +69,13 @@ public interface OnDemandDocumentDAO {
 	 * Get all obs members in the obs group having the defined concept
 	 */
 	public List<Obs> getObsGroupMembers(List<Obs> containerObs, List<Concept> concept);
+	/**
+	 * Get the orders associated with the list of encounters
+	 */
+	public List<Order> getEncounterOrders(List<Encounter> encounters);
+	/**
+	 * Get encounter orders of the specified type
+	 */
+	public List<Order> getEncounterOrders(List<Encounter> encounters, Class<? extends Order> orderType);
 	
 }

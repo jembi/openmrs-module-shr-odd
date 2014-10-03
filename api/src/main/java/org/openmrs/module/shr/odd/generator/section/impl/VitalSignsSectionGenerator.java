@@ -61,7 +61,7 @@ public class VitalSignsSectionGenerator extends SectionGeneratorImpl {
 		);
 		
 		// Now are we create a coded vital signs section or not?
-		if(super.allEncountersHaveDiscreteComponents())
+		if(super.allEncountersHaveDiscreteComponentObs())
 		{
 			// Yes: this is level 3, we want to generate at level 3
 			retVal.getTemplateId().add(new II(CdaHandlerConstants.SCT_TEMPLATE_CODED_VITAL_SIGNS));
@@ -98,6 +98,9 @@ public class VitalSignsSectionGenerator extends SectionGeneratorImpl {
 				
 	            for(Obs vitalSignsObs : candidateObsInOrganizers)
 	            {
+	            	
+	            	if(vitalSignsObs.getVoided()) continue; /// skip
+	            	
 	            	Date organizerDate = vitalSignsObs.getObsDatetime();
 	            	if(vitalSignsObs.getObsGroup() != null)
 	            		organizerDate = vitalSignsObs.getObsGroup().getObsDatetime();
@@ -134,6 +137,9 @@ public class VitalSignsSectionGenerator extends SectionGeneratorImpl {
 				II proposedOrganizerId = null;
 				for(Obs component : organizer.getValue())
 				{
+					
+					if(component.getVoided()) continue;
+					
 					II containerId = null;
 					if(component.getObsGroup() != null && component.getObsGroup().getAccessionNumber() != null) // Was in a group
 						containerId = this.m_cdaDataUtil.parseIIFromString(component.getObsGroup().getAccessionNumber());
@@ -162,9 +168,12 @@ public class VitalSignsSectionGenerator extends SectionGeneratorImpl {
 				org.setId(SET.createSET(proposedOrganizerId));
 				
 				// Now add to the section
-				Entry entry = new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE);
-				entry.setClinicalStatement(org);
-				retVal.getEntry().add(entry);
+				if(org.getComponent().size() > 0)
+				{
+					Entry entry = new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE);
+					entry.setClinicalStatement(org);
+					retVal.getEntry().add(entry);
+				}
 			}
 			
 			retVal.setText(super.generateLevel3Text(retVal));

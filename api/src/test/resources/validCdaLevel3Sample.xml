@@ -881,7 +881,7 @@ None of the following address elements are specifically required by HITSP C32, s
 							<text>
 								<reference value="#SIGTEXT_4"/>
 							</text>
-							<statusCode code="completed"/>
+							<statusCode code="active"/>
 							<effectiveTime xsi:type="IVL_TS">
 								<low value="20000328"/>
 								<high nullFlavor="UNK"/>
@@ -1322,8 +1322,146 @@ None of the following address elements are specifically required by HITSP C32, s
 				</entry>
 			</section>
 		</component>
-
-
+			<component>
+				<section>
+					<templateId root="2.16.840.1.113883.10.20.1.6" /> <!-- Immunizations section template -->
+				    <templateId root="1.3.6.1.4.1.19376.1.5.3.1.3.23"/>
+					<code code="11369-6" codeSystem="2.16.840.1.113883.6.1" />
+					<title>Immunizations</title>
+					<text>
+						<table border="1" width="100%">
+							<thead>
+								<tr>
+									<th>Vaccine</th>
+									<th>Date</th>
+									<th>Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>Influenza virus vaccine, IM</td>
+									<td>Nov 1999</td>
+									<td>Completed</td>
+								</tr>
+								<tr>
+									<td>Influenza virus vaccine, IM</td>
+									<td>Dec 1998</td>
+									<td>Completed</td>
+								</tr>
+								<tr>
+									<td>Pneumococcal polysaccharide vaccine, IM</td>
+									<td>Dec 1998</td>
+									<td>Completed</td>
+								</tr>
+								<tr>
+									<td>Tetanus and diphtheria toxoids, IM</td>
+									<td>1997</td>
+									<td>Completed</td>
+								</tr>
+							</tbody>
+						</table>
+					</text>
+					<entry typeCode="DRIV">
+						<substanceAdministration classCode="SBADM"
+							moodCode="EVN">
+							<templateId root="2.16.840.1.113883.10.20.1.24" /> <!-- Medication activity template -->
+							<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.12"/>
+							<id root="e6f1ba43-c0ed-4b9b-9f12-f435d8ad8f92" />
+							<statusCode code="completed" />
+							<effectiveTime xsi:type="IVL_TS">
+								<center value="199911" />
+							</effectiveTime>
+							<routeCode code="IM" codeSystem="2.16.840.1.113883.5.112"
+								codeSystemName="RouteOfAdministration" displayName="Intramuscular injection" />
+							<consumable>
+								<manufacturedProduct>
+									<templateId root="2.16.840.1.113883.10.20.1.53" /> <!-- Product template -->
+									<manufacturedMaterial>
+										<code code="88" codeSystem="2.16.840.1.113883.6.59"
+											displayName="Influenza virus vaccine">
+											<originalText>Influenza virus vaccine</originalText>
+										</code>
+									</manufacturedMaterial>
+								</manufacturedProduct>
+							</consumable>
+						</substanceAdministration>
+					</entry>
+					<entry typeCode="DRIV">
+						<substanceAdministration classCode="SBADM"
+							moodCode="EVN">
+							<templateId root="2.16.840.1.113883.10.20.1.24" /> <!-- Medication activity template -->
+							<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.12"/>
+							<id root="115f0f70-1343-4938-b62f-631de9749a0a" />
+							<statusCode code="completed" />
+							<effectiveTime xsi:type="IVL_TS">
+								<center value="199812" />
+							</effectiveTime>
+							<routeCode code="IM" codeSystem="2.16.840.1.113883.5.112"
+								codeSystemName="RouteOfAdministration" displayName="Intramuscular injection" />
+							<consumable>
+								<manufacturedProduct>
+									<templateId root="2.16.840.1.113883.10.20.1.53" /> <!-- Product template -->
+									<manufacturedMaterial>
+										<code code="88" codeSystem="2.16.840.1.113883.6.59"
+											displayName="Influenza virus vaccine">
+											<originalText>Influenza virus vaccine</originalText>
+										</code>
+									</manufacturedMaterial>
+								</manufacturedProduct>
+							</consumable>
+						</substanceAdministration>
+					</entry>
+					<entry typeCode="DRIV">
+						<substanceAdministration classCode="SBADM"
+							moodCode="EVN">
+							<templateId root="2.16.840.1.113883.10.20.1.24" /> <!-- Medication activity template -->
+							<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.12"/>
+							<id root="78598407-9f16-42d5-8ffd-09281a60fe33" />
+							<statusCode code="completed" />
+							<effectiveTime xsi:type="IVL_TS">
+								<center value="199812" />
+							</effectiveTime>
+							<routeCode code="IM" codeSystem="2.16.840.1.113883.5.112"
+								codeSystemName="RouteOfAdministration" displayName="Intramuscular injection" />
+							<consumable>
+								<manufacturedProduct>
+									<templateId root="2.16.840.1.113883.10.20.1.53" /> <!-- Product template -->
+									<manufacturedMaterial>
+										<code code="33" codeSystem="2.16.840.1.113883.6.59"
+											displayName="Pneumococcal polysaccharide vaccine">
+											<originalText>Pneumococcal polysaccharide vaccine
+											</originalText>
+										</code>
+									</manufacturedMaterial>
+								</manufacturedProduct>
+							</consumable>
+						</substanceAdministration>
+					</entry>
+					<entry typeCode="DRIV">
+						<substanceAdministration classCode="SBADM"
+							moodCode="EVN">
+							<templateId root="2.16.840.1.113883.10.20.1.24" /> <!-- Medication activity template -->
+							<templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.12"/>
+							<id root="261e94a0-95fb-4975-b5a5-c8e12c01c1bc" />
+							<statusCode code="completed" />
+							<effectiveTime value="1997" />
+							<routeCode code="IM" codeSystem="2.16.840.1.113883.5.112"
+								codeSystemName="RouteOfAdministration" displayName="Intramuscular injection" />
+							<consumable>
+								<manufacturedProduct>
+									<templateId root="2.16.840.1.113883.10.20.1.53" /> <!-- Product template -->
+									<manufacturedMaterial>
+										<code code="09" codeSystem="2.16.840.1.113883.6.59"
+											displayName="Tetanus and diphtheria toxoids">
+											<originalText>Tetanus and diphtheria toxoids</originalText>
+										</code>
+									</manufacturedMaterial>
+								</manufacturedProduct>
+							</consumable>
+						</substanceAdministration>
+					</entry>
+				</section>
+			</component>
 		</structuredBody>
 	</component>
 	

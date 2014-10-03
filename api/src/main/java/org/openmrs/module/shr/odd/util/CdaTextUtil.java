@@ -19,9 +19,13 @@ import org.marc.everest.datatypes.TS;
 import org.marc.everest.datatypes.doc.StructDocElementNode;
 import org.marc.everest.datatypes.doc.StructDocNode;
 import org.marc.everest.datatypes.doc.StructDocTextNode;
+import org.marc.everest.datatypes.generic.CD;
 import org.marc.everest.datatypes.generic.CE;
 import org.marc.everest.datatypes.generic.CV;
+import org.marc.everest.datatypes.generic.EIVL;
 import org.marc.everest.datatypes.generic.IVL;
+import org.marc.everest.datatypes.generic.PIVL;
+import org.marc.everest.datatypes.generic.SXCM;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Act;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Author;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
@@ -31,8 +35,12 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Entry;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.EntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Organizer;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.SubstanceAdministration;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.DrugEntity;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ObservationInterpretation;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubject;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubstanceMood;
+import org.openmrs.api.db.AdministrationDAO;
 
 
 /**
@@ -74,9 +82,205 @@ public final class CdaTextUtil {
 			return this.generateText((Observation)statement, context, document);
 		else if(statement.isPOCD_MT000040UVAct())
 			return this.generateText((Act)statement, context, document);
+		else if(statement.isPOCD_MT000040UVSubstanceAdministration())
+			return this.generateText((SubstanceAdministration)statement, context, document);
 		else
 			return new StructDocElementNode("content", statement.toString());
 	}
+
+	/**
+	 * Substance administration
+	 * 
+	 * <tr>
+	 * 	<td colspan="2">Procedure (Code)</td>
+	 * 	<td>Date</td>
+	 *  <td>Frequency</td>
+	 *  <td>Drug</td>
+	 *  <td>Dose</td>
+	 *  <td>Form</td>
+	 *  <td>Status</td>
+	 *  <td>Notes</td>
+	 * </tr>
+	 */
+	public StructDocElementNode generateText(SubstanceAdministration administration, StructDocElementNode context, ClinicalDocument document)
+	{
+		StructDocElementNode retVal = new StructDocElementNode("tr");
+		
+		
+		String id = String.format(String.format("obs%s", UUID.randomUUID()));
+		id = id.substring(0, id.indexOf("-"));
+		
+		StructDocElementNode procedureTd = null;
+		if(administration.getCode() != null)
+		{
+			procedureTd = this.createCodeTextCell(administration.getCode());
+			retVal.getChildren().add(procedureTd);
+		}
+		else
+			procedureTd = retVal.addElement("td", "Drug Administration");
+		procedureTd.addAttribute("colspan", "2");
+		if(!administration.getMoodCode().getCode().equals(x_DocumentSubstanceMood.Eventoccurrence))
+			procedureTd.addText(String.format(" (%s)", administration.getMoodCode().getCode()));
+		if(BL.TRUE.equals(administration.getNegationInd()))
+			procedureTd.addText(" (Not Performed)");
+		if(administration.getEffectiveTime().size() > 0)
+			retVal.addElement("td").getChildren().addAll(this.generateIvlDisplay((SXCM<TS>)administration.getEffectiveTime().get(0)));
+		else
+			retVal.addElement("td", "Unknown");
+		
+		if(administration.getEffectiveTime().size() > 1)
+		{
+			StructDocElementNode freqTd = retVal.addElement("td");
+			SXCM<TS> time = (SXCM<TS>)administration.getEffectiveTime().get(1);
+			if(time instanceof PIVL)
+			{
+				freqTd.addText("Every ");
+				freqTd.addText(((PIVL)time).getPeriod().toString());
+			}
+			else if(time instanceof EIVL)
+			{
+				EIVL<TS> eivl = (EIVL<TS>)time;
+				if(eivl.getOffset().getValue() != null)
+					freqTd.addText(eivl.getOffset().getValue().toString());
+				freqTd.addText(" ");
+				freqTd.addText(eivl.getEvent().getCode().name());
+			}
+			else if(time instanceof SXCM)
+			{
+				freqTd.addText("Once On ");
+				freqTd.getChildren().add(this.createTimeDisplay(time.getValue()));
+			}
+
+		}
+		else
+			retVal.addElement("td", "One time");
+		
+		// Drug
+		if(administration.getConsumable() != null &&
+				administration.getConsumable().getManufacturedProduct() != null &&
+				administration.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterial() != null)
+		{
+			if(administration.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedLabeledDrug() != null)
+				retVal.addElement("td", 
+					SD.createText("Labeled drug "), 
+					SD.createText(administration.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedLabeledDrug().getName().toString()));
+			else
+				retVal.getChildren().add(this.createCodeTextCell(administration.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedMaterial().getCode()));
+		}
+		else
+			retVal.addElement("td", "None Identified");
+		
+		// Dose
+		if(administration.getDoseQuantity() != null && !administration.getDoseQuantity().isNull())
+			retVal.addElement("td",administration.getDoseQuantity().toString());
+		else
+			retVal.addElement("td", "?");
+		
+		// Form
+		if(administration.getAdministrationUnitCode() != null && !administration.getAdministrationUnitCode().isNull())
+			retVal.getChildren().add(this.createCodeTextCell(administration.getAdministrationUnitCode()));
+		else
+			retVal.addElement("td");
+		
+		// Status event?
+		retVal.addElement("td", administration.getStatusCode().getCode().toString());
+		
+		// Notes
+		if(administration.getText() != null)
+			retVal.addElement("td", administration.getText().toString());
+		else
+			retVal.addElement("td");
+		
+		// Set the text
+		administration.setText(new ED(new TEL(String.format("#%s", id))));
+		
+		// There is no context so the retval becomes the list
+		if(context == null)
+		{
+			context = new StructDocElementNode();
+			this.createSubstanceAdministrationTable(context).getChildren().add(retVal);
+			retVal = (StructDocElementNode)context.getChildren().get(0);
+		}
+		else if(context.getName().equals("list"))
+		{
+			context = context.addElement("item");
+			context = this.createObservationTable(context);
+			context.getChildren().add(retVal);
+		}
+		else if(context.getName().equals("td"))
+		{
+			context = context.addElement("list").addElement("item");
+			context = this.createSubstanceAdministrationTable(context);
+			context.getChildren().add(retVal);
+		}
+		else if(context.getName().equals("table")) // need to find the tbody
+		{
+			for(StructDocNode node : context.getChildren())
+				if(node.getName().equals("tbody"))
+					node.getChildren().add(retVal);
+		}
+		else
+			context.getChildren().add(retVal);
+		
+		// Now, is there sub-observations
+		if(administration.getEntryRelationship().size() > 0)
+		{
+			StructDocElementNode relationshipRow = context.addElement("tr");
+			relationshipRow.addElement("td");
+			relationshipRow.addElement("td", "Related Doses");
+			StructDocElementNode relationshipContent = relationshipRow.addElement("td");
+			relationshipContent.addAttribute("colspan", "6");
+			StructDocElementNode subContext = this.createObservationTable(relationshipContent.addElement("list").addElement("item"));
+			for(EntryRelationship er : administration.getEntryRelationship())
+				this.generateText(er.getClinicalStatement(), subContext, document);
+		}
+		
+		return retVal;
+				
+	}
+	
+	/**
+	 * Create a code text cell
+	 */
+	private StructDocElementNode createCodeTextCell(CV<String> code) {
+		if(code == null || code.isNull())
+			return new StructDocElementNode("td","N/A");
+		if(code.getOriginalText() != null)
+		{
+			String id = String.format("txt%s", UUID.randomUUID());
+			id = id.substring(0, id.indexOf("-"));
+			StructDocElementNode cellNode = new StructDocElementNode("td");
+			cellNode.addText(code.getOriginalText().toString());
+			cellNode.addAttribute("ID", id);
+			code.setOriginalText(new ED());
+			code.getOriginalText().setReference(new TEL(String.format("#%s", id)));
+			return cellNode;
+		}
+		else
+			return new StructDocElementNode("td", code.getDisplayName());
+    }
+
+	/**
+	 * Create substance administration table header
+	 */
+	private StructDocElementNode createSubstanceAdministrationTable(StructDocElementNode context) {
+		// For each component place in a table row!
+				StructDocElementNode table = context.addElement("table"),
+						thead = table.addElement("thead"),
+						theadRow = thead.addElement("tr"), 
+						tbody = table.addElement("tbody");
+				
+				theadRow.addElement("th", "Administration Procedure").addAttribute("colspan", "2");
+				theadRow.addElement("th", "Date/Time");
+				theadRow.addElement("th", "Frequency");
+				theadRow.addElement("th", "Drug");
+				theadRow.addElement("th", "Dose");
+				theadRow.addElement("th", "Form");
+				theadRow.addElement("th", "Status");
+				theadRow.addElement("th", "Notes");
+				
+				return tbody;
+    }
 
 	/**
 	 * Text for Acts
@@ -139,7 +343,10 @@ public final class CdaTextUtil {
 				else
 					caption.addText("[Person] ");
 				
-				caption.addText(String.format(" [%s] ", organizer.getSubject().getRelatedSubject().getCode().getDisplayName()));
+				if(organizer.getSubject() != null && 
+						organizer.getSubject().getRelatedSubject() != null &&
+								organizer.getSubject().getRelatedSubject().getCode() != null)
+					caption.addText(String.format(" [%s] ", organizer.getSubject().getRelatedSubject().getCode().getDisplayName()));
 			}
 			caption.addText(")");
 		}
@@ -186,9 +393,10 @@ public final class CdaTextUtil {
 		
 		// TODO: entry relationships
 		if(observation.getCode() != null && !observation.getCode().isNull())
-			retVal.addElement("td", String.format("%s", observation.getCode().getDisplayName()));
+			retVal.getChildren().add(this.createCodeTextCell(observation.getCode()));
 		else
 			retVal.addElement("td", "Unknown");
+		
 		
 		// Time
 		if(observation.getEffectiveTime() != null && !observation.getEffectiveTime().isNull())
@@ -203,19 +411,8 @@ public final class CdaTextUtil {
 		StructDocElementNode valueTd = null;
 		if(observation.getValue() instanceof CV)
 		{
-			CV obsValue = (CV)observation.getValue();
-			if(obsValue.getOriginalText() != null)
-			{
-				String codeOrgTextRef = String.format("code%s", UUID.randomUUID());
-				codeOrgTextRef = codeOrgTextRef.substring(0, codeOrgTextRef.indexOf("-"));
-				valueTd = retVal.addElement("td", obsValue.getOriginalText().toString());
-				valueTd.addAttribute("ID", codeOrgTextRef);
-				obsValue.getOriginalText().setReference(new TEL("#" + codeOrgTextRef));
-				obsValue.getOriginalText().setData((byte[])null);
-			}
-			else
-				valueTd = retVal.addElement("td", obsValue.getDisplayName());
-				
+			valueTd = this.createCodeTextCell((CV)observation.getValue());
+			retVal.getChildren().add(valueTd);
 		}
 		else if(observation.getValue() != null && !observation.getValue().isNull())
 			valueTd = retVal.addElement("td", observation.getValue().toString());
@@ -247,6 +444,8 @@ public final class CdaTextUtil {
 		}
 		else
 			retVal.addElement("td", "");
+		
+		retVal.addElement("td", observation.getStatusCode().toString());
 		
 		// Notes
 		if(observation.getText() != null)
@@ -294,7 +493,7 @@ public final class CdaTextUtil {
 			StructDocElementNode relationshipRow = context.addElement("tr");
 			relationshipRow.addElement("td", "Additional Information");
 			StructDocElementNode relationshipContent = relationshipRow.addElement("td");
-			relationshipContent.addAttribute("colspan", "5");
+			relationshipContent.addAttribute("colspan", "6");
 			StructDocElementNode subContext = this.createObservationTable(relationshipContent.addElement("list").addElement("item"));
 			for(EntryRelationship er : observation.getEntryRelationship())
 				this.generateText(er.getClinicalStatement(), subContext, document);
@@ -317,33 +516,51 @@ public final class CdaTextUtil {
 	/**
 	 * Get a displayable value for IVL
 	 */
-	private Collection<? extends StructDocNode> generateIvlDisplay(IVL<TS> ivl) {
+	private Collection<? extends StructDocNode> generateIvlDisplay(SXCM<TS> timeComponent) {
 		List<StructDocNode> retVal = new ArrayList<StructDocNode>();
-		if(ivl.getLow() != null && !ivl.getLow().isNull())
-		{
-			retVal.add(new StructDocTextNode(" Since "));
-			SimpleDateFormat lowDateFormat = new SimpleDateFormat(this.getDateFormat(ivl.getLow()));
-			retVal.add(new StructDocTextNode(lowDateFormat.format(ivl.getLow().getDateValue().getTime())));
-		}
-		if(ivl.getHigh() != null && !ivl.getHigh().isNull())
-		{
-			retVal.add(new StructDocTextNode(" Until "));
-			SimpleDateFormat highDateFormat = new SimpleDateFormat(this.getDateFormat(ivl.getHigh()));
-			retVal.add(new StructDocTextNode(highDateFormat.format(ivl.getHigh().getDateValue().getTime())));
-		}
-		if(ivl.getValue() != null && !ivl.getValue().isNull())
+		
+		
+		if(timeComponent.getValue() != null && !timeComponent.getValue().isNull())
 		{
 			retVal.add(new StructDocTextNode(" On "));
-			SimpleDateFormat valueDateFormat = new SimpleDateFormat(this.getDateFormat(ivl.getValue()));
-			retVal.add(new StructDocTextNode(valueDateFormat.format(ivl.getValue().getDateValue().getTime())));
+			retVal.add(this.createTimeDisplay(timeComponent.getValue()));
 		}
+		
+		if(timeComponent instanceof IVL)
+		{
+			IVL<TS> ivl = (IVL<TS>)timeComponent;
+			if(ivl.getLow() != null && !ivl.getLow().isNull())
+			{
+				retVal.add(new StructDocTextNode(" Since "));
+				retVal.add(this.createTimeDisplay(ivl.getLow()));
+			}
+			if(ivl.getHigh() != null && !ivl.getHigh().isNull())
+			{
+				retVal.add(new StructDocTextNode(" Until "));
+				retVal.add(this.createTimeDisplay(ivl.getHigh()));
+			}
+		}		
 		return retVal;
+	}
+
+	/**
+	 * Text node
+	 */
+	private StructDocTextNode createTimeDisplay(TS value) {
+		
+		if(value == null)
+			return new StructDocTextNode();
+		SimpleDateFormat valueDateFormat = new SimpleDateFormat(this.getDateFormat(value));
+		return new StructDocTextNode(valueDateFormat.format(value.getDateValue().getTime()));
 	}
 
 	/**
 	 * Get the date format
 	 */
 	private String getDateFormat(TS value) {
+		
+		if(value == null)
+			return "";
 		StringBuilder dateFormat = new StringBuilder();
 		int precision = value.getDateValuePrecision();
 		
@@ -382,6 +599,7 @@ public final class CdaTextUtil {
 		theadRow.addElement("th", "Observed Value");
 		theadRow.addElement("th", "Author");
 		theadRow.addElement("th", "Interpretation");
+		theadRow.addElement("th", "Status");
 		theadRow.addElement("th", "Notes");
 		
 		return tbody;

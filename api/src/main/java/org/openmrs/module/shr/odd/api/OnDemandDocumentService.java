@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.openmrs.Concept;
+import org.openmrs.Encounter;
 import org.openmrs.Obs;
+import org.openmrs.Order;
 import org.openmrs.Patient;
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.shr.odd.exception.OnDemandDocumentException;
@@ -98,4 +100,13 @@ public interface OnDemandDocumentService extends OpenmrsService {
 	 * Get all obs group members within the specified group of obs
 	 */
 	public List<Obs> getObsGroupMembers(List<Obs> sectionObs);
+
+	/**
+	 * Get all orders from the specified encounters
+	 */
+	public List<Order> getEncounterOrders(List<Encounter> docEncounters);
+	/**
+	 * Get orders in the encounter of the specified type
+	 */
+	public List<Order> getEncounterOrders(List<Encounter> asList, Class<? extends Order> orderType);
 }

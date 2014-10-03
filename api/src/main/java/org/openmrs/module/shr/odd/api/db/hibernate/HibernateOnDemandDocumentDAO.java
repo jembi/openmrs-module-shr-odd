@@ -14,8 +14,10 @@ import org.openmrs.Auditable;
 import org.openmrs.BaseOpenmrsData;
 import org.openmrs.BaseOpenmrsObject;
 import org.openmrs.Concept;
+import org.openmrs.Encounter;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsData;
+import org.openmrs.Order;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.odd.api.db.OnDemandDocumentDAO;
@@ -196,8 +198,7 @@ public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
 		if(containerObs.size() == 0)
 			return new ArrayList<Obs>();
 		Criteria crit = this.m_sessionFactory.getCurrentSession().createCriteria(Obs.class)
-				.add(Restrictions.in("obsGroup", containerObs))
-				.add(Restrictions.eq("voided", false));
+				.add(Restrictions.in("obsGroup", containerObs));
 		return (List<Obs>)crit.list();
 
     }
@@ -208,8 +209,37 @@ public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
 			return new ArrayList<Obs>();
 		Criteria crit = this.m_sessionFactory.getCurrentSession().createCriteria(Obs.class)
 				.add(Restrictions.in("obsGroup", containerObs))
-				.add(Restrictions.eq("voided", false))
 				.add(Restrictions.in("concept", concept));
 		return (List<Obs>)crit.list();
+    }
+
+	/**
+	 * Get the list of orders associated with the specified encounters
+	 * @see org.openmrs.module.shr.odd.api.db.OnDemandDocumentDAO#getEncounterOrders(java.util.List)
+	 */
+	@Override
+    public List<Order> getEncounterOrders(List<Encounter> encounters) {
+		if(encounters == null || encounters.size() == 0)
+			return new ArrayList<Order>();
+		Order o;
+		
+		Criteria crit = this.m_sessionFactory.getCurrentSession().createCriteria(Order.class)
+				.add(Restrictions.in("encounter", encounters));
+		return (List<Order>)crit.list();
+    }
+
+	/**
+	 * Get encounter orders of the specified type
+	 * @see org.openmrs.module.shr.odd.api.db.OnDemandDocumentDAO#getEncounterOrders(java.util.List, java.lang.Class)
+	 */
+	@Override
+    public List<Order> getEncounterOrders(List<Encounter> encounters, Class<? extends Order> orderType) {
+		if(encounters == null || encounters.size() == 0)
+			return new ArrayList<Order>();
+		Order o;
+		
+		Criteria crit = this.m_sessionFactory.getCurrentSession().createCriteria(orderType)
+				.add(Restrictions.in("encounter", encounters));
+		return (List<Order>)crit.list();
     }
 }

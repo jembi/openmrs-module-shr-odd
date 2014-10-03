@@ -42,7 +42,12 @@
 			<version>1.2.0</version>
 			<scope>provided</scope>
 		</dependency>
-						
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>xds-b-repository-api</artifactId>
+			<version>0.4.0</version>
+			<scope>provided</scope>
+		</dependency>						
 		<!-- End OpenMRS modules -->
 		
 

@@ -2,6 +2,7 @@ package org.openmrs.module.shr.odd.model;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import org.openmrs.Auditable;
 import org.openmrs.BaseOpenmrsData;
@@ -12,8 +13,6 @@ import org.openmrs.Patient;
  */
 public class OnDemandDocumentRegistration extends BaseOpenmrsData implements Auditable {
 
-	
-	
 
 	// The identifier of the registration
 	private Integer oddId;

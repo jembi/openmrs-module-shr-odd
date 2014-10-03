@@ -32,12 +32,7 @@
 			<version>0.1.0</version>		
 			<scope>provided</scope>		
 		</dependency>
-		<dependency>
-			<groupId>org.openmrs.module</groupId>
-			<artifactId>shr-contenthandler-api</artifactId>
-			<version>1.2.0</version>		
-			<scope>provided</scope>		
-		</dependency>				
+		
 		<!-- End OpenMRS modules -->
 		
 
@@ -80,31 +75,44 @@
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>shr-contenthandler-api</artifactId>
-			<version>1.2.0</version>
+			<version>2.0.0</version>
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- XDS Module -->
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>xds-b-repository-api</artifactId>
+			<version>0.4.0</version>
+			<type>jar</type>
+			<scope>provided</scope>
+		</dependency>
+		
 		<!-- Everest Dependencies -->
 		<dependency>
 			<groupId>org.marc.everest</groupId>
 			<artifactId>everest-core</artifactId>
 			<version>1.1.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.marc.everest</groupId>
 			<artifactId>everest-formatters-xml-its1</artifactId>
 			<version>1.1.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.marc.everest</groupId>
 			<artifactId>everest-formatters-xml-dt-r1</artifactId>
 			<version>1.1.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.marc.everest</groupId>
 			<artifactId>everest-rmim-uv-cdar2</artifactId>
 			<version>1.1.0</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	

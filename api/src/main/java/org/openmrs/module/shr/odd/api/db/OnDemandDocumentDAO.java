@@ -1,7 +1,12 @@
 package org.openmrs.module.shr.odd.api.db;
 
 import java.util.List;
+import java.util.Set;
 
+import org.openmrs.Concept;
+import org.openmrs.Encounter;
+import org.openmrs.Obs;
+import org.openmrs.Order;
 import org.openmrs.Patient;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
@@ -52,5 +57,25 @@ public interface OnDemandDocumentDAO {
 	 * Saves an on-demand document to encounter link
 	 */
 	public OnDemandDocumentEncounterLink saveOnDemandDocumentEncounterLink(OnDemandDocumentEncounterLink link);
+	/**
+	 * Get all obs members in the obs group
+	 */
+	public List<Obs> getObsGroupMembers(Obs containerObs);
+	/**
+	 * Get all obs members in the obs group
+	 */
+	public List<Obs> getObsGroupMembers(List<Obs> containerObs);
+	/**
+	 * Get all obs members in the obs group having the defined concept
+	 */
+	public List<Obs> getObsGroupMembers(List<Obs> containerObs, List<Concept> concept);
+	/**
+	 * Get the orders associated with the list of encounters
+	 */
+	public List<Order> getEncounterOrders(List<Encounter> encounters);
+	/**
+	 * Get encounter orders of the specified type
+	 */
+	public List<Order> getEncounterOrders(List<Encounter> encounters, Class<? extends Order> orderType);
 	
 }

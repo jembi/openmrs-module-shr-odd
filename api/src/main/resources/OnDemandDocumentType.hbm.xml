@@ -21,6 +21,7 @@
 		<property name="retireReason" type="java.lang.String" column="retired_reason" length="255"/>
 		<property name="javaClassName" type="java.lang.String" column="java_class_name"/>
 		<property name="name" type="java.lang.String" column="name"/>
+		<property name="formatCode" type="java.lang.String" column="format_code"/>
 		<!-- bi-directional many-to-one association to User -->
 		<many-to-one name="retiredBy" class="org.openmrs.User" column="retired_by" />
 		<!-- bi-directional many-to-one association to User -->

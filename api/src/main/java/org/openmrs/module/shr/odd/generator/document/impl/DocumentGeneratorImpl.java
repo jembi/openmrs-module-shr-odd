@@ -167,22 +167,27 @@ public abstract class DocumentGeneratorImpl implements DocumentGenerator {
 	/**
 	 * Add sections to the document
 	 */
-	public List<Component3> generateSections(OnDemandDocumentRegistration documentRegistration, Class<? extends SectionGenerator>... generatorClazzes) {
+	public List<Component3> generateSections(OnDemandDocumentRegistration documentRegistration, ClinicalDocument generatedDocument, Class<? extends SectionGenerator>... generatorClazzes) {
 		
-		List<Component3> retVal = new ArrayList<Component3>();
 
 		// Iterate through the generator classes and generate / add the section
 		for(Class<? extends SectionGenerator> clazz : generatorClazzes)
 		{
-			SectionGenerator generator = SectionGeneratorFactory.getOrCreateInstance(clazz);
+			SectionGenerator generator = SectionGeneratorFactory.createInstance(clazz);
 			if(generator == null) continue; // cannot create this generator
 			
 			// Now generate the section
-			Section generatedSection = generator.generateSection(documentRegistration);
-			retVal.add(new Component3(ActRelationshipHasComponent.HasComponent, BL.TRUE, generatedSection));
+			generator.setRegistration(documentRegistration);
+			generator.setGeneratedDocument(generatedDocument);
+			Section generatedSection = generator.generateSection();
+
+			if(generatedSection != null)
+				generatedDocument.getComponent().getBodyChoiceIfStructuredBody().getComponent().add(
+					new Component3(ActRelationshipHasComponent.HasComponent, BL.TRUE, generatedSection)
+						);
 		}
-		
-		return retVal;
+
+		return generatedDocument.getComponent().getBodyChoiceIfStructuredBody().getComponent();
     }
 	
 }

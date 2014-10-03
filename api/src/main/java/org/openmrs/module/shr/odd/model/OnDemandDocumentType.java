@@ -1,19 +1,22 @@
 package org.openmrs.module.shr.odd.model;
 
+import java.util.UUID;
+
 import org.openmrs.BaseOpenmrsMetadata;
 
 /**
  * Identifies a type of ODD
  */
 public class OnDemandDocumentType extends BaseOpenmrsMetadata {
-	
+
 	// The Id of the ODD type
 	private Integer typeId;
 	// The name of the class 
 	private String javaClassName;
 	// The name of the type
 	private String name;
-	
+	// Format code
+	private String formatCode;
     /**
      * @return the id
      */
@@ -55,6 +58,22 @@ public class OnDemandDocumentType extends BaseOpenmrsMetadata {
      */
     public void setName(String name) {
     	this.name = name;
+    }
+
+	
+    /**
+     * @return the formatCode
+     */
+    public String getFormatCode() {
+    	return formatCode;
+    }
+
+	
+    /**
+     * @param formatCode the formatCode to set
+     */
+    public void setFormatCode(String formatCode) {
+    	this.formatCode = formatCode;
     }
 	
 	

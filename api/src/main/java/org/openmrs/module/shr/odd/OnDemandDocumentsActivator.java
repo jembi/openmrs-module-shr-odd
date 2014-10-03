@@ -19,6 +19,11 @@ import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.ModuleActivator;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
+import org.openmrs.module.shr.contenthandler.api.AlreadyRegisteredException;
+import org.openmrs.module.shr.contenthandler.api.ContentHandlerService;
+import org.openmrs.module.shr.contenthandler.api.InvalidContentTypeException;
+import org.openmrs.module.shr.odd.contenthandler.OnDemandDocumentContentHandler;
+import org.openmrs.module.shr.odd.exception.OnDemandDocumentException;
 import org.openmrs.module.shr.odd.subscriber.GenericDocumentSubscriber;
 
 /**
@@ -38,10 +43,27 @@ public class OnDemandDocumentsActivator implements ModuleActivator {
 	}
 	
 	/**
+	 * Register content handlers
+	 */
+	private void registerContentHandlers()
+	{
+		// Register the format codes
+		ContentHandlerService contentHandler = Context.getService(ContentHandlerService.class);
+		try {
+			if(contentHandler.getContentHandler("application/xml+hl7-cda-odd") == null)
+				contentHandler.registerContentHandler("application/xml+hl7-cda-odd", OnDemandDocumentContentHandler.getInstance());
+        }
+        catch (Exception e) {
+        	log.error("Could not register handler", e);
+        }
+	}
+
+	/**
 	 * @see ModuleActivator#contextRefreshed()
 	 */
 	public void contextRefreshed() {
 		this.registerSubscribers();
+		this.registerContentHandlers();
 		log.info("SHR ODD Module refreshed");
 	}
 	
@@ -50,6 +72,7 @@ public class OnDemandDocumentsActivator implements ModuleActivator {
 	 */
 	public void started() {
 		this.registerSubscribers();
+		this.registerContentHandlers();
 		log.info("SHR ODD Module started");
 		
 	}

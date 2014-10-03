@@ -14,8 +14,6 @@ import org.openmrs.module.shr.odd.generator.SectionGenerator;
 public final class SectionGeneratorFactory {
 
 	// Cached instances
-	private final static Object s_lockObject = new Object();
-	private final static Map<Class<? extends SectionGenerator>, SectionGenerator> s_sectionGenerators = new HashMap<Class<? extends SectionGenerator>, SectionGenerator>();
 	private final static Log log = LogFactory.getLog(SectionGeneratorFactory.class);
 	
 	/**
@@ -25,22 +23,15 @@ public final class SectionGeneratorFactory {
 	 * @param clazz
 	 * @return
 	 */
-	public static SectionGenerator getOrCreateInstance(Class<? extends SectionGenerator> clazz) {
-		SectionGenerator candidate = s_sectionGenerators.get(clazz);
-		if(candidate == null)
-		{
-			synchronized (s_lockObject) {
-				try {
-	                candidate = clazz.newInstance();
-					s_sectionGenerators.put(clazz, candidate);
-                }
-                catch (Exception e) {
-	                // TODO Auto-generated catch block
-	                log.error("Error generated creating generator", e);
-                }
-            }
-		}
-		return candidate;
+	public static SectionGenerator createInstance(Class<? extends SectionGenerator> clazz) {
+		try {
+            return clazz.newInstance();
+        }
+        catch (Exception e) {
+            // TODO Auto-generated catch block
+            log.error("Error generated creating generator", e);
+            return null;
+        }
     }
 	
 }

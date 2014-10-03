@@ -2,6 +2,9 @@ package org.openmrs.module.shr.odd.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -11,9 +14,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.activation.URLDataSource;
 import javax.xml.stream.XMLInputFactory;
 
 import org.openmrs.Concept;
+import org.openmrs.ConceptDatatype;
+import org.openmrs.ConceptNumeric;
 import org.openmrs.EncounterRole;
 import org.openmrs.ImplementationId;
 import org.openmrs.Location;
@@ -30,8 +36,10 @@ import org.openmrs.Relationship;
 import org.openmrs.Visit;
 import org.openmrs.VisitAttribute;
 import org.openmrs.api.context.Context;
+import org.openmrs.api.db.ConceptDAO;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
+import org.openmrs.module.shr.cdahandler.processor.util.OpenmrsConceptUtil;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.configuration.OnDemandDocumentConfiguration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
@@ -45,12 +53,14 @@ import org.marc.everest.datatypes.doc.StructDocTextNode;
 import org.marc.everest.datatypes.generic.*;
 import org.marc.everest.exceptions.FormatterException;
 import org.marc.everest.formatters.FormatterUtil;
+import org.marc.everest.interfaces.IGraphable;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssignedAuthor;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssignedEntity;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssociatedEntity;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Author;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AuthoringDevice;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.CustodianOrganization;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Organization;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.OrganizationPartOf;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Participant1;
@@ -79,6 +89,7 @@ public final class CdaDataUtil {
 	private final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfiguration.getInstance();
 	private final OnDemandDocumentConfiguration m_oddConfiguration = OnDemandDocumentConfiguration.getInstance();
 	private final OddMetadataUtil m_metaDataUtil = OddMetadataUtil.getInstance();
+	private final OpenmrsConceptUtil m_conceptUtil = OpenmrsConceptUtil.getInstance();
 	
 	// NOK codes
 	private static final List<String> s_nextOfKinRelations = Arrays.asList("MTH", "FTH", "GRMTH", "GRFTH", "SIB", "CHILD",
@@ -117,7 +128,7 @@ public final class CdaDataUtil {
 		if(matcher.matches())
 		{
 			retVal.setExtension(matcher.group(1));
-			if(retVal.getExtension() == "null")
+			if(retVal.getExtension().equals("null"))
 				retVal.setExtension(null);
 			retVal.setRoot(matcher.group(2));
 		}
@@ -222,6 +233,13 @@ public final class CdaDataUtil {
 				retVal.add(tel);
 			}
 		}
+		
+		if(retVal.size() == 0)
+		{
+			TEL nullTel = new TEL();
+			nullTel.setNullFlavor(NullFlavor.NoInformation);
+			retVal.add(nullTel);
+		}
 		return retVal;
 
     }
@@ -236,14 +254,6 @@ public final class CdaDataUtil {
 		if(name.getPreferred())
 			retVal.setUse(SET.createSET(new CS<EntityNameUse>(EntityNameUse.Legal)));
 		
-		// Middle name
-		if(name.getMiddleName() != null)
-		{
-			ENXP midPart = new ENXP(name.getMiddleName(), EntityNamePartType.Given);
-			midPart.setQualifier(SET.createSET(new CS<EntityNamePartQualifier>(EntityNamePartQualifier.Middle)));
-			retVal.getParts().add(midPart);
-		}
-
 		// Family 
 		if(name.getFamilyName() != null)
 			retVal.getParts().add(new ENXP(name.getFamilyName(), EntityNamePartType.Family));
@@ -260,9 +270,10 @@ public final class CdaDataUtil {
 		if(name.getMiddleName() != null)
 		{
 			ENXP midPart = new ENXP(name.getMiddleName(), EntityNamePartType.Given);
-			midPart.setQualifier(SET.createSET(new CS<EntityNamePartQualifier>(EntityNamePartQualifier.Middle)));
+			//midPart.setQualifier(SET.createSET(new CS<EntityNamePartQualifier>(EntityNamePartQualifier.Middle)));
 			retVal.getParts().add(midPart);
 		}
+		
 
 		return retVal;
 		
@@ -298,9 +309,11 @@ public final class CdaDataUtil {
 		// Get the ID
 		retVal.setId(SET.createSET(
 			this.parseIIFromString(pvdr.getIdentifier()),
-			new II(this.m_cdaConfiguration.getProviderRoot(), pvdr.getId().toString())
+			new II(this.m_cdaConfiguration.getProviderRoot(), pvdr.getId().toString()),
+			new II(this.m_cdaConfiguration.getUserRoot(), Context.getUserService().getUsersByPerson(pvdr.getPerson(), false).get(0).getId().toString())
 		));
 
+		
 		// Set telecom
 		retVal.setTelecom(this.createTelecomSet(pvdr.getPerson()));
 		
@@ -335,15 +348,11 @@ public final class CdaDataUtil {
 			retVal.setName(SET.createSET(new ON((EntityNameUse)null, Arrays.asList(new ENXP(location.getName())))));
 		
 		// Address
-		AD address = AD.fromSimpleAddress(null, location.getAddress1(), location.getAddress2(), location.getCityVillage(), location.getStateProvince(), location.getCountry(), location.getPostalCode());
-		if(location.getAddress3() != null)
-			address.getPart().add(2, new ADXP(location.getAddress3(), AddressPartType.AddressLine));
-		if(location.getAddress4() != null)
-			address.getPart().add(3, new ADXP(location.getAddress4(), AddressPartType.AddressLine));
-		if(location.getAddress5() != null)
-			address.getPart().add(4, new ADXP(location.getAddress5(), AddressPartType.AddressLine));
-		if(address.getPart().size() > 0)
-			retVal.setAddr(SET.createSET(address));
+		retVal.setAddr(SET.createSET(this.createAddressSet(location)));
+
+		// TODO:
+		retVal.setTelecom(SET.createSET(new TEL()));
+		retVal.getTelecom().get(0).setNullFlavor(NullFlavor.NoInformation);
 		
 		if(location.getParentLocation() != null)
 		{
@@ -390,10 +399,38 @@ public final class CdaDataUtil {
 		device.setSoftwareName(new SC("OpenSHR"));
 		device.setManufacturerModelName(new SC(OpenmrsConstants.OPENMRS_VERSION));
 		retVal.getAssignedAuthor().setAssignedAuthorChoice(device);
+		
+		// Get location of the device?
+		Location shrLocation = Context.getLocationService().getDefaultLocation();
+		if(shrLocation != null)
+		{
+			retVal.getAssignedAuthor().setAddr(SET.createSET(this.createAddressSet(shrLocation)));
+			retVal.getAssignedAuthor().setTelecom(SET.createSET(new TEL()));
+			retVal.getAssignedAuthor().getTelecom().get(0).setNullFlavor(NullFlavor.NoInformation);
+		}
 		return retVal;
 
     }
 	
+
+	/**
+	 * Create address set
+	 */
+	private AD createAddressSet(Location location) {
+		AD retVal = AD.fromSimpleAddress(null, location.getAddress1(), location.getAddress2(), location.getCityVillage(), location.getStateProvince(), location.getCountry(), location.getPostalCode());
+		
+		if(location.getAddress3() != null)
+			retVal.getPart().add(2, new ADXP(location.getAddress3(), AddressPartType.AddressLine));
+		if(location.getAddress4() != null)
+			retVal.getPart().add(3, new ADXP(location.getAddress4(), AddressPartType.AddressLine));
+		if(location.getAddress5() != null)
+			retVal.getPart().add(4, new ADXP(location.getAddress5(), AddressPartType.AddressLine));
+
+		if(retVal.getPart().size() == 0)
+			retVal.setNullFlavor(NullFlavor.NoInformation);
+		return retVal;
+		
+    }
 
 	/**
 	 * Get the custodian information
@@ -409,16 +446,31 @@ public final class CdaDataUtil {
 			II deviceId = new II();
 			deviceId.setNullFlavor(NullFlavor.NoInformation);
 			retVal.setId(SET.createSET(deviceId));
+			retVal.setName(new ON());
+			retVal.setAddr(new AD());
+			retVal.setTelecom(new TEL());
+			retVal.getName().setNullFlavor(NullFlavor.NoInformation);
+			retVal.getAddr().setNullFlavor(NullFlavor.NoInformation);
+			retVal.getTelecom().setNullFlavor(NullFlavor.NoInformation);
 		}
 		else
 		{
 			retVal.setName(new ON());
 			retVal.getName().getParts().add(new ENXP(shrLocation.getName()));
 			// TODO: Get a root assigned for OpenMRS implementation IDs? Or make the id long enough for an OID
-			II id = this.parseIIFromString(this.m_metaDataUtil.getLocationAttribute(shrLocation, CdaHandlerConstants.ATTRIBUTE_NAME_EXTERNAL_ID).getValue().toString());
-			retVal.setId(SET.createSET(
-				id,
-				new II(this.m_cdaConfiguration.getLocationRoot(), shrLocation.getId().toString())));
+			LocationAttribute idAttribute = this.m_metaDataUtil.getLocationAttribute(shrLocation, CdaHandlerConstants.ATTRIBUTE_NAME_EXTERNAL_ID);
+			if(idAttribute != null)
+				retVal.setId(SET.createSET(
+					this.parseIIFromString(idAttribute.getValue().toString()),
+					new II(this.m_cdaConfiguration.getLocationRoot(), shrLocation.getId().toString())));
+			else
+				retVal.setId(SET.createSET(
+					new II(this.m_cdaConfiguration.getLocationRoot(), shrLocation.getId().toString())));
+
+			retVal.setAddr(this.createAddressSet(shrLocation));
+			// TODO
+			retVal.setTelecom(new TEL());
+			retVal.getTelecom().setNullFlavor(NullFlavor.NoInformation);
 		}
 		return retVal;
 	}
@@ -472,7 +524,10 @@ public final class CdaDataUtil {
 		}
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
-		return new TS(cal); 
+		
+		TS retVal = new TS(cal);
+		return retVal;
+
     }
 
 	/**
@@ -528,7 +583,10 @@ public final class CdaDataUtil {
 			retVal.add(this.createAD(addr));
 		if(retVal.size() > 0)
 			return retVal;
-		return null;
+		AD nullAd = new AD();
+		nullAd.setNullFlavor(NullFlavor.NoInformation);
+		retVal.add(nullAd);
+		return retVal;
 	}
 
 	/**
@@ -548,6 +606,7 @@ public final class CdaDataUtil {
 	 */
 	public StructDocNode createText(Obs obs) {
 
+		//obs = Context.getObsService().getObs(obs.getId());
 		if(obs.isComplex())
 		{
 			obs = Context.getObsService().getComplexObs(obs.getId(), null);
@@ -567,7 +626,7 @@ public final class CdaDataUtil {
 			}
 			catch(Exception e)
 			{
-				return new StructDocTextNode(e.getMessage());
+				return new StructDocTextNode(new String(data));
 			}
 		}
 		else
@@ -592,6 +651,71 @@ public final class CdaDataUtil {
 			}
 		}
 		return node;
+    }
+
+	/**
+	 * Create an observation VALUE from an Obs
+	 */
+	public ANY getObservationValue(Obs obs) {
+		String conceptDatatypeUuid = obs.getConcept().getDatatype().getUuid();
+		if(obs.getValueBoolean() != null)
+			return new BL(obs.getValueAsBoolean());
+		else if(obs.getValueCoded() != null)
+			return this.m_metaDataUtil.getStandardizedCode(obs.getValueCoded(), null, CD.class);
+		else if(obs.getValueComplex() != null)
+		{
+			obs = Context.getObsService().getComplexObs(obs.getId(), null);
+			byte[] data = (byte[]) obs.getComplexData().getData();
+			
+			// Binary data?
+			String mimeType = null,
+					obsTitle = obs.getComplexData().getTitle();
+			if(obsTitle.contains("--"))
+			{
+				int sPos = obsTitle.indexOf("--") + 3,
+						count = obsTitle.lastIndexOf(".") - sPos;
+				mimeType = URLDecoder.decode(obsTitle.substring(sPos, count));
+			}
+			
+			ED retVal = new ED(data, mimeType);
+			retVal.setData(data);
+			return retVal;
+			
+		}
+		else if(obs.getValueDate() != null)
+		{
+			
+			TS retVal = this.createTS(obs.getValueDate());
+			retVal.setDateValuePrecision(TS.DAY);
+			return retVal;
+		}
+		else if(obs.getValueDatetime() != null)
+			return this.createTS(obs.getValueDatetime());
+		else if(ConceptDatatype.N_A_UUID.equals(conceptDatatypeUuid)) // This is most likely an indicator!
+			return null; // TODO: indicators
+		else if(obs.getValueNumeric() != null) // Numeric!
+		{
+			ConceptNumeric numConcept = Context.getConceptService().getConceptNumeric(obs.getConcept().getId());
+			if(numConcept.getUnits() == "" || numConcept.getUnits() == null)
+			{
+				// Are there decimals?
+				if(Math.ceil(obs.getValueNumeric()) == Math.floor(obs.getValueNumeric())) 
+					return new INT(obs.getValueNumeric().intValue());
+				else
+					return new REAL(obs.getValueNumeric());
+			}
+			else
+				return new PQ(BigDecimal.valueOf(obs.getValueNumeric()), this.m_conceptUtil.getUcumUnitCode(numConcept));
+		}
+		else if(obs.getValueText() != null)
+		{
+			// TEXT could be MO or RTO
+			// TODO: Yeah, this could be sticky...
+			return new ANY();
+		}
+		else
+			return new ANY() {{ setNullFlavor(NullFlavor.Other); }};
+		
     }
 
 }

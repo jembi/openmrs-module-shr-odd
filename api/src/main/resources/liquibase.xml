@@ -15,32 +15,43 @@
 			<column name="type_id" type="int" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false"/>
 			</column>
-			<column name="uuid" type="string(48)" defaultValueComputed="uuid()">
+			<column name="uuid" type="varchar(48)" >
 				<constraints nullable="false"/>
 			</column>
 			<column name="creator" type="int">
 	   			<constraints nullable="false"/>
 	   		</column>
 	   		<column name="retired_by" type="int"/>
-	   		<column name="date_created" type="date" defaultValueComputed="now()">
+	   		<column name="date_created" type="date">
 	   			<constraints nullable="false"/>
 	   		</column>
 	   		<column name="date_retired" type="date"/>
-	   		<column name="retired_reason" type="string(255)"/>
+	   		<column name="retired_reason" type="varchar(255)"/>
 	   		<column name="retired" type="boolean" defaultValueBoolean="false">
 	   			<constraints nullable="false"/>
 	   		</column>
-	   		<column name="name" type="string(255)">
+	   		<column name="name" type="varchar(255)">
 	   			<constraints nullable="false"/>
 			</column>
-	   		<column name="java_class_name" type="string(255)">
+			<column name="format_code" type="varchar(255)">
+				<constraints nullable="false"/>
+			</column>
+	   		<column name="java_class_name" type="varchar(255)">
 	   			<constraints nullable="false"/>
 	   		</column>
  		</createTable>
 		<addForeignKeyConstraint constraintName="odd_type_creator_id_fk" referencedTableName="users" baseColumnNames="creator" baseTableName="odd_type" referencedColumnNames="user_id"/>
-	   	<addForeignKeyConstraint constraintName="odd_type_changed_by_fk" referencedTableName="users" baseColumnNames="changed_by" baseTableName="odd_type" referencedColumnNames="user_id"/>
-	   	<addForeignKeyConstraint constraintName="odd_type_voided_by_fk" referencedTableName="users" baseColumnNames="voided_by" baseTableName="odd_type" referencedColumnNames="user_id"/>
- 		
+	   	<addForeignKeyConstraint constraintName="odd_type_retired_by_fk" referencedTableName="users" baseColumnNames="retired_by" baseTableName="odd_type" referencedColumnNames="user_id"/>
+ 		<insert tableName="odd_type">
+ 			<column name="uuid" value="85c89cb3-7547-418d-a3d7-1a4666b38c5d"/>
+ 			<column name="name" value="Continuity of Care Document"/>
+ 			<column name="type_id" valueNumeric="1"/>
+ 			<column name="retired" valueNumeric="0"/>
+ 			<column name="creator" valueNumeric="2"/>
+ 			<column name="date_created" valueComputed="now()"/>
+ 			<column name="java_class_name" value="org.openmrs.module.shr.odd.generator.document.impl.CcdGenerator"/>
+ 			<column name="format_code" value="2.16.840.1.113883.10.20.1^^^&amp;HL7&amp;ISO"/>
+ 		</insert>
 	</changeSet>
 	
 	<!--  Creates the On-Demand Documents Registration Table -->
@@ -55,7 +66,7 @@
 	   		<column name="odd_id" type="int" autoIncrement="true">
 	   			<constraints primaryKey="true" nullable="false"/>
 	   		</column>
-	   		<column name="uuid" type="string(48)" defaultValueComputed="uuid()">
+	   		<column name="uuid" type="varchar(48)" >
 	 		   	<constraints nullable="false"/>
 	   		</column>
 	   		<column name="creator" type="int">
@@ -63,14 +74,14 @@
 	   		</column>
 	   		<column name="changed_by" type="int"/>
 	   		<column name="voided_by" type="int"/>
- 			<column name="void_reason" type="string(255)"/>
+ 			<column name="void_reason" type="varchar(255)"/>
 	   		<column name="voided" type="boolean" defaultValueBoolean="false"/>
-	   		<column name="date_created" type="date" defaultValueComputed="now()">
+	   		<column name="date_created" type="date" >
 	   			<constraints nullable="false"/>
 	   		</column>
 	   		<column name="date_changed" type="date"/>
 	   		<column name="date_voided" type="date"/>
-	   		<column name="accession_number" type="string(255)">
+	   		<column name="accession_number" type="varchar(255)">
 	   			<constraints unique="true"/>
 	   		</column>
 	   		<column name="patient_id" type="int">
@@ -96,7 +107,7 @@
 	   	<comment>Create On-Demand Documents to Encounter Table</comment>
 	   	<createTable tableName="odd_encounter">
 	   		<!--  Surrogate PK -->
-	   		<column name="link_id" type="int">
+	   		<column name="link_id" type="int" autoIncrement="true">
 	   			<constraints primaryKey="true" nullable="false"/>
 	   		</column>
 	   		<column name="odd_id" type="int">
@@ -110,9 +121,9 @@
 	   		</column>
 	   		<column name="changed_by" type="int"/>
 	   		<column name="voided_by" type="int"/>
-	   		<column name="void_reason" type="string(255)"/>
+	   		<column name="void_reason" type="varchar(255)"/>
 	   		<column name="voided" type="boolean" defaultValueBoolean="false"/>
-	   		<column name="date_created" type="date" defaultValueComputed="now()">
+	   		<column name="date_created" type="date" >
 	   			<constraints nullable="false"/>
 	   		</column>
 	   		<column name="date_changed" type="date"/>

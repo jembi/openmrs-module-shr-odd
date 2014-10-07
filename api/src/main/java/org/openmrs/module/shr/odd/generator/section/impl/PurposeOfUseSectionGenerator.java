@@ -22,6 +22,8 @@ import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
  */
 public class PurposeOfUseSectionGenerator extends SectionGeneratorImpl {
 	
+
+		
 	/**
 	 * Generate the section
 	 * @see org.openmrs.module.shr.odd.generator.SectionGenerator#generateSection()

@@ -13,10 +13,14 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.StructuredBody;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActRelationshipHasComponent;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.processor.entry.impl.ihe.pcc.ImmunizationEntryProcessor;
+import org.openmrs.module.shr.odd.generator.section.impl.AdvanceDirectivesSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.AllergiesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.FamilyHistorySectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.ImmunizationsSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.MedicationsSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.PlanOfCareSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.ProblemSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.ProceduresSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.PurposeOfUseSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.VitalSignsSectionGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
@@ -54,11 +58,15 @@ public class CcdGenerator extends DocumentGeneratorImpl {
 		super.generateSections(oddRegistration,
 			retVal,
 			PurposeOfUseSectionGenerator.class,
+			AdvanceDirectivesSectionGenerator.class,
+			PlanOfCareSectionGenerator.class,
 			VitalSignsSectionGenerator.class,
 			ProblemSectionGenerator.class,
+			AllergiesSectionGenerator.class,
 			FamilyHistorySectionGenerator.class,
 			MedicationsSectionGenerator.class,
-			ImmunizationsSectionGenerator.class
+			ImmunizationsSectionGenerator.class,
+			ProceduresSectionGenerator.class
 		);
 		
 		// retVal.getComponent().getBodyChoiceIfStructuredBody().getComponent().addAll(sections);

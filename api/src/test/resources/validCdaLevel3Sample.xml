@@ -19,20 +19,19 @@
 			<id root="ProviderID" extension="PatientID" assigningAuthorityName="Provider Name"/>
 			<addr use="HP">
 				<!--HITSP/C83 recommends that a patient have at least one address element with a use attribute of HP, i.e. home primary-->
-None of the following address elements are specifically required by HITSP C32, so the address could be be just plain text at this location? Use of one or more of the following labeled address lines, with meaningful content, is recommended.
-				<streetAddressLine>First Address Line</streetAddressLine>
-				<streetAddressLine>Next Address line - if needed, etc.</streetAddressLine>
-				<city>CityName</city>
-				<state>StateName</state>
-				<postalCode>ZipCode(5or9)</postalCode>
-				<country>USA</country>
+				<streetAddressLine>123 Main Street West</streetAddressLine>
+				<streetAddressLine>Unit 38</streetAddressLine>
+				<city>Hamilton</city>
+				<state>ON</state>
+				<postalCode>H0H0H0</postalCode>
+				<country>CA</country>
 			</addr>
 			<telecom/>
 			<patient>
 				<name>
-					<given>FirstName</given>
-					<given>Middle Name or Initial - if known</given>
-					<family>FamilyName</family>
+					<given>Peppermint</given>
+					<given>P</given>
+					<family>Patty</family>
 				</name>
 				<!--HITSP/C83 requires patient administrative gender, e.g. M, F, I (indeterminate)-->
 				<administrativeGenderCode code="F" displayName="Female" codeSystem="2.16.840.1.113883.5.1" codeSystemName="HL7 AdministrativeGender"/>
@@ -55,10 +54,13 @@ None of the following address elements are specifically required by HITSP C32, s
 			<addr/>
 			<telecom/>
 			<assignedPerson>
-				<name>Staff</name>
+				<name>
+					<family>Hibbert</family>
+					<given>Julius</given>
+				</name>
 			</assignedPerson>
 			<representedOrganization>
-				<name>NIST Healthcare Testing Laboratory</name>
+				<name>Springfield General Hospital</name>
 				<telecom/>
 				<addr/>
 			</representedOrganization>
@@ -68,7 +70,7 @@ None of the following address elements are specifically required by HITSP C32, s
 		<assignedCustodian>
 			<representedCustodianOrganization>
 				<id root="2.3.4.5.6.7.8" extension="4.3.5.5.4"/>
-				<name>An Organization</name>
+				<name>Greater Springfield Hospital System</name>
 				<telecom/>
 				<addr/>
 			</representedCustodianOrganization>

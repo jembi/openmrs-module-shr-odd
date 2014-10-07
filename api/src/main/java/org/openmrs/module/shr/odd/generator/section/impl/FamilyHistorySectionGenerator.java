@@ -262,6 +262,19 @@ public class FamilyHistorySectionGenerator extends SectionGeneratorImpl {
 						}
 					} // for
 					
+					// Subject 
+					if(organizer.getSubject() == null)
+						organizer.setSubject(new Subject());
+					if(organizer.getSubject().getRelatedSubject() == null)
+						organizer.getSubject().setRelatedSubject(new RelatedSubject(x_DocumentSubject.PersonalRelationship));
+					if(organizer.getSubject().getRelatedSubject().getSubject() == null)
+						organizer.getSubject().getRelatedSubject().setSubject(this.createSubjectPerson());
+					
+					if(organizer.getSubject().getRelatedSubject().getSubject().getName() == null)
+					{
+						organizer.getSubject().getRelatedSubject().getSubject().setName(SET.createSET(new PN()));
+						organizer.getSubject().getRelatedSubject().getSubject().getName().get(0).setNullFlavor(NullFlavor.NoInformation);
+					}
 					
 				} // for history item
 				

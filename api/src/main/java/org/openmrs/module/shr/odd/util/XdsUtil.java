@@ -81,6 +81,7 @@ public final class XdsUtil {
 		SubmitObjectsRequest registryRequest = new SubmitObjectsRequest();
 		registryRequest.setRegistryObjectList(new RegistryObjectListType());
 		ExtrinsicObjectType oddRegistryObject = new ExtrinsicObjectType();
+		oddRegistryObject.setObjectType("urn:uuid:34268e47-fdf5-41a6-ba33-82133c465248");
 		oddRegistryObject.setId(String.format("Document%s", registration.getId().toString()));
 		oddRegistryObject.setMimeType("text/xml");
 		oddRegistryObject.setObjectType(XDSConstants.UUID_XDSDocumentEntry);

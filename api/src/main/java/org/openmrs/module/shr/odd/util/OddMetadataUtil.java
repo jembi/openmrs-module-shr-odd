@@ -116,6 +116,12 @@ public final class OddMetadataUtil {
 		try {
 	        T retVal = null;
 	        
+	        if(value == null)
+	        {
+	        	retVal = clazz.newInstance();
+	        	retVal.setNullFlavor(NullFlavor.NoInformation);
+	        	return retVal;
+	        }
 	        // First, we need to find the reference term that represents the most applicable
 	        Queue<ConceptReferenceTerm> preferredCodes = new ArrayDeque<ConceptReferenceTerm>(),
 	        		equivalentCodes = new ArrayDeque<ConceptReferenceTerm>();

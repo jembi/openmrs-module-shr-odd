@@ -59,7 +59,7 @@ public class ProblemSectionGenerator extends SectionGeneratorImpl {
 
 		// Create generic section construct
 		Section retVal = super.createSection(
-			Arrays.asList(CdaHandlerConstants.SCT_TEMPLATE_CCD_PROBLEM), 
+			Arrays.asList(CdaHandlerConstants.SCT_TEMPLATE_CCD_PROBLEM, CdaHandlerConstants.SCT_TEMPLATE_ACTIVE_PROBLEMS), 
 			"section.problem.title",
 			this.m_sectionCode
 		);

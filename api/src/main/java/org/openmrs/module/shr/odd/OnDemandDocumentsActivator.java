@@ -18,12 +18,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.ModuleActivator;
+import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
 import org.openmrs.module.shr.contenthandler.api.AlreadyRegisteredException;
 import org.openmrs.module.shr.contenthandler.api.ContentHandlerService;
 import org.openmrs.module.shr.contenthandler.api.InvalidContentTypeException;
 import org.openmrs.module.shr.odd.contenthandler.OnDemandDocumentContentHandler;
 import org.openmrs.module.shr.odd.exception.OnDemandDocumentException;
+import org.openmrs.module.shr.odd.subscriber.AntepartumSubscriber;
 import org.openmrs.module.shr.odd.subscriber.GenericDocumentSubscriber;
 
 /**
@@ -40,6 +42,8 @@ public class OnDemandDocumentsActivator implements ModuleActivator {
 	{
 		CdaImportService importService = Context.getService(CdaImportService.class);
 		importService.subscribeImport(null, GenericDocumentSubscriber.getInstance());
+		importService.subscribeImport(CdaHandlerConstants.DOC_TEMPLATE_ANTEPARTUM_HISTORY_AND_PHYSICAL, AntepartumSubscriber.getInstance());
+		importService.subscribeImport(CdaHandlerConstants.DOC_TEMPLATE_ANTEPARTUM_SUMMARY, AntepartumSubscriber.getInstance());
 	}
 	
 	/**

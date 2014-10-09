@@ -29,9 +29,7 @@ import org.openmrs.web.dwr.EncounterListItem;
  * and registers a CCD
  */
 public class GenericDocumentSubscriber implements CdaImportSubscriber {
-	
-	
-	
+		
 	// Singleton stuff
 	private static Object s_lockObject = new Object();
 	private static GenericDocumentSubscriber s_instance;
@@ -56,7 +54,7 @@ public class GenericDocumentSubscriber implements CdaImportSubscriber {
     /**
      * Gets the singleton instance of the import subscriber
      */
-    public static GenericDocumentSubscriber getInstance()
+    public final static GenericDocumentSubscriber getInstance()
     {
     	if(s_instance == null)
     		synchronized (s_lockObject) {
@@ -116,8 +114,8 @@ public class GenericDocumentSubscriber implements CdaImportSubscriber {
 			this.m_oddService.saveOnDemandDocument(registration);
 	
 			// Register the pnr
-			//if(existingDocs.size() == 0) // Register new only TODO: Update this to support update
-			//	XdsUtil.getInstance().registerDocumentSet(registration);
+			if(existingDocs.size() == 0) // Register new only TODO: Update this to support update
+				XdsUtil.getInstance().registerDocumentSet(registration);
         }
         catch (Exception e) {
 	        // TODO Auto-generated catch block
@@ -125,6 +123,5 @@ public class GenericDocumentSubscriber implements CdaImportSubscriber {
         }
 
 	}
-
 	
 }

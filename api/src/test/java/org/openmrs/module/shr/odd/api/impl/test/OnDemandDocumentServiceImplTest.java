@@ -194,7 +194,7 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 		// First import the APS document
 		Visit visit1 = this.doParseCda("/validCdaLevel3Sample.xml");
 		// Get patient information by name
-		List<Patient> patient = Context.getPatientService().getPatients("FirstName FamilyName");
+		List<Patient> patient = Context.getPatientService().getPatients("Patty");
 		Assert.assertEquals(1, patient.size());
 		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
 		Assert.assertEquals(1, oddDocuments.size());

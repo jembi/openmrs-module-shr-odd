@@ -230,6 +230,16 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
     public List<Order> getEncounterOrders(List<Encounter> docEncounters, Class<? extends Order> orderType) {
 		return this.dao.getEncounterOrders(docEncounters, orderType);
     }
+
+	/**
+	 * Get on-demand document registrations by patient and type
+	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#getOnDemandDocumentRegistrationsByPatient(org.openmrs.Patient, java.lang.Class)
+	 */
+	@Override
+    public List<OnDemandDocumentRegistration> getOnDemandDocumentRegistrationsByPatient(Patient patient, OnDemandDocumentType documentType)
+    {
+    	return this.dao.getOnDemandDocumentRegistrationsByPatient(patient, documentType, false);
+    }
 	
 	
 }

@@ -8,6 +8,7 @@ import org.openmrs.Encounter;
 import org.openmrs.Obs;
 import org.openmrs.Order;
 import org.openmrs.Patient;
+import org.openmrs.module.shr.odd.generator.DocumentGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
@@ -77,5 +78,11 @@ public interface OnDemandDocumentDAO {
 	 * Get encounter orders of the specified type
 	 */
 	public List<Order> getEncounterOrders(List<Encounter> encounters, Class<? extends Order> orderType);
+	/**
+	 * Get on-demand document registrations of a particular type for the specified patient
+	 */
+	public List<OnDemandDocumentRegistration> getOnDemandDocumentRegistrationsByPatient(Patient patient,
+                                                                                        OnDemandDocumentType documentType,
+                                                                                        boolean b);
 	
 }

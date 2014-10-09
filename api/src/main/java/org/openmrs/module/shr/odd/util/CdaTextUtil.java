@@ -36,6 +36,7 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.EntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Organizer;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.SubstanceAdministration;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.ActStatus;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.DrugEntity;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ObservationInterpretation;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubject;
@@ -288,7 +289,24 @@ public final class CdaTextUtil {
 	public StructDocElementNode generateText(Act act, StructDocElementNode context, ClinicalDocument document)
 	{
 		for(EntryRelationship er : act.getEntryRelationship())
-			return this.generateText(er.getClinicalStatement(), context, document);
+		{
+			// HACK: Generate content with act status
+			ActStatus originalStatus = act.getStatusCode().getCode();
+			if(er.getClinicalStatementIfObservation() != null)
+			{
+				originalStatus = er.getClinicalStatementIfObservation().getStatusCode().getCode();
+				er.getClinicalStatementIfObservation().setStatusCode(act.getStatusCode());
+			}
+			
+			StructDocElementNode node = this.generateText(er.getClinicalStatement(), context, document);
+
+
+			// Reset the status code
+			if(er.getClinicalStatementIfObservation() != null)
+				er.getClinicalStatementIfObservation().setStatusCode(originalStatus);
+
+			return node;
+		}
 		return context.addElement("content", act.getCode().getDisplayName());
 	}
 	

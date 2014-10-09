@@ -11,6 +11,7 @@ import org.openmrs.Patient;
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.shr.odd.exception.OnDemandDocumentException;
 import org.openmrs.module.shr.odd.generator.DocumentGenerator;
+import org.openmrs.module.shr.odd.generator.document.impl.ApsGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
@@ -109,4 +110,10 @@ public interface OnDemandDocumentService extends OpenmrsService {
 	 * Get orders in the encounter of the specified type
 	 */
 	public List<Order> getEncounterOrders(List<Encounter> asList, Class<? extends Order> orderType);
+
+	/**
+	 * Get on-demand document registrations by patient and ODD type
+	 */
+	public List<OnDemandDocumentRegistration> getOnDemandDocumentRegistrationsByPatient(Patient patient,
+                                                                                        OnDemandDocumentType oddType);
 }

@@ -25,6 +25,7 @@ import org.marc.everest.datatypes.INT;
 import org.marc.everest.datatypes.NullFlavor;
 import org.marc.everest.datatypes.PQ;
 import org.marc.everest.datatypes.SD;
+import org.marc.everest.datatypes.ST;
 import org.marc.everest.datatypes.SetOperator;
 import org.marc.everest.datatypes.TS;
 import org.marc.everest.datatypes.doc.StructDocElementNode;
@@ -53,6 +54,8 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Consumable;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Criterion;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Entry;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.EntryRelationship;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ExternalAct;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ExternalDocument;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ManufacturedProduct;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Material;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
@@ -61,6 +64,7 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Performer2;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Precondition;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Procedure;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Product;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Reference;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Section;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.SubstanceAdministration;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Supply;
@@ -73,6 +77,7 @@ import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActClassDocumentEntryOrganize
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActMoodDocumentObservation;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntry;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntryRelationship;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipExternalReference;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentActMood;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentProcedureMood;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubstanceMood;
@@ -85,8 +90,11 @@ import org.openmrs.Obs;
 import org.openmrs.Order;
 import org.openmrs.Person;
 import org.openmrs.Provider;
+import org.openmrs.VisitAttribute;
+import org.openmrs.VisitAttributeType;
 import org.openmrs.activelist.ActiveListItem;
 import org.openmrs.api.context.Context;
+import org.openmrs.customdatatype.CustomValueDescriptor;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
@@ -366,7 +374,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		
 		retVal.setTemplateId(this.getTemplateIdList(templateId));
 		
-		  // Add identifier
+	    // Add identifier
 	    retVal.setId(new SET<II>());
 	    if(activeListItem.getStartObs() != null && activeListItem.getStartObs().getAccessionNumber() != null &&
 	    		activeListItem.getStartObs().getAccessionNumber().isEmpty())
@@ -436,6 +444,9 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    // Set template id
 	    retVal.setTemplateId(this.getTemplateIdList(templateId));
 	    
+		Reference original = this.createReferenceToDocument(sourceObs);
+		if(original != null) retVal.getReference().add(original);
+
 	    // Add identifier
 	    retVal.setId(new SET<II>());
 	    if(sourceObs.getAccessionNumber() != null && !sourceObs.getAccessionNumber().isEmpty())
@@ -476,6 +487,35 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    if(negation.size() > 0 && negation.get(0).getValueCoded().getId().toString().equals(Context.getAdministrationService().getGlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_FALSE_CONCEPT)))
 	    	retVal.setNegationInd(BL.TRUE);
 	    	
+	    try {
+	        List<Obs> references = this.m_service.getObsGroupMembers(sourceObs, Arrays.asList(this.m_conceptUtil.getOrCreateRMIMConcept(CdaHandlerConstants.RMIM_CONCEPT_UUID_REFERENCE, new ST())));
+	        if(references.size() > 0)
+	        	for(Obs ref : references)
+	        	{
+	        		Reference refr = new Reference();
+	        		ExternalDocument ed = new ExternalDocument();
+	        		ed.setId(SET.createSET(this.m_cdaDataUtil.parseIIFromString(ref.getValueText())));
+	        		refr.setTypeCode(x_ActRelationshipExternalReference.REFR);
+	        		refr.setExternalActChoice(ed);
+	        		retVal.getReference().add(refr);
+	        	}
+        }
+        catch (DocumentImportException e) {
+	        // TODO Auto-generated catch block
+	        log.error("Error generated", e);
+        }
+	    
+	    // Replacement?
+	    if(sourceObs.getPreviousVersion() != null)
+	    {
+	    	Reference prevRef = new Reference(x_ActRelationshipExternalReference.RPLC);
+	    	ExternalAct externalAct = new ExternalAct(new CD<String>("OBS"));
+	    	externalAct.setId(SET.createSET(new II(this.m_cdaConfiguration.getObsRoot(), sourceObs.getPreviousVersion().getId().toString())));
+	    	if(sourceObs.getPreviousVersion().getAccessionNumber() != null)
+	    		externalAct.getId().add(this.m_cdaDataUtil.parseIIFromString(sourceObs.getPreviousVersion().getAccessionNumber()));
+	    	prevRef.setExternalActChoice(externalAct);
+	    	retVal.getReference().add(prevRef);
+	    }
 	    	
 	    return retVal;
 	    
@@ -624,6 +664,9 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	public SubstanceAdministration createSubstanceAdministration(List<String> templateIds, Obs sourceObs) {
 		SubstanceAdministration retVal = new SubstanceAdministration();
 
+		Reference original = this.createReferenceToDocument(sourceObs);
+		if(original != null) retVal.getReference().add(original);
+		
 		// Set the mood code
 	    ExtendedObs extendedObs = Context.getService(CdaImportService.class).getExtendedObs(sourceObs.getId());
 
@@ -934,6 +977,36 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
     }
 
 	/**
+	 * Create a reference to a source document
+	 */
+	private Reference createReferenceToDocument(Obs sourceObs) {
+		
+		Reference retVal = null;
+		if(sourceObs.getEncounter().getVisit() != null)
+		{
+            try {
+            	retVal = new Reference();
+        		ExternalDocument ed = new ExternalDocument();
+        		
+            	VisitAttributeType vat = this.m_conceptUtil.getOrCreateVisitExternalIdAttributeType();
+    			for(VisitAttribute attr : sourceObs.getEncounter().getVisit().getActiveAttributes())
+    				if(attr.getAttributeType().equals(vat))
+    					ed.setId(SET.createSET(this.m_cdaDataUtil.parseIIFromString(attr.getValue().toString())));
+
+    			retVal.setTypeCode(x_ActRelationshipExternalReference.REFR);
+    			retVal.setExternalActChoice(ed);
+
+            }
+            catch (DocumentImportException e) {
+	            // TODO Auto-generated catch block
+	            log.error("Error generated", e);
+            }
+		}
+		
+		return retVal;
+    }
+
+	/**
 	 * Parse dose quantity
 	 */
 	private IVL<PQ> parseDoseQuantity(String valueText) {
@@ -1030,7 +1103,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	/**
 	 * Create the procedure entry
 	 */
-	protected Procedure createProcedure(List<String> templateIds, Obs sourceObs) {
+	public Procedure createProcedure(List<String> templateIds, Obs sourceObs) {
 		
 		Procedure retVal = new Procedure();
 
@@ -1040,6 +1113,9 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    	retVal.getId().add(this.m_cdaDataUtil.parseIIFromString(sourceObs.getAccessionNumber()));
 	    
 	    retVal.getAuthor().add(this.createAuthorPointer(sourceObs));
+
+		Reference original = this.createReferenceToDocument(sourceObs);
+		if(original != null) retVal.getReference().add(original);
 
 		// Extended observations
 		ExtendedObs extendedObs = Context.getService(CdaImportService.class).getExtendedObs(sourceObs.getId());

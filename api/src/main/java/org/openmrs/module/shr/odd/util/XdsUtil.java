@@ -81,13 +81,14 @@ public final class XdsUtil {
 		SubmitObjectsRequest registryRequest = new SubmitObjectsRequest();
 		registryRequest.setRegistryObjectList(new RegistryObjectListType());
 		ExtrinsicObjectType oddRegistryObject = new ExtrinsicObjectType();
+		// ODD
 		oddRegistryObject.setObjectType("urn:uuid:34268e47-fdf5-41a6-ba33-82133c465248");
 		oddRegistryObject.setId(String.format("Document%s", registration.getId().toString()));
 		oddRegistryObject.setMimeType("text/xml");
 		oddRegistryObject.setObjectType(XDSConstants.UUID_XDSDocumentEntry);
 		oddRegistryObject.setName(new InternationalStringType());
 		oddRegistryObject.getName().getLocalizedString().add(new LocalizedStringType());
-		oddRegistryObject.getName().getLocalizedString().get(0).setValue(registration.getType().getName());
+		oddRegistryObject.getName().getLocalizedString().get(0).setValue(registration.getTitle());
 		
 		// Add repository UUID
 		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_REPOSITORY_UNIQUE_ID, this.m_configuration.getRepositoryUniqueId());

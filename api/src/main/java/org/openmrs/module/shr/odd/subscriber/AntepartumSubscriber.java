@@ -120,6 +120,7 @@ public class AntepartumSubscriber implements CdaImportSubscriber {
 			retVal.setPatient(processedVisit.getPatient());
 			retVal.setType(this.m_oddType);
 			retVal.setAccessionNumber(accessionNumber);
+			retVal.setTitle(String.format("Antepartum Summary episode #%s", currentApsRegistrations.size() + 1));
 			return retVal;
 		}
 		else // Find the appropriate one, whereby the visit time is before the most recent estimated delivery date
@@ -151,6 +152,7 @@ public class AntepartumSubscriber implements CdaImportSubscriber {
 			}
 			// TODO: Is confinement a reliable piece of data, will they all have that?
 			OnDemandDocumentRegistration retVal = new OnDemandDocumentRegistration();
+			retVal.setTitle(String.format("Antepartum Summary episode #%s", currentApsRegistrations.size() + 1));
 			retVal.setPatient(processedVisit.getPatient());
 			retVal.setType(this.m_oddType);
 			retVal.setAccessionNumber(accessionNumber);

@@ -536,7 +536,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	/**
 	 * Get the mood code
 	 */
-	private <T extends IEnumeratedVocabulary> CS<T> getMoodCode(Obs obs, Class<T> vocabulary) {
+	protected <T extends IEnumeratedVocabulary> CS<T> getMoodCode(Obs obs, Class<T> vocabulary) {
 		 if(obs instanceof ExtendedObs)
 		    {
 		    	ExtendedObs extendedObs = (ExtendedObs)obs;
@@ -555,7 +555,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	/**
 	 * Get the effective time
 	 */
-	private IVL<TS> getEffectiveTime(Obs obs) {
+	protected IVL<TS> getEffectiveTime(Obs obs) {
 		IVL<TS> retVal = new IVL<TS>();
 		
 		if(obs instanceof ExtendedObs)
@@ -596,7 +596,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	/**
 	 * Get the status code of the object
 	 */
-	private CS<ActStatus> getStatusCode(Obs obs) {
+	protected CS<ActStatus> getStatusCode(Obs obs) {
 		 if(obs instanceof ExtendedObs)
 	    {
 	    	ExtendedObs extendedObs = (ExtendedObs)obs;
@@ -637,15 +637,30 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	protected SD generateLevel3Text(Section section)
 	{
 		SD retVal = new SD();
-		StructDocElementNode contextNode = null;
+		Class<? extends ClinicalStatement> previousStatementType = null;
+		StructDocElementNode context = null; 
 		for(Entry ent : section.getEntry())
 		{
-			StructDocElementNode genNode = this.m_cdaTextUtil.generateText(ent.getClinicalStatement(), contextNode, this.m_documentContext);
-			if(contextNode == null)
-				contextNode = genNode;
+			// Is this different than the previous?
+			if(!ent.getClinicalStatement().getClass().equals(previousStatementType))
+			{
+				// Add existing context node before generating another
+				if(context!=null)
+					retVal.getContent().add(context);
+				// Force the generation of new context
+				context = null;
+			}
+			StructDocElementNode genNode = this.m_cdaTextUtil.generateText(ent.getClinicalStatement(), context, this.m_documentContext);
+			
+			// Set the context node
+			if(context == null)
+				context = genNode;
+			previousStatementType = ent.getClinicalStatement().getClass();
+			
 			ent.setTypeCode(x_ActRelationshipEntry.DRIV);
 		}
-		retVal.getContent().add(contextNode);
+		if(context != null && !retVal.getContent().contains(context))
+			retVal.getContent().add(context);
 		return retVal;
 	}
 
@@ -979,7 +994,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	/**
 	 * Create a reference to a source document
 	 */
-	private Reference createReferenceToDocument(Obs sourceObs) {
+	protected Reference createReferenceToDocument(Obs sourceObs) {
 		
 		Reference retVal = null;
 		if(sourceObs.getEncounter().getVisit() != null)

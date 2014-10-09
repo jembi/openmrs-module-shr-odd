@@ -94,6 +94,7 @@ public class GenericDocumentSubscriber implements CdaImportSubscriber {
 				registration.setPatient(processedVisit.getPatient());
 				registration.setAccessionNumber(accessionNumber);
 				registration.setType(documentType);
+				registration.setTitle("Continuity of Care Document");
 			}
 			
 			// Add the ODD encounter link!

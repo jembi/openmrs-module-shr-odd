@@ -25,6 +25,7 @@ import org.openmrs.GlobalProperty;
 import org.openmrs.Patient;
 import org.openmrs.Visit;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
 import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
@@ -32,6 +33,7 @@ import org.openmrs.module.shr.cdahandler.exception.DocumentValidationException;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.api.test.CdaLoggingUtils;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
+import org.openmrs.module.shr.odd.subscriber.AntepartumSubscriber;
 import org.openmrs.module.shr.odd.subscriber.GenericDocumentSubscriber;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.util.OpenmrsConstants;
@@ -132,7 +134,7 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 	public void testGenerateCCDDocument()
 	{
 		// Register the handler for a generic
-		this.m_importService.subscribeImport(null, GenericDocumentSubscriber.getInstance());
+		this.m_importService.subscribeImport(CdaHandlerConstants.DOC_TEMPLATE_ANTEPARTUM_HISTORY_AND_PHYSICAL, AntepartumSubscriber.getInstance());
 		// First import the APS document
 		Visit visit = this.doParseCda("/validAphpSampleFullSections.xml");
 		// Get patient information by name

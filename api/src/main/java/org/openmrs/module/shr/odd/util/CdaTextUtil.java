@@ -39,9 +39,12 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.SubstanceAdministration;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActStatus;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.DrugEntity;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ObservationInterpretation;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntry;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubject;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubstanceMood;
 import org.openmrs.api.db.AdministrationDAO;
+import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 
 
 /**
@@ -199,13 +202,20 @@ public final class CdaTextUtil {
 		if(context == null)
 		{
 			context = new StructDocElementNode();
-			this.createSubstanceAdministrationTable(context).getChildren().add(retVal);
+			StructDocElementNode tbody = this.createSubstanceAdministrationTable(context);
+			tbody.getChildren().add(retVal);
 			retVal = (StructDocElementNode)context.getChildren().get(0);
+			context = tbody; 
 		}
 		else if(context.getName().equals("list"))
 		{
 			context = context.addElement("item");
-			context = this.createObservationTable(context);
+			context = this.createSubstanceAdministrationTable(context);
+			context.getChildren().add(retVal);
+		}
+		else if(context.getName().equals("item"))
+		{
+			context = this.createSubstanceAdministrationTable(context);
 			context.getChildren().add(retVal);
 		}
 		else if(context.getName().equals("td"))
@@ -244,9 +254,10 @@ public final class CdaTextUtil {
 	 * Create a code text cell
 	 */
 	private StructDocElementNode createCodeTextCell(CV<String> code) {
+		StructDocElementNode retVal = null;
 		if(code == null || code.isNull())
-			return new StructDocElementNode("td","N/A");
-		if(code.getOriginalText() != null)
+			retVal = new StructDocElementNode("td","N/A");
+		else if(code.getOriginalText() != null)
 		{
 			String id = String.format("txt%s", UUID.randomUUID());
 			id = id.substring(0, id.indexOf("-"));
@@ -255,10 +266,12 @@ public final class CdaTextUtil {
 			cellNode.addAttribute("ID", id);
 			code.setOriginalText(new ED());
 			code.getOriginalText().setReference(new TEL(String.format("#%s", id)));
-			return cellNode;
+			retVal = cellNode;
 		}
 		else
-			return new StructDocElementNode("td", code.getDisplayName());
+			retVal = new StructDocElementNode("td", code.getDisplayName());
+		retVal.setNamespaceUri("urn:hl7-org:v3");
+		return retVal;
     }
 
 	/**
@@ -454,7 +467,7 @@ public final class CdaTextUtil {
 		}
 		
 		// Interpretation
-		if(observation.getInterpretationCode() != null && observation.getInterpretationCode().isNull())
+		if(observation.getInterpretationCode() != null && !observation.getInterpretationCode().isNull())
 		{
 			StructDocElementNode content = retVal.addElement("td");
 			for(CE<ObservationInterpretation> interp : observation.getInterpretationCode())
@@ -481,12 +494,19 @@ public final class CdaTextUtil {
 		if(context == null)
 		{
 			context = new StructDocElementNode();
-			this.createObservationTable(context).getChildren().add(retVal);
+			StructDocElementNode tbody = this.createObservationTable(context);
+			tbody.getChildren().add(retVal);
 			retVal = (StructDocElementNode)context.getChildren().get(0);
+			context = tbody; 
 		}
 		else if(context.getName().equals("list"))
 		{
 			context = context.addElement("item");
+			context = this.createObservationTable(context);
+			context.getChildren().add(retVal);
+		}
+		else if(context.getName().equals("item"))
+		{
 			context = this.createObservationTable(context);
 			context.getChildren().add(retVal);
 		}
@@ -500,7 +520,10 @@ public final class CdaTextUtil {
 		{
 			for(StructDocNode node : context.getChildren())
 				if(node.getName().equals("tbody"))
+				{
+					context = (StructDocElementNode)node;
 					node.getChildren().add(retVal);
+				}
 		}
 		else
 			context.getChildren().add(retVal);
@@ -509,12 +532,48 @@ public final class CdaTextUtil {
 		if(observation.getEntryRelationship().size() > 0)
 		{
 			StructDocElementNode relationshipRow = context.addElement("tr");
-			relationshipRow.addElement("td", "Additional Information");
+			relationshipRow.addElement("td");
 			StructDocElementNode relationshipContent = relationshipRow.addElement("td");
 			relationshipContent.addAttribute("colspan", "6");
-			StructDocElementNode subContext = this.createObservationTable(relationshipContent.addElement("list").addElement("item"));
+			StructDocElementNode relationshipItem = relationshipContent.addElement("list").addElement("item");
+			relationshipItem.addElement("caption", "Additional Information");
+			StructDocElementNode subContext = this.createObservationTable(relationshipItem);
 			for(EntryRelationship er : observation.getEntryRelationship())
-				this.generateText(er.getClinicalStatement(), subContext, document);
+			{
+				String captionText = "Has Component:";
+				
+				// Text for the caption
+				if(BL.TRUE.equals(er.getInversionInd()))
+				{
+					if(x_ActRelationshipEntryRelationship.CAUS.equals(er.getTypeCode().getCode()))
+						captionText = "Caused by:";
+					else if(x_ActRelationshipEntryRelationship.SPRT.equals(er.getTypeCode().getCode()))
+						captionText = "Supported By:";
+					else if(x_ActRelationshipEntryRelationship.SUBJ.equals(er.getTypeCode().getCode()))
+						captionText = "Subject of:";
+				}
+				else
+				{
+					if(x_ActRelationshipEntryRelationship.CAUS.equals(er.getTypeCode().getCode()))
+						captionText = "Causes:";
+					else if(x_ActRelationshipEntryRelationship.SPRT.equals(er.getTypeCode().getCode()))
+						captionText = "Supports:";
+					else if(x_ActRelationshipEntryRelationship.MFST.equals(er.getTypeCode().getCode()))
+						captionText = "Manifests:";
+					else if(x_ActRelationshipEntryRelationship.SUBJ.equals(er.getTypeCode().getCode()))
+						captionText = "Subjects:";
+				}
+				
+				StructDocElementNode node = subContext.addElement("tr").addElement("td");
+				node.addAttribute("colspan", "7");
+				node = node.addElement("content");
+				node.addAttribute("styleCode", "Bold");
+				node.addText(captionText);
+				StructDocElementNode row = this.generateText(er.getClinicalStatement(), subContext, document);
+				
+				
+				row = row;
+			}
 		}
 		
 		return retVal;

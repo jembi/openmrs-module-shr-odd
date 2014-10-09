@@ -228,6 +228,7 @@ public final class CdaDataUtil {
 				}
 				else
 					tel.setValue(patt.getValue());
+				
 				if(patt.getVoided())
 					tel.setUse(TelecommunicationsAddressUse.BadAddress);
 				retVal.add(tel);
@@ -508,7 +509,12 @@ public final class CdaDataUtil {
 		// Gender and birth
 		hl7Patient.setAdministrativeGenderCode(new AdministrativeGender(patient.getGender(), AdministrativeGender.Male.getCodeSystem()));
 		hl7Patient.setBirthTime(this.createTS(patient.getBirthdate()));
-		hl7Patient.getBirthTime().setDateValuePrecision(TS.DAY);
+		
+		if(patient.getBirthdateEstimated())
+			hl7Patient.getBirthTime().setDateValuePrecision(TS.YEAR);
+		else
+			hl7Patient.getBirthTime().setDateValuePrecision(TS.DAY);
+		
 		return retVal;
     }
 

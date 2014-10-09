@@ -215,7 +215,17 @@ public class FamilyHistorySectionGenerator extends SectionGeneratorImpl {
 								if(organizer.getSubject().getRelatedSubject().getSubject() == null)
 									organizer.getSubject().getRelatedSubject().setSubject(this.createSubjectPerson());
 								
+								
 								organizer.getSubject().getRelatedSubject().getSubject().setBirthTime(this.m_cdaDataUtil.createTS(detailItem.getValueDate()));
+								if(detailItem.getComment() != null)
+								{
+									try
+									{
+									organizer.getSubject().getRelatedSubject().getSubject().getBirthTime().setDateValuePrecision(Integer.parseInt(detailItem.getComment()));
+									}
+									catch(Exception e)
+									{}
+								}
 								break;
 								
 							case 160752: // id of family member

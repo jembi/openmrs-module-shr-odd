@@ -9,9 +9,12 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Component2;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.StructuredBody;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActRelationshipHasComponent;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
+import org.openmrs.module.shr.cdahandler.processor.entry.impl.ihe.pcc.AntepartumFlowsheetBatteryEntryProcessor;
 import org.openmrs.module.shr.contenthandler.api.CodedValue;
 import org.openmrs.module.shr.odd.generator.section.impl.AdvanceDirectivesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.AllergiesSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.AntepartumVisitFlowsheetSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.EstimatedDeliveryDatesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.FamilyHistorySectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.ImmunizationsSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.MedicationsSectionGenerator;
@@ -40,7 +43,8 @@ public class ApsGenerator extends DocumentGeneratorImpl {
 		retVal.setTitle(retVal.getCode().getDisplayName());
 		retVal.setTemplateId(LIST.createLIST(
 			new II(CdaHandlerConstants.DOC_TEMPLATE_CCD),
-			new II(CdaHandlerConstants.DOC_TEMPLATE_CDA4CDT)
+			new II(CdaHandlerConstants.DOC_TEMPLATE_CDA4CDT),
+			new II(CdaHandlerConstants.DOC_TEMPLATE_ANTEPARTUM_SUMMARY)
 		));
 		
 		// CCD body must be structured
@@ -50,6 +54,8 @@ public class ApsGenerator extends DocumentGeneratorImpl {
 		// Now add the required sections
 		super.generateSections(oddRegistration,
 			retVal,
+			EstimatedDeliveryDatesSectionGenerator.class,
+			AntepartumVisitFlowsheetSectionGenerator.class,
 			AllergiesSectionGenerator.class,
 			MedicationsSectionGenerator.class,
 			PlanOfCareSectionGenerator.class,

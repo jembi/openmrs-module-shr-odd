@@ -18,7 +18,7 @@
 		
 		<property name="accessionNumber" type="java.lang.String" column="accession_number"/>
 		
-		
+		<property name="title" type="java.lang.String" length="255" column="title"/>
 		<property name="dateCreated" type="java.util.Date"
 			column="date_created" not-null="true" length="19" />
 		<property name="voided" type="java.lang.Boolean" column="voided"

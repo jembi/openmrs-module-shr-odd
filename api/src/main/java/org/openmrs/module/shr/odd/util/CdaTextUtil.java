@@ -445,6 +445,15 @@ public final class CdaTextUtil {
 			valueTd = this.createCodeTextCell((CV)observation.getValue());
 			retVal.getChildren().add(valueTd);
 		}
+		else if(observation.getValue() instanceof ED)
+		{
+			TEL reference = ((ED)observation.getValue()).getReference();
+			if(reference != null)
+				valueTd = retVal.addElement("td", new StructDocElementNode("renderMultiMedia").addAttribute("referencedObject", reference.getValue()));
+			else
+				valueTd = retVal.addElement("td");
+			valueTd.addText("Binary Data");
+		}
 		else if(observation.getValue() != null && !observation.getValue().isNull())
 			valueTd = retVal.addElement("td", observation.getValue().toString());
 		else if(observation.getValue() != null)

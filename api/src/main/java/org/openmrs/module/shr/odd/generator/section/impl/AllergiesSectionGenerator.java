@@ -175,7 +175,7 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 					EntryRelationship manifestation = new EntryRelationship(x_ActRelationshipEntryRelationship.MFST, BL.TRUE);
 					manifestation.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_MANIFESTATION_RELATION)));
 					Observation manifestationObservation = new Observation(x_ActMoodDocumentObservation.Eventoccurrence);
-					manifestationObservation.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_CCD_REACTION_OBSERVATION)));
+					manifestationObservation.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION), new II(CdaHandlerConstants.ENT_TEMPLATE_CCD_REACTION_OBSERVATION)));
 					manifestationObservation.setCode(new CD<String>("PROBLEM", CdaHandlerConstants.CODE_SYSTEM_IHE_ACT_CODE));
 					manifestationObservation.setStatusCode(ActStatus.Completed);
 					manifestationObservation.setEffectiveTime(new IVL<TS>());

@@ -30,7 +30,7 @@ import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
  * Generates the immunizations section
  */
 public class ImmunizationsSectionGenerator extends SectionGeneratorImpl {
-	// The section code
+		// The section code
 		private final CE<String> m_sectionCode = new CE<String>("11369-6", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "HISTORY OF IMMUNIZATIONS", null);
 		private final Concept m_sectionConcept;
 		

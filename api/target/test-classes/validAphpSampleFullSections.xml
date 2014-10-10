@@ -811,6 +811,66 @@
         </section>
       </component>
 
+     <component typeCode="COMP" contextConductionInd="true">
+        <section classCode="DOCSECT" moodCode="EVN">
+          <templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.21.2.5.1"/>
+          <code code="57078-8" codeSystem="2.16.840.1.113883.6.1"/>
+          <title language="en-US">Coded Antenatal Testing Battery</title>
+          <text mediaType="text/x-hl7-text+xml">Some text</text>
+          <entry typeCode="COMP" contextConductionInd="true">
+            <organizer classCode="BATTERY" moodCode="EVN">
+              <templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.21.3.10"/>
+              <code code="XX-ANTENATALTESTINGBATTERY" displayName="Antenatal Testing Battery" codeSystem="2.16.840.1.113883.6.1"/>
+              <statusCode code="completed"/>
+              <effectiveTime value="20141009090628.640-0400"/>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="c1d5ab57-ff71-434f-bd14-4ab3099bd41c"/>
+                  <code code="11630-1" codeSystem="2.16.840.1.113883.6.1" displayName="Biophysical profile.amniotic fluid volume"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.642-0400"/>
+                  <value xsi:type="ED" representation="TXT" language="en-US">This is a string</value>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="fbfb14b7-8e57-4cb1-9f0d-b5520af3f0f8"/>
+                  <code code="11631-9" codeSystem="2.16.840.1.113883.6.1" displayName="Biophysical profile.body movement"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.642-0400"/>
+                  <value xsi:type="ED" representation="TXT" language="en-US">This is a string</value>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="8404696d-c6b1-428c-a215-242496e8dd9d"/>
+                  <code code="35096-7" codeSystem="2.16.840.1.113883.6.1" displayName="Ultrasound morphologic"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.642-0400"/>
+                  <value xsi:type="ED" representation="TXT" language="en-US">This is a string</value>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="018636aa-b24e-4895-82a0-afdaca18b854"/>
+                  <code code="51659-1" codeSystem="2.16.840.1.113883.6.1" displayName="Hbs1 Antigen"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.642-0400"/>
+                  <value xsi:type="ED" representation="TXT" language="en-US">This is a string</value>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+            </organizer>
+          </entry>
+        </section>
+      </component>
 
 		</structuredBody>
 	</component>

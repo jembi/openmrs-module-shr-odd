@@ -13,6 +13,7 @@ import org.openmrs.module.shr.cdahandler.processor.entry.impl.ihe.pcc.Antepartum
 import org.openmrs.module.shr.contenthandler.api.CodedValue;
 import org.openmrs.module.shr.odd.generator.section.impl.AdvanceDirectivesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.AllergiesSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.AntenatalTestingAndSurveillanceSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.AntepartumVisitFlowsheetSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.EstimatedDeliveryDatesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.FamilyHistorySectionGenerator;
@@ -42,8 +43,8 @@ public class ApsGenerator extends DocumentGeneratorImpl {
 		retVal.setCode(this.getDocumentTypeCode());
 		retVal.setTitle(retVal.getCode().getDisplayName());
 		retVal.setTemplateId(LIST.createLIST(
-			new II(CdaHandlerConstants.DOC_TEMPLATE_CCD),
 			new II(CdaHandlerConstants.DOC_TEMPLATE_CDA4CDT),
+			new II(CdaHandlerConstants.DOC_TEMPLATE_MEDICAL_DOCUMENTS),
 			new II(CdaHandlerConstants.DOC_TEMPLATE_ANTEPARTUM_SUMMARY)
 		));
 		
@@ -56,6 +57,7 @@ public class ApsGenerator extends DocumentGeneratorImpl {
 			retVal,
 			EstimatedDeliveryDatesSectionGenerator.class,
 			AntepartumVisitFlowsheetSectionGenerator.class,
+			AntenatalTestingAndSurveillanceSectionGenerator.class,
 			AllergiesSectionGenerator.class,
 			MedicationsSectionGenerator.class,
 			PlanOfCareSectionGenerator.class,

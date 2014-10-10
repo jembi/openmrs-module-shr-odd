@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -173,7 +174,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		retVal.setTitle(strings.getString(String.format("shr-odd.%s", titleMessageKey)));
 		retVal.setText(new SD());
 		retVal.setCode(code);
-		
+		retVal.setId(new II(UUID.randomUUID()));
 		// Set templates
 		LIST<II> sectionTemplate = new LIST<II>();
 		for(String template : templateIds)

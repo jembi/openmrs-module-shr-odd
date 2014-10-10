@@ -8,7 +8,6 @@ import org.marc.everest.datatypes.II;
 import org.marc.everest.datatypes.SD;
 import org.marc.everest.datatypes.generic.CD;
 import org.marc.everest.datatypes.generic.CE;
-import org.marc.everest.datatypes.generic.CV;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Component4;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Entry;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
@@ -25,67 +24,44 @@ import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
 
 /**
- * Antepartum Visit Flowsheet Section Generator
+ * Antenatal Testing and Surveillance Section Generator
  */
-public class AntepartumVisitFlowsheetSectionGenerator extends SectionGeneratorImpl {
-	
+public class AntenatalTestingAndSurveillanceSectionGenerator extends SectionGeneratorImpl {
 	// The section code
-	private final CE<String> m_sectionCode = new CE<String>("57059-8", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "Pregnancy Visit Summary", null);
-	private final CD<String> m_batteryCode = new CD<String>("57061-4", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "Antepartum Flowsheet Panel", null);
+	private final CD<String> m_batteryCode = new CD<String>("XX-ANTENATALTESTINGBATTERY", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "ANTENATAL TESTING AND SURVEILLANCE BATTERY", null);
+	private final CE<String> m_sectionCode = new CE<String>("57078-8", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "ANTENATAL TESTING AND SURVEILLANCE", null);
 	private final Concept m_sectionConcept;
 	
 	/**
 	 * Problem section generator ctor
 	 */
-	public AntepartumVisitFlowsheetSectionGenerator() throws DocumentImportException
+	public AntenatalTestingAndSurveillanceSectionGenerator() throws DocumentImportException
 	{
 		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode);
 	}
 	
+
 	/**
 	 * Generate the section
 	 * @see org.openmrs.module.shr.odd.generator.SectionGenerator#generateSection()
 	 */
 	@Override
 	public Section generateSection() {
+		Section retVal = super.createSection(
+			Arrays.asList(CdaHandlerConstants.SCT_TEMPLATE_ANTENATAL_TESTING_AND_SURVEILLANCE), 
+			"section.antenatalTesting.title", 
+			this.m_sectionCode);
 		
-		Section retVal = super.createSection(Arrays.asList(CdaHandlerConstants.SCT_TEMPLATE_ANTEPARTUM_TEMPLATE_VISIT_SUMMARY_FLOWSHEET), "section.flowsheet.title", this.m_sectionCode);
-		
-		// Find the delivery date estimate observation
-
-		// Only get the most recent
-		Obs mostRecent = null;
-
-		// Try to obtain the delivery date obs
-		try {
-        	List<Obs> prepregnancyWeightObservations = super.getAllObservationsOfType(this.m_conceptUtil.getOrCreateConcept(new CV<String>("8348-5", CdaHandlerConstants.CODE_SYSTEM_LOINC)));
-    		for(Obs obs : prepregnancyWeightObservations)
-    			if(mostRecent == null || obs.getObsDatetime().after(mostRecent.getObsDatetime()))
-    				mostRecent = obs;
-        }
-        catch (DocumentImportException e) {
-	        // TODO Auto-generated catch block
-	        log.error("Error generated", e);
-        }
-		
-		// Some observations may come from a pregnancy history or may 
-		// Do we have any content?
+		// Level 3
 		if(super.allEncountersHaveDiscreteComponentObs())
 		{
-			// Most recent pregnancy weight
-			if(mostRecent != null)
-			{
-				Observation pregnancyWeightObs = super.createObs(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_SIMPLE_OBSERVATION), mostRecent, CdaHandlerConstants.CODE_SYSTEM_LOINC);
-				retVal.getEntry().add(new Entry(x_ActRelationshipEntry.DRIV, BL.TRUE, pregnancyWeightObs));
-			}
-			
-			// Now represent each flowsheet panel
-            try {
-            	List<Obs> flowsheetBatteries = super.m_service.getObsGroupMembers(this.getSectionObs(), Arrays.asList(this.m_conceptUtil.getOrCreateConcept(this.m_batteryCode)));
-				for(Obs battery : flowsheetBatteries)
+			// Testing batteries
+        	try {
+	            List<Obs> testingBatteries = super.m_service.getObsGroupMembers(this.getSectionObs(), Arrays.asList(this.m_conceptUtil.getOrCreateConcept(this.m_batteryCode)));
+	            for(Obs battery : testingBatteries)
 				{
 					Organizer batteryOrganizer = super.createOrganizer(x_ActClassDocumentEntryOrganizer.BATTERY, 
-						Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_ANTEPARTUM_FLOWSHEET_PANEL),
+						Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_ANTENATAL_TESTING_BATTERY),
 						this.m_batteryCode, 
 						new II(this.m_cdaConfiguration.getObsRoot(), battery.getId().toString()), 
 						ActStatus.Completed, 
@@ -104,26 +80,29 @@ public class AntepartumVisitFlowsheetSectionGenerator extends SectionGeneratorIm
 						batteryOrganizer.getComponent().add(new Component4(ActRelationshipHasComponent.HasComponent, BL.TRUE, observation));
 					}
 	
+					// Add the entry
 					retVal.getEntry().add(new Entry(x_ActRelationshipEntry.DRIV, BL.TRUE, batteryOrganizer));
 				}
+	            
+	            retVal.setText(super.generateLevel3Text(retVal));
+	            
             }
             catch (DocumentImportException e) {
 	            // TODO Auto-generated catch block
 	            log.error("Error generated", e);
             }
-			
-			retVal.setText(super.generateLevel3Text(retVal));
+
 		}
 		else if(super.getSectionObs().size() > 0)
 			super.generateLevel2Content(retVal);
 		else
-			retVal.setText(new SD(SD.createText("No data present")));
+			retVal.setText(new SD(SD.createText("No data recorded")));
 		
 		return retVal;
 	}
 	
 	/**
-	 * Get the obs group concept
+	 * Get the section obs group
 	 * @see org.openmrs.module.shr.odd.generator.section.impl.SectionGeneratorImpl#getSectionObsGroupConcept()
 	 */
 	@Override

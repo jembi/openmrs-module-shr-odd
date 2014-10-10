@@ -678,9 +678,12 @@ public final class CdaDataUtil {
 					obsTitle = obs.getComplexData().getTitle();
 			if(obsTitle.contains("--"))
 			{
-				int sPos = obsTitle.indexOf("--") + 3,
-						count = obsTitle.lastIndexOf(".") - sPos;
-				mimeType = URLDecoder.decode(obsTitle.substring(sPos, count));
+				if(obsTitle.contains("--"))
+				{
+					int sPos = obsTitle.indexOf("--") + 3,
+							count = obsTitle.lastIndexOf(".") - sPos;
+					mimeType = URLDecoder.decode(obsTitle.substring(sPos, count));
+				}
 			}
 			
 			ED retVal = new ED(data, mimeType);

@@ -37,7 +37,7 @@
   <concept concept_id="160864" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
   <concept concept_id="160862" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
   <concept concept_id="162135" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
-
+	<concept concept_id="116367" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
 
   <concept concept_id="1442" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
   <concept concept_id="1621" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
@@ -47,6 +47,7 @@
   <concept concept_id="160753" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
   <concept concept_id="1651" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
   <concept concept_id="161548" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
+  <concept concept_id="1063" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
 	
 	<!--  IZ -->
 	  <concept concept_id="1421" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
@@ -65,10 +66,23 @@
   <concept concept_id="160432" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05"/>
 
   <concept_name concept_name_id="340" concept_id="160432" name="Dead" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="339" concept_id="1560" name="Family Member Relation" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="338" concept_id="160593" name="Family History List" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="332" concept_id="160741" name="Medication History" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="333" concept_id="1282" name="Medication Orders" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="341" concept_id="1421" name="Immunization History" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
+  <concept_name concept_name_id="339" concept_id="1560" name="Family Member Relation" locale="en-GB" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
+  <concept_name concept_name_id="338" concept_id="160593" name="Family History List" locale="en-GB" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
+  <concept_name concept_name_id="332" concept_id="160741" name="Medication History" locale="en-GB" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
+  <concept_name concept_name_id="333" concept_id="1282" name="Medication Orders" locale="en-GB" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
+  <concept_name concept_name_id="341" concept_id="1421" name="Immunization History" locale="en-GB" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
+  <concept_name concept_name_id="390" concept_id="116367" name="Allergy to Latex" locale="en-GB" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
+  <concept_name concept_name_id="392" concept_id="1063" name="BLOOD TRANSFUSION" locale="en-GB" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
 
+  <concept_reference_source concept_source_id="12" name="LOINC" description="LOINC" hl7_code="LN" creator="1" date_created="2005-02-24 00:00:00.0" uuid="j3nfjk33-639f-4cb4-961f-1e025b908436" retired="false"/>
+
+
+
+	<concept_reference_term uuid="38b75e7f-e119-43fc-bdc4-be4efed33612" concept_reference_term_id="304" concept_source_id="2" name="Latex" code="300916003" date_created="2014-04-05" creator="2" retired="false" />
+	<concept_reference_term uuid="38b75e7f-e119-43fc-bdc4-be4efed33613" concept_reference_term_id="305" concept_source_id="12" name="Blood Transfusion" code="xx-bld-trnsf-ok" date_created="2014-04-05" creator="2" retired="false" />
+	<concept_reference_term uuid="38b75e7f-e119-43fc-bdc4-be4efed33614" concept_reference_term_id="306" concept_source_id="2" name="Blood Transfusion Ok" code="116859006" date_created="2014-04-05" creator="2" retired="false" />
+	<concept_reference_map uuid="a9eb8740-b4c2-46c9-b008-529c6a797c28" concept_map_id="304" concept_id="116367" concept_reference_term_id="304" concept_map_type_id="2" creator="2" date_created="2014-04-05"/> 
+	<concept_reference_map uuid="a9eb8740-b4c2-46c9-b008-529c6a797c24" concept_map_id="305" concept_id="1063" concept_reference_term_id="305" concept_map_type_id="2" creator="2" date_created="2014-04-05"/> 
+	<concept_reference_map uuid="a9eb8740-b4c2-46c9-b008-529c6a797c25" concept_map_id="306" concept_id="1063" concept_reference_term_id="306" concept_map_type_id="2" creator="2" date_created="2014-04-05"/> 
+	
 </dataset>

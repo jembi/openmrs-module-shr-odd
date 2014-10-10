@@ -99,7 +99,7 @@ public class MedicationsSectionGenerator extends SectionGeneratorImpl {
 		else
 		{
 			// Generate the no medications known entry
-			SubstanceAdministration sbadm = super.createNoSubstanceAdministration(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_ACTIVITY, CdaHandlerConstants.ENT_TEMPLATE_MEDICATIONS));
+			SubstanceAdministration sbadm = super.createNoSubstanceAdministration(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_ACTIVITY, CdaHandlerConstants.ENT_TEMPLATE_MEDICATIONS, CdaHandlerConstants.ENT_TEMPLATE_MEDICATIONS_NORMAL_DOSING));
 			retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, sbadm));
 			retVal.setText(super.generateLevel3Text(retVal));
 		}

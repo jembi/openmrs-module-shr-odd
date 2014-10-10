@@ -401,11 +401,6 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    			eft.getLow().setDateValuePrecision(obs.getObsDatePrecision());
 	    	}
 	    }
-	    else
-	    {
-	    	eft.setLow(new TS());
-	    	eft.getLow().setNullFlavor(NullFlavor.Unknown);
-	    }
 	    if(activeListItem.getStopObs() != null)
 	    {
 	    	eft.setHigh(this.m_cdaDataUtil.createTS(activeListItem.getEndDate()));
@@ -420,16 +415,11 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    	}
 	    	
 	    }
-	    else
-	    {
-	    	eft.setHigh(new TS());
-	    	eft.getHigh().setNullFlavor(NullFlavor.Unknown);
-	    }
 
 	    retVal.setEffectiveTime(eft);
 	    
 	    // Is there a creation time?
-	    retVal.getAuthor().add(this.createAuthorPointer(activeListItem));
+    	retVal.getAuthor().add(this.createAuthorPointer(activeListItem));
 	    
 	    retVal.setStatusCode(ConcernEntryProcessor.calculateCurrentStatus(activeListItem));;
 	    
@@ -449,10 +439,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		if(original != null) retVal.getReference().add(original);
 
 	    // Add identifier
-	    retVal.setId(new SET<II>());
-	    if(sourceObs.getAccessionNumber() != null && !sourceObs.getAccessionNumber().isEmpty())
-	    	retVal.getId().add(this.m_cdaDataUtil.parseIIFromString(sourceObs.getAccessionNumber()));
-	    retVal.getId().add(new II(this.m_cdaConfiguration.getObsRoot(), sourceObs.getId().toString()));
+		retVal.setId(this.getIdentifierList(sourceObs));
 	    
 	    // Add the code
 	    retVal.setCode(this.m_oddMetadataUtil.getStandardizedCode(sourceObs.getConcept(), targetCodeCodeSystem, CD.class));
@@ -520,6 +507,17 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    	
 	    return retVal;
 	    
+    }
+
+	/**
+	 * Get the identifier list
+	 */
+	protected SET<II> getIdentifierList(Obs sourceObs) {
+		SET<II> retVal = new SET<II>();
+	    if(sourceObs.getAccessionNumber() != null && !sourceObs.getAccessionNumber().isEmpty())
+	    	retVal.add(this.m_cdaDataUtil.parseIIFromString(sourceObs.getAccessionNumber()));
+	    retVal.add(new II(this.m_cdaConfiguration.getObsRoot(), sourceObs.getId().toString()));
+	    return retVal;
     }
 
 	/**
@@ -691,9 +689,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    retVal.setTemplateId(this.getTemplateIdList(templateIds));
 
 	    // Identifiers
-	    retVal.setId(SET.createSET(new II(this.m_cdaConfiguration.getObsRoot(), sourceObs.getId().toString())));
-	    if(sourceObs.getAccessionNumber() != null && !sourceObs.getAccessionNumber().isEmpty())
-	    	retVal.getId().add(this.m_cdaDataUtil.parseIIFromString(sourceObs.getAccessionNumber()));
+	    retVal.setId(this.getIdentifierList(sourceObs));
 	    
 	    retVal.getAuthor().add(this.createAuthorPointer(sourceObs));
 	    
@@ -810,9 +806,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    			}
 	    			
 	    		    // Identifiers
-	    		    retVal.setId(SET.createSET(new II(this.m_cdaConfiguration.getObsRoot(), component.getId().toString())));
-	    		    if(component.getAccessionNumber() != null && !component.getAccessionNumber().isEmpty())
-	    		    	retVal.getId().add(this.m_cdaDataUtil.parseIIFromString(component.getAccessionNumber()));
+	    			retVal.setId(this.getIdentifierList(sourceObs));
 	    		    
 	    			// Add author data
 	    			supply.getAuthor().add(this.createAuthorPointer(component));
@@ -1061,7 +1055,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		// Create the product
 		Consumable consumable = new Consumable();
 		ManufacturedProduct product = new ManufacturedProduct(RoleClassManufacturedProduct.ManufacturedProduct);
-		product.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_PRODUCT), new II(CdaHandlerConstants.ENT_TEMPLATE_PRODCUT)));
+		product.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_PRODUCT), new II(CdaHandlerConstants.ENT_TEMPLATE_PRODUCT)));
 
 		Material manufacturedMaterial = new Material();
 		product.setManufacturedDrugOrOtherMaterial(manufacturedMaterial);
@@ -1098,8 +1092,8 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		
 		retVal.setStatusCode(ActStatus.Completed);
 		
-		retVal.setId(SET.createSET(new II()));
-		retVal.getId().get(0).setNullFlavor(NullFlavor.NotApplicable);
+		retVal.setId(SET.createSET(new II(UUID.randomUUID())));
+//		retVal.getId().get(0).setNullFlavor(NullFlavor.NotApplicable);
 		
 		retVal.setDoseQuantity(new PQ());
 		retVal.getDoseQuantity().setNullFlavor(NullFlavor.NotApplicable);
@@ -1109,10 +1103,13 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		
 		retVal.setConsumable(new Consumable());
 		retVal.getConsumable().setManufacturedProduct(new ManufacturedProduct());
+		retVal.getConsumable().getManufacturedProduct().setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_PRODUCT, CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_PRODUCT)));
 		retVal.getConsumable().getManufacturedProduct().setManufacturedDrugOrOtherMaterial(new Material());
 		retVal.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedMaterial().setCode(new CE<String>());
 		retVal.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedMaterial().getCode().setNullFlavor(NullFlavor.NotApplicable);
+		retVal.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedMaterial().getCode().setOriginalText(new ED("Not Applicable"));
 		
+		retVal.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
 		return retVal;
     }
 
@@ -1124,9 +1121,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		Procedure retVal = new Procedure();
 
 	    // Identifiers
-	    retVal.setId(SET.createSET(new II(this.m_cdaConfiguration.getObsRoot(), sourceObs.getId().toString())));
-	    if(sourceObs.getAccessionNumber() != null && !sourceObs.getAccessionNumber().isEmpty())
-	    	retVal.getId().add(this.m_cdaDataUtil.parseIIFromString(sourceObs.getAccessionNumber()));
+		retVal.setId(this.getIdentifierList(sourceObs));
 	    
 	    retVal.getAuthor().add(this.createAuthorPointer(sourceObs));
 
@@ -1245,7 +1240,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	 * @param templateIds
 	 * @return
 	 */
-	private LIST<II> getTemplateIdList(List<String> templateIds)
+	protected LIST<II> getTemplateIdList(List<String> templateIds)
 	{
 		LIST<II> retVal = null;
 		if(templateIds.size() > 0)
@@ -1257,4 +1252,5 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		return retVal;
 
 	}
+
 }

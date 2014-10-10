@@ -56,7 +56,7 @@ public class EstimatedDeliveryDatesSectionGenerator extends SectionGeneratorImpl
 		// Do we have any content?
 		if(mostRecent != null)
 		{
-			Observation eddObservation = super.createObs(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_DELIVERY_DATE_OBSERVATION), mostRecent, CdaHandlerConstants.CODE_SYSTEM_LOINC);
+			Observation eddObservation = super.createObs(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_DELIVERY_DATE_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_SIMPLE_OBSERVATION), mostRecent, CdaHandlerConstants.CODE_SYSTEM_LOINC);
 			
 			if(eddObservation.getValue() instanceof TS)
 				((TS)eddObservation.getValue()).setDateValuePrecision(TS.DAY);
@@ -79,7 +79,7 @@ public class EstimatedDeliveryDatesSectionGenerator extends SectionGeneratorImpl
 					if(derivationObs.getValue() instanceof TS)
 						((TS)derivationObs.getValue()).setDateValuePrecision(TS.DAY);
 					
-					supportObs.getEntryRelationship().add(new EntryRelationship(new x_ActRelationshipEntryRelationship("DRIV", x_ActRelationshipEntryRelationship.CAUS.getCodeSystem()), null, derivationObs));
+					supportObs.getEntryRelationship().add(new EntryRelationship(x_ActRelationshipEntryRelationship.SPRT, null, derivationObs));
 				}
 				
 				// Add support obs

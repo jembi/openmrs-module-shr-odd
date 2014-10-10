@@ -35,10 +35,13 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Entry;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.EntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Organizer;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Participant2;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.SubstanceAdministration;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActStatus;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.DrugEntity;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.EntityClassRoot;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ObservationInterpretation;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.ParticipationType;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntry;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubject;
@@ -110,9 +113,9 @@ public final class CdaTextUtil {
 	{
 		StructDocElementNode retVal = new StructDocElementNode("tr");
 		
-		
 		String id = String.format(String.format("obs%s", UUID.randomUUID()));
 		id = id.substring(0, id.indexOf("-"));
+		retVal.addAttribute("ID", id);
 		
 		StructDocElementNode procedureTd = null;
 		if(administration.getCode() != null)
@@ -255,8 +258,10 @@ public final class CdaTextUtil {
 	 */
 	private StructDocElementNode createCodeTextCell(CV<String> code) {
 		StructDocElementNode retVal = null;
-		if(code == null || code.isNull())
+		if(code == null || code.getOriginalText() == null)
+		{
 			retVal = new StructDocElementNode("td","N/A");
+		}
 		else if(code.getOriginalText() != null)
 		{
 			String id = String.format("txt%s", UUID.randomUUID());
@@ -488,12 +493,38 @@ public final class CdaTextUtil {
 		retVal.addElement("td", observation.getStatusCode().toString());
 		
 		// Notes
+		StructDocElementNode commentNode = null;
 		if(observation.getText() != null)
 		{
-			retVal.addElement("td", observation.getText().toString());
+			commentNode = retVal.addElement("td", observation.getText().toString());
 		}
 		else
-			retVal.addElement("td","");
+			commentNode = retVal.addElement("td","");
+
+		// Participant items
+		StructDocElementNode participantItems = new StructDocElementNode("list");
+		for(Participant2 ptcpt : observation.getParticipant())
+		{
+			if(ptcpt.getParticipantRole() == null || ptcpt.getParticipantRole().getPlayingEntityChoiceIfPlayingEntity() == null) 
+				continue;
+			StructDocElementNode listItem = participantItems.addElement("item"),
+					caption = listItem.addElement("caption");
+			
+			// Actor info on participant
+			if(ptcpt.getTypeCode().getCode().equals(ParticipationType.Consumable))
+				caption.addText("Consumable >");
+			
+			// Actor info role
+			if(ptcpt.getParticipantRole().getPlayingEntityChoiceIfPlayingEntity().getClassCode().getCode().equals(EntityClassRoot.ManufacturedMaterial))
+				caption.addText("Manufactured Material");
+			
+			// Material code
+			StructDocElementNode cell = this.createCodeTextCell(ptcpt.getParticipantRole().getPlayingEntityChoiceIfPlayingEntity().getCode());
+			cell.setName("content");
+			listItem.getChildren().add(cell);
+		}
+		if(participantItems.getChildren().size() > 0)
+			commentNode.getChildren().add(participantItems);
 		
 		// Overwrite text
 		observation.setText(new ED());
@@ -596,7 +627,12 @@ public final class CdaTextUtil {
 		// Find the author
 		for(Author aut : document.getAuthor())
 			if(aut.getAssignedAuthor().getId().contains(authorId))
-				return new StructDocTextNode(aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson().getName().get(0).toString());
+			{
+				if(aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson() != null)
+					return new StructDocTextNode(aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson().getName().get(0).toString());
+				else
+					return new StructDocTextNode(String.format("Device Authored : %s", aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedAuthoringDevice().getSoftwareName()));
+			}
 		return new StructDocTextNode("Unknown");
 	}
 	/**

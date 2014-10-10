@@ -43,8 +43,8 @@ public class ApsGenerator extends DocumentGeneratorImpl {
 		retVal.setCode(this.getDocumentTypeCode());
 		retVal.setTitle(retVal.getCode().getDisplayName());
 		retVal.setTemplateId(LIST.createLIST(
-			new II(CdaHandlerConstants.DOC_TEMPLATE_CDA4CDT),
 			new II(CdaHandlerConstants.DOC_TEMPLATE_MEDICAL_DOCUMENTS),
+			new II(CdaHandlerConstants.DOC_TEMPLATE_MEDICAL_SUMMARY),
 			new II(CdaHandlerConstants.DOC_TEMPLATE_ANTEPARTUM_SUMMARY)
 		));
 		

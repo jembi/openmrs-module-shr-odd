@@ -23,6 +23,7 @@ import org.openmrs.module.shr.odd.generator.section.impl.PlanOfCareSectionGenera
 import org.openmrs.module.shr.odd.generator.section.impl.ProblemSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.ProceduresSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.PurposeOfUseSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.SurgicalProceduresSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.VitalSignsSectionGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 
@@ -62,7 +63,8 @@ public class ApsGenerator extends DocumentGeneratorImpl {
 			MedicationsSectionGenerator.class,
 			PlanOfCareSectionGenerator.class,
 			AdvanceDirectivesSectionGenerator.class,
-			ProblemSectionGenerator.class			
+			ProblemSectionGenerator.class,
+			SurgicalProceduresSectionGenerator.class
 		);
 		
 		// retVal.getComponent().getBodyChoiceIfStructuredBody().getComponent().addAll(sections);

@@ -228,6 +228,7 @@ public final class CdaDataUtil {
 				}
 				else
 					tel.setValue(patt.getValue());
+				
 				if(patt.getVoided())
 					tel.setUse(TelecommunicationsAddressUse.BadAddress);
 				retVal.add(tel);
@@ -508,7 +509,12 @@ public final class CdaDataUtil {
 		// Gender and birth
 		hl7Patient.setAdministrativeGenderCode(new AdministrativeGender(patient.getGender(), AdministrativeGender.Male.getCodeSystem()));
 		hl7Patient.setBirthTime(this.createTS(patient.getBirthdate()));
-		hl7Patient.getBirthTime().setDateValuePrecision(TS.DAY);
+		
+		if(patient.getBirthdateEstimated())
+			hl7Patient.getBirthTime().setDateValuePrecision(TS.YEAR);
+		else
+			hl7Patient.getBirthTime().setDateValuePrecision(TS.DAY);
+		
 		return retVal;
     }
 
@@ -672,9 +678,12 @@ public final class CdaDataUtil {
 					obsTitle = obs.getComplexData().getTitle();
 			if(obsTitle.contains("--"))
 			{
-				int sPos = obsTitle.indexOf("--") + 3,
-						count = obsTitle.lastIndexOf(".") - sPos;
-				mimeType = URLDecoder.decode(obsTitle.substring(sPos, count));
+				if(obsTitle.contains("--"))
+				{
+					int sPos = obsTitle.indexOf("--") + 3,
+							count = obsTitle.lastIndexOf(".") - sPos;
+					mimeType = URLDecoder.decode(obsTitle.substring(sPos, count));
+				}
 			}
 			
 			ED retVal = new ED(data, mimeType);

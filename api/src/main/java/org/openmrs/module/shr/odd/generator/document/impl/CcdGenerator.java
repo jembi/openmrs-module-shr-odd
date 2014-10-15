@@ -22,6 +22,7 @@ import org.openmrs.module.shr.odd.generator.section.impl.PlanOfCareSectionGenera
 import org.openmrs.module.shr.odd.generator.section.impl.ProblemSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.ProceduresSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.PurposeOfUseSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.SocialHistorySectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.VitalSignsSectionGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 
@@ -66,7 +67,8 @@ public class CcdGenerator extends DocumentGeneratorImpl {
 			FamilyHistorySectionGenerator.class,
 			MedicationsSectionGenerator.class,
 			ImmunizationsSectionGenerator.class,
-			ProceduresSectionGenerator.class
+			ProceduresSectionGenerator.class,
+			SocialHistorySectionGenerator.class
 		);
 		
 		// retVal.getComponent().getBodyChoiceIfStructuredBody().getComponent().addAll(sections);

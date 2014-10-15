@@ -24,7 +24,25 @@ public class OnDemandDocumentRegistration extends BaseOpenmrsData implements Aud
 	private Set<OnDemandDocumentEncounterLink> encounterLinks = new HashSet<OnDemandDocumentEncounterLink>();
 	// Accession number for the ODD
 	private String accessionNumber;
+	// Title for the ODD
+	private String title;
 	
+	
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+    	return title;
+    }
+
+	
+    /**
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+    	this.title = title;
+    }
+
 	/**
 	 * Gets the unique identifier for this registration
 	 * @see org.openmrs.OpenmrsObject#getId()

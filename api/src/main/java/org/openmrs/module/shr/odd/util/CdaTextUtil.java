@@ -35,13 +35,19 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Entry;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.EntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Organizer;
+import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Participant2;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.SubstanceAdministration;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActStatus;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.DrugEntity;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.EntityClassRoot;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ObservationInterpretation;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.ParticipationType;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntry;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubject;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubstanceMood;
 import org.openmrs.api.db.AdministrationDAO;
+import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 
 
 /**
@@ -107,9 +113,9 @@ public final class CdaTextUtil {
 	{
 		StructDocElementNode retVal = new StructDocElementNode("tr");
 		
-		
 		String id = String.format(String.format("obs%s", UUID.randomUUID()));
 		id = id.substring(0, id.indexOf("-"));
+		retVal.addAttribute("ID", id);
 		
 		StructDocElementNode procedureTd = null;
 		if(administration.getCode() != null)
@@ -199,13 +205,20 @@ public final class CdaTextUtil {
 		if(context == null)
 		{
 			context = new StructDocElementNode();
-			this.createSubstanceAdministrationTable(context).getChildren().add(retVal);
+			StructDocElementNode tbody = this.createSubstanceAdministrationTable(context);
+			tbody.getChildren().add(retVal);
 			retVal = (StructDocElementNode)context.getChildren().get(0);
+			context = tbody; 
 		}
 		else if(context.getName().equals("list"))
 		{
 			context = context.addElement("item");
-			context = this.createObservationTable(context);
+			context = this.createSubstanceAdministrationTable(context);
+			context.getChildren().add(retVal);
+		}
+		else if(context.getName().equals("item"))
+		{
+			context = this.createSubstanceAdministrationTable(context);
 			context.getChildren().add(retVal);
 		}
 		else if(context.getName().equals("td"))
@@ -244,9 +257,12 @@ public final class CdaTextUtil {
 	 * Create a code text cell
 	 */
 	private StructDocElementNode createCodeTextCell(CV<String> code) {
-		if(code == null || code.isNull())
-			return new StructDocElementNode("td","N/A");
-		if(code.getOriginalText() != null)
+		StructDocElementNode retVal = null;
+		if(code == null)
+		{
+			retVal = new StructDocElementNode("td","N/A");
+		}
+		else if(code.getOriginalText() != null)
 		{
 			String id = String.format("txt%s", UUID.randomUUID());
 			id = id.substring(0, id.indexOf("-"));
@@ -255,10 +271,14 @@ public final class CdaTextUtil {
 			cellNode.addAttribute("ID", id);
 			code.setOriginalText(new ED());
 			code.getOriginalText().setReference(new TEL(String.format("#%s", id)));
-			return cellNode;
+			retVal = cellNode;
 		}
+		else if(code.getDisplayName() != null)
+			retVal = new StructDocElementNode("td", code.getDisplayName());
 		else
-			return new StructDocElementNode("td", code.getDisplayName());
+			retVal = new StructDocElementNode("td", String.format("%s [%s]", code.getCode(), code.getCodeSystem()));
+		retVal.setNamespaceUri("urn:hl7-org:v3");
+		return retVal;
     }
 
 	/**
@@ -432,6 +452,15 @@ public final class CdaTextUtil {
 			valueTd = this.createCodeTextCell((CV)observation.getValue());
 			retVal.getChildren().add(valueTd);
 		}
+		else if(observation.getValue() instanceof ED)
+		{
+			TEL reference = ((ED)observation.getValue()).getReference();
+			if(reference != null)
+				valueTd = retVal.addElement("td", new StructDocElementNode("renderMultiMedia").addAttribute("referencedObject", reference.getValue()));
+			else
+				valueTd = retVal.addElement("td");
+			valueTd.addText("Binary Data");
+		}
 		else if(observation.getValue() != null && !observation.getValue().isNull())
 			valueTd = retVal.addElement("td", observation.getValue().toString());
 		else if(observation.getValue() != null)
@@ -454,7 +483,7 @@ public final class CdaTextUtil {
 		}
 		
 		// Interpretation
-		if(observation.getInterpretationCode() != null && observation.getInterpretationCode().isNull())
+		if(observation.getInterpretationCode() != null && !observation.getInterpretationCode().isNull())
 		{
 			StructDocElementNode content = retVal.addElement("td");
 			for(CE<ObservationInterpretation> interp : observation.getInterpretationCode())
@@ -466,12 +495,38 @@ public final class CdaTextUtil {
 		retVal.addElement("td", observation.getStatusCode().toString());
 		
 		// Notes
+		StructDocElementNode commentNode = null;
 		if(observation.getText() != null)
 		{
-			retVal.addElement("td", observation.getText().toString());
+			commentNode = retVal.addElement("td", observation.getText().toString());
 		}
 		else
-			retVal.addElement("td","");
+			commentNode = retVal.addElement("td","");
+
+		// Participant items
+		StructDocElementNode participantItems = new StructDocElementNode("list");
+		for(Participant2 ptcpt : observation.getParticipant())
+		{
+			if(ptcpt.getParticipantRole() == null || ptcpt.getParticipantRole().getPlayingEntityChoiceIfPlayingEntity() == null) 
+				continue;
+			StructDocElementNode listItem = participantItems.addElement("item"),
+					caption = listItem.addElement("caption");
+			
+			// Actor info on participant
+			if(ptcpt.getTypeCode().getCode().equals(ParticipationType.Consumable))
+				caption.addText("Consumable >");
+			
+			// Actor info role
+			if(ptcpt.getParticipantRole().getPlayingEntityChoiceIfPlayingEntity().getClassCode().getCode().equals(EntityClassRoot.ManufacturedMaterial))
+				caption.addText("Manufactured Material");
+			
+			// Material code
+			StructDocElementNode cell = this.createCodeTextCell(ptcpt.getParticipantRole().getPlayingEntityChoiceIfPlayingEntity().getCode());
+			cell.setName("content");
+			listItem.getChildren().add(cell);
+		}
+		if(participantItems.getChildren().size() > 0)
+			commentNode.getChildren().add(participantItems);
 		
 		// Overwrite text
 		observation.setText(new ED());
@@ -481,12 +536,19 @@ public final class CdaTextUtil {
 		if(context == null)
 		{
 			context = new StructDocElementNode();
-			this.createObservationTable(context).getChildren().add(retVal);
+			StructDocElementNode tbody = this.createObservationTable(context);
+			tbody.getChildren().add(retVal);
 			retVal = (StructDocElementNode)context.getChildren().get(0);
+			context = tbody; 
 		}
 		else if(context.getName().equals("list"))
 		{
 			context = context.addElement("item");
+			context = this.createObservationTable(context);
+			context.getChildren().add(retVal);
+		}
+		else if(context.getName().equals("item"))
+		{
 			context = this.createObservationTable(context);
 			context.getChildren().add(retVal);
 		}
@@ -500,7 +562,10 @@ public final class CdaTextUtil {
 		{
 			for(StructDocNode node : context.getChildren())
 				if(node.getName().equals("tbody"))
+				{
+					context = (StructDocElementNode)node;
 					node.getChildren().add(retVal);
+				}
 		}
 		else
 			context.getChildren().add(retVal);
@@ -509,12 +574,48 @@ public final class CdaTextUtil {
 		if(observation.getEntryRelationship().size() > 0)
 		{
 			StructDocElementNode relationshipRow = context.addElement("tr");
-			relationshipRow.addElement("td", "Additional Information");
+			relationshipRow.addElement("td");
 			StructDocElementNode relationshipContent = relationshipRow.addElement("td");
 			relationshipContent.addAttribute("colspan", "6");
-			StructDocElementNode subContext = this.createObservationTable(relationshipContent.addElement("list").addElement("item"));
+			StructDocElementNode relationshipItem = relationshipContent.addElement("list").addElement("item");
+			relationshipItem.addElement("caption", "Additional Information");
+			StructDocElementNode subContext = this.createObservationTable(relationshipItem);
 			for(EntryRelationship er : observation.getEntryRelationship())
-				this.generateText(er.getClinicalStatement(), subContext, document);
+			{
+				String captionText = "Has Component:";
+				
+				// Text for the caption
+				if(BL.TRUE.equals(er.getInversionInd()))
+				{
+					if(x_ActRelationshipEntryRelationship.CAUS.equals(er.getTypeCode().getCode()))
+						captionText = "Caused by:";
+					else if(x_ActRelationshipEntryRelationship.SPRT.equals(er.getTypeCode().getCode()))
+						captionText = "Supported By:";
+					else if(x_ActRelationshipEntryRelationship.SUBJ.equals(er.getTypeCode().getCode()))
+						captionText = "Subject of:";
+				}
+				else
+				{
+					if(x_ActRelationshipEntryRelationship.CAUS.equals(er.getTypeCode().getCode()))
+						captionText = "Causes:";
+					else if(x_ActRelationshipEntryRelationship.SPRT.equals(er.getTypeCode().getCode()))
+						captionText = "Supports:";
+					else if(x_ActRelationshipEntryRelationship.MFST.equals(er.getTypeCode().getCode()))
+						captionText = "Manifests:";
+					else if(x_ActRelationshipEntryRelationship.SUBJ.equals(er.getTypeCode().getCode()))
+						captionText = "Subjects:";
+				}
+				
+				StructDocElementNode node = subContext.addElement("tr").addElement("td");
+				node.addAttribute("colspan", "7");
+				node = node.addElement("content");
+				node.addAttribute("styleCode", "Bold");
+				node.addText(captionText);
+				StructDocElementNode row = this.generateText(er.getClinicalStatement(), subContext, document);
+				
+				
+				row = row;
+			}
 		}
 		
 		return retVal;
@@ -528,7 +629,12 @@ public final class CdaTextUtil {
 		// Find the author
 		for(Author aut : document.getAuthor())
 			if(aut.getAssignedAuthor().getId().contains(authorId))
-				return new StructDocTextNode(aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson().getName().get(0).toString());
+			{
+				if(aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson() != null)
+					return new StructDocTextNode(aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson().getName().get(0).toString());
+				else
+					return new StructDocTextNode(String.format("Device Authored : %s", aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedAuthoringDevice().getSoftwareName()));
+			}
 		return new StructDocTextNode("Unknown");
 	}
 	/**

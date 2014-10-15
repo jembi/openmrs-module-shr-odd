@@ -30,7 +30,7 @@ import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
  * Generates the immunizations section
  */
 public class ImmunizationsSectionGenerator extends SectionGeneratorImpl {
-	// The section code
+		// The section code
 		private final CE<String> m_sectionCode = new CE<String>("11369-6", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "HISTORY OF IMMUNIZATIONS", null);
 		private final Concept m_sectionConcept;
 		
@@ -61,20 +61,27 @@ public class ImmunizationsSectionGenerator extends SectionGeneratorImpl {
 				{
 					if(data.getVoided()) continue;
 					SubstanceAdministration sbadm = super.createSubstanceAdministration(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_ACTIVITY, CdaHandlerConstants.ENT_TEMPLATE_IMMUNIZATIONS),(Obs)data);
-					if(sbadm.getCode() == null)
-						sbadm.setCode(new CD<String>("IMMUNIZ", CdaHandlerConstants.CODE_SYSTEM_ACT_CODE, "ActCode", null, "Immunization", null));
-					retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, sbadm));
+					
+					if(sbadm != null)
+					{
+						if(sbadm.getCode() == null)
+							sbadm.setCode(new CD<String>("IMMUNIZ", CdaHandlerConstants.CODE_SYSTEM_ACT_CODE, "ActCode", null, "Immunization", null));
+						retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, sbadm));
+					}
 				}
-				retVal.setText(super.generateLevel3Text(retVal));
 				
 			}
-			else
+
+
+			if(retVal.getEntry().size() == 0)
 			{
 				// Generate the no medications known entry
-				SubstanceAdministration sbadm = super.createNoSubstanceAdministration(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_ACTIVITY, CdaHandlerConstants.ENT_TEMPLATE_IMMUNIZATIONS));
+				SubstanceAdministration sbadm = super.createNoSubstanceAdministration(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_ACTIVITY, CdaHandlerConstants.ENT_TEMPLATE_MEDICATIONS, CdaHandlerConstants.ENT_TEMPLATE_MEDICATIONS_NORMAL_DOSING));
 				retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, sbadm));
-				retVal.setText(super.generateLevel3Text(retVal));
 			}
+
+			if(retVal.getEntry().size() > 0)
+				retVal.setText(super.generateLevel3Text(retVal));
 			
 			return retVal;
 		}

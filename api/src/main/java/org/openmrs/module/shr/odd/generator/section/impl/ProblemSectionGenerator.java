@@ -7,6 +7,7 @@ import org.marc.everest.datatypes.BL;
 import org.marc.everest.datatypes.NullFlavor;
 import org.marc.everest.datatypes.SD;
 import org.marc.everest.datatypes.TS;
+import org.marc.everest.datatypes.generic.CD;
 import org.marc.everest.datatypes.generic.CE;
 import org.marc.everest.datatypes.generic.IVL;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Act;
@@ -38,7 +39,7 @@ public class ProblemSectionGenerator extends SectionGeneratorImpl {
 	// The section code
 	private final CE<String> m_sectionCode = new CE<String>("11450-4", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "PROBLEM LIST", null);
 	private final Concept m_sectionConcept;
-	
+
 	/**
 	 * Problem section generator ctor
 	 */
@@ -100,6 +101,7 @@ public class ProblemSectionGenerator extends SectionGeneratorImpl {
 					CdaHandlerConstants.CODE_SYSTEM_SNOMED);
 				
 				problemAct.getEntryRelationship().add(new EntryRelationship(x_ActRelationshipEntryRelationship.SUBJ, BL.FALSE, BL.TRUE, null, null, null, problemObservation));
+				
 				retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, problemAct));
 			}
 
@@ -112,8 +114,15 @@ public class ProblemSectionGenerator extends SectionGeneratorImpl {
 		}
 		else
 		{
-			retVal.setText(new SD(SD.createText("No content recorded")));
+			
+			Act problemAct = super.createNoKnownProblemAct(
+				Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_CONCERN, CdaHandlerConstants.ENT_TEMPLATE_CONCERN_ENTRY, CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_ACT),
+				new CD<String>("55607006", CdaHandlerConstants.CODE_SYSTEM_SNOMED, null, null, "Problem", null),
+				new CD<String>("396782006", CdaHandlerConstants.CODE_SYSTEM_SNOMED, null, null, "Past Medical History Unknown", null));
+			retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, problemAct));
+			retVal.setText(super.generateLevel3Text(retVal));
 		}
+
 		return retVal;
 	}
 

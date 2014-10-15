@@ -55,7 +55,7 @@ public abstract class GenericLevel2SectionGenerator extends SectionGeneratorImpl
 		if(this.getSectionObs().size() > 0)
 			this.generateLevel2Content(retVal);
 		else
-			retVal.setText(new SD(SD.createText("No content available")));
+			return null;
 		
 		return retVal;
 	}

@@ -9,9 +9,13 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Component2;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.StructuredBody;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActRelationshipHasComponent;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
+import org.openmrs.module.shr.cdahandler.processor.entry.impl.ihe.pcc.AntepartumFlowsheetBatteryEntryProcessor;
 import org.openmrs.module.shr.contenthandler.api.CodedValue;
 import org.openmrs.module.shr.odd.generator.section.impl.AdvanceDirectivesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.AllergiesSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.AntenatalTestingAndSurveillanceSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.AntepartumVisitFlowsheetSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.EstimatedDeliveryDatesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.FamilyHistorySectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.ImmunizationsSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.MedicationsSectionGenerator;
@@ -19,6 +23,7 @@ import org.openmrs.module.shr.odd.generator.section.impl.PlanOfCareSectionGenera
 import org.openmrs.module.shr.odd.generator.section.impl.ProblemSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.ProceduresSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.PurposeOfUseSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.SurgicalProceduresSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.VitalSignsSectionGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 
@@ -39,8 +44,9 @@ public class ApsGenerator extends DocumentGeneratorImpl {
 		retVal.setCode(this.getDocumentTypeCode());
 		retVal.setTitle(retVal.getCode().getDisplayName());
 		retVal.setTemplateId(LIST.createLIST(
-			new II(CdaHandlerConstants.DOC_TEMPLATE_CCD),
-			new II(CdaHandlerConstants.DOC_TEMPLATE_CDA4CDT)
+			new II(CdaHandlerConstants.DOC_TEMPLATE_MEDICAL_DOCUMENTS),
+			new II(CdaHandlerConstants.DOC_TEMPLATE_MEDICAL_SUMMARY),
+			new II(CdaHandlerConstants.DOC_TEMPLATE_ANTEPARTUM_SUMMARY)
 		));
 		
 		// CCD body must be structured
@@ -50,11 +56,15 @@ public class ApsGenerator extends DocumentGeneratorImpl {
 		// Now add the required sections
 		super.generateSections(oddRegistration,
 			retVal,
+			EstimatedDeliveryDatesSectionGenerator.class,
+			AntepartumVisitFlowsheetSectionGenerator.class,
+			AntenatalTestingAndSurveillanceSectionGenerator.class,
 			AllergiesSectionGenerator.class,
 			MedicationsSectionGenerator.class,
 			PlanOfCareSectionGenerator.class,
 			AdvanceDirectivesSectionGenerator.class,
-			ProblemSectionGenerator.class
+			ProblemSectionGenerator.class,
+			SurgicalProceduresSectionGenerator.class
 		);
 		
 		// retVal.getComponent().getBodyChoiceIfStructuredBody().getComponent().addAll(sections);

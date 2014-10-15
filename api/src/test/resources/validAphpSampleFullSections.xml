@@ -177,6 +177,55 @@
 	<component>
 		<structuredBody>
 
+      <component typeCode="COMP" contextConductionInd="true">
+        <section classCode="DOCSECT" moodCode="EVN">
+          <templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.11.2.2.1"/>
+          <code code="57060-6" codeSystem="2.16.840.1.113883.6.1"/>
+          <title language="en-US">Estimated Delivery Dates</title>
+          <text mediaType="text/x-hl7-text+xml"><content ID="delivery">October 10, 2014</content></text>
+          <entry typeCode="COMP" contextConductionInd="true">
+            <observation classCode="OBS" moodCode="EVN">
+              <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+              <templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.11.2.3.1"/>
+              <id root="3b49df5d-b329-404d-a518-5c27a6ea5ae1"/>
+              <code code="11778-8" codeSystem="2.16.840.1.113883.6.1" displayName="DELIVERY DATE (CLINICAL ESTIMATE)"/>
+              <statusCode code="completed"/>
+              <effectiveTime value="20141009090628.628-0400"/>
+              <value xsi:type="TS" value="20141009"/>
+              <author typeCode="AUT" contextControlCode="OP">
+                <time value="20141009090628.628-0400"/>
+                <assignedAuthor classCode="ASSIGNED">
+                  <id extension="123456789" root="2.16.840.1.113883.19.5.1" />
+                </assignedAuthor>
+              </author>
+              <text>
+              	<reference value="#delivery"/>
+              </text>
+              <entryRelationship typeCode="SPRT" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="8459e852-c76f-4005-b889-fa9afb8483b1"/>
+                  <code code="11779-6" codeSystem="2.16.840.1.113883.6.1" displayName="DELIVERY DATE (ESTIMATED FROM LAST MENSTRUAL PERIOD)" />
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.628-0400"/>
+                  <value xsi:type="TS" value="20141009090628.627-0400"/>
+                  <entryRelationship typeCode="CAUS" contextConductionInd="true">
+                    <observation classCode="OBS" moodCode="EVN">
+                      <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                      <id root="e2d38233-5a63-4c67-9a39-8ed5cf73b709"/>
+                      <code code="11888-5" codeSystem="2.16.840.1.113883.6.1" displayName="Gestational age US composite estimate"/>
+                      <statusCode code="completed"/>
+                      <effectiveTime value="20141009090628.632-0400"/>
+                      <value xsi:type="PQ" unit="wk" value="20"/>
+                    </observation>
+                  </entryRelationship>
+                </observation>
+              </entryRelationship>
+            </observation>
+          </entry>
+        </section>
+      </component>
+      
 			<component>
 				<section>
 					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.1.13.2.1' />
@@ -584,14 +633,15 @@
 										<low value="20070115141530" />
 									</effectiveTime>
 									<value xsi:type="CD" code="373270004" codeSystem="2.16.840.1.113883.6.96"
-										codeSystemName="SNOMED CT">
+										codeSystemName="SNOMED CT" displayName="Penicillin">
 									</value>
 									<participant typeCode="CSM">
 										<participantRole classCode="MANU">
 											<playingEntity classCode="MMAT">
 												<code code="373270004" codeSystem="2.16.840.1.113883.6.96"
-													codeSystemName="SNOMED CT">
+													codeSystemName="SNOMED CT" displayName="Penicillin">
 												</code>
+												<name>Penicillin</name>
 											</playingEntity>
 										</participantRole>
 									</participant>
@@ -605,7 +655,7 @@
 												codeSystemName="IHEActCode" />
 											<statusCode code="completed" />
 											<value xsi:type="CD" code="39579001" codeSystem="2.16.840.1.113883.6.96"
-												codeSystemName="SNOMED CT">
+												codeSystemName="SNOMED CT" displayName="Anaphylaxis" >
 											</value>
 										</observation>
 									</entryRelationship>
@@ -621,7 +671,7 @@
 											</text>
 											<statusCode code='completed' />
 											<value xsi:type='CD' code='H' codeSystem='2.16.840.1.113883.5.1063'
-												codeSystemName='ObservationValue' />
+												codeSystemName='ObservationValue' displayName="Severe"/>
 										</observation>
 									</entryRelationship>
 
@@ -634,6 +684,193 @@
 			</component>
 
 
+      <component typeCode="COMP" contextConductionInd="true">
+        <section classCode="DOCSECT" moodCode="EVN">
+          <templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.11.2.2.2"/>
+          <code code="57059-8" codeSystem="2.16.840.1.113883.6.1"/>
+          <title language="en-US">Antenatal Flowsheet Battery</title>
+          <text mediaType="text/x-hl7-text+xml">Some text</text>
+          <entry typeCode="COMP" contextConductionInd="true">
+            <observation classCode="OBS" moodCode="EVN">
+              <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+              <id root="6bffd12b-f11d-4127-b26c-726785ce6f5e"/>
+              <code code="8348-5" codeSystem="2.16.840.1.113883.6.1" displayName="Body weight Measured --pre pregnancy"/>
+              <statusCode code="completed"/>
+              <effectiveTime value="20141009090628.633-0400"/>
+              <value xsi:type="PQ" unit="kg" value="86"/>
+              <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+            </observation>
+          </entry>
+          <entry typeCode="COMP" contextConductionInd="true">
+            <organizer classCode="BATTERY" moodCode="EVN">
+              <templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.11.2.3.2"/>
+              <code code="57061-4" codeSystem="2.16.840.1.113883.6.1" displayName="ACOG VISIT SUMMARY BATTERY"/>
+              <statusCode code="completed"/>
+              <effectiveTime value="20141009090628.637-0400"/>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="384aba5e-9348-4b33-b768-222fa503eec6"/>
+                  <code code="57067-1" displayName="Fetal Body weight Estimated by palpation" codeSystem="2.16.840.1.113883.6.1"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.639-0400"/>
+                  <value xsi:type="PQ" unit="g" value="900"/>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="dc085dbe-b085-4b89-ba43-97432bc38fa2"/>
+                  <code code="11876-0" displayName="Fetal presentation by palpitation" codeSystem="2.16.840.1.113883.6.1"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.639-0400"/>
+                  <value xsi:type="CD" code="21882006" codeSystem="2.16.840.1.113883.6.96" displayName="Face presentation"/>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="964a219b-377a-4098-9281-45cbf022f04f"/>
+                  <code code="11948-7" displayName="Fetal Heart rate US" codeSystem="2.16.840.1.113883.6.1"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.639-0400"/>
+                  <value xsi:type="PQ" unit="/min" value="80"/>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="1c3a6b09-365e-4492-ae85-699427906a09"/>
+                  <code code="57088-7" displayName="Fetal Movement - Reported" codeSystem="2.16.840.1.113883.6.1"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.639-0400"/>
+                  <value xsi:type="CO" code="364755008" displayName="Finding of fetal movement activity" codeSystem="2.16.840.1.113883.6.96"/>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="456cc091-5bce-419e-b044-d5495e48537e"/>
+                  <code code="57069-7" displayName="Preterm labor symptoms" codeSystem="2.16.840.1.113883.6.1"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.639-0400"/>
+                  <value xsi:type="BL" value="false"/>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="72525c24-e383-4577-882b-0cd7b8d803ce"/>
+                  <code code="8480-6" displayName="INTRAVASCULAR SYSTOLIC" codeSystem="2.16.840.1.113883.6.1"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.639-0400"/>
+                  <value xsi:type="PQ" unit="mm[Hg]" value="120"/>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="73919328-0abb-4501-abe6-15b433e6ec98"/>
+                  <code code="8462-4" displayName="INTRAVASCULAR DIASTOLIC" codeSystem="2.16.840.1.113883.6.1"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.639-0400"/>
+                  <value xsi:type="PQ" unit="mm[Hg]" value="80"/>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="290cd994-2210-4ef2-b916-834075e11cc3"/>
+                  <code code="1753-3" displayName="Albumin [Presence] in Urine" codeSystem="2.16.840.1.113883.6.1"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.640-0400"/>
+                  <value xsi:type="CO" code="167275009" displayName="Urine protein test = + (finding)" codeSystem="2.16.840.1.113883.6.96"/>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="af3b22c6-b518-44ac-ab3a-e2dc9de46151"/>
+                  <code code="38208-5" displayName="Pain severity - Reported" codeSystem="2.16.840.1.113883.6.1"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.640-0400"/>
+                  <value xsi:type="CO" value="2"/>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+            </organizer>
+          </entry>
+        </section>
+      </component>
+
+     <component typeCode="COMP" contextConductionInd="true">
+        <section classCode="DOCSECT" moodCode="EVN">
+          <templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.21.2.5.1"/>
+          <code code="57078-8" codeSystem="2.16.840.1.113883.6.1"/>
+          <title language="en-US">Coded Antenatal Testing Battery</title>
+          <text mediaType="text/x-hl7-text+xml">Some text</text>
+          <entry typeCode="COMP" contextConductionInd="true">
+            <organizer classCode="BATTERY" moodCode="EVN">
+              <templateId root="1.3.6.1.4.1.19376.1.5.3.1.1.21.3.10"/>
+              <code code="XX-ANTENATALTESTINGBATTERY" displayName="Antenatal Testing Battery" codeSystem="2.16.840.1.113883.6.1"/>
+              <statusCode code="completed"/>
+              <effectiveTime value="20141009090628.640-0400"/>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="c1d5ab57-ff71-434f-bd14-4ab3099bd41c"/>
+                  <code code="11630-1" codeSystem="2.16.840.1.113883.6.1" displayName="Biophysical profile.amniotic fluid volume"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.642-0400"/>
+                  <value xsi:type="ED" representation="TXT" language="en-US">This is a string</value>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="fbfb14b7-8e57-4cb1-9f0d-b5520af3f0f8"/>
+                  <code code="11631-9" codeSystem="2.16.840.1.113883.6.1" displayName="Biophysical profile.body movement"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.642-0400"/>
+                  <value xsi:type="ED" representation="TXT" language="en-US">This is a string</value>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="8404696d-c6b1-428c-a215-242496e8dd9d"/>
+                  <code code="35096-7" codeSystem="2.16.840.1.113883.6.1" displayName="Ultrasound morphologic"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.642-0400"/>
+                  <value xsi:type="ED" representation="TXT" language="en-US">This is a string</value>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+              <component typeCode="COMP" contextConductionInd="true">
+                <observation classCode="OBS" moodCode="EVN">
+                  <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
+                  <id root="018636aa-b24e-4895-82a0-afdaca18b854"/>
+                  <code code="51659-1" codeSystem="2.16.840.1.113883.6.1" displayName="Hbs1 Antigen"/>
+                  <statusCode code="completed"/>
+                  <effectiveTime value="20141009090628.642-0400"/>
+                  <value xsi:type="ED" representation="TXT" language="en-US">This is a string</value>
+                  <interpretationCode code="N" codeSystem="2.16.840.1.113883.5.83" codeSystemName="ObservationInterpretation"/>
+                </observation>
+              </component>
+            </organizer>
+          </entry>
+        </section>
+      </component>
 
 		</structuredBody>
 	</component>

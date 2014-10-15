@@ -52,6 +52,16 @@
  			<column name="java_class_name" value="org.openmrs.module.shr.odd.generator.document.impl.CcdGenerator"/>
  			<column name="format_code" value="2.16.840.1.113883.10.20.1^^^&amp;HL7&amp;ISO"/>
  		</insert>
+	 	<insert tableName="odd_type">
+ 			<column name="uuid" value="7e9987ed-11bb-4a58-ae13-e1de45e3007e"/>
+ 			<column name="name" value="Antepartum Summary Document"/>
+ 			<column name="type_id" valueNumeric="2"/>
+ 			<column name="retired" valueNumeric="0"/>
+ 			<column name="creator" valueNumeric="2"/>
+ 			<column name="date_created" valueComputed="now()"/>
+ 			<column name="java_class_name" value="org.openmrs.module.shr.odd.generator.document.impl.ApsGenerator"/>
+ 			<column name="format_code" value="urn:ihe:pcc:aps:2007"/>
+ 		</insert>
 	</changeSet>
 	
 	<!--  Creates the On-Demand Documents Registration Table -->
@@ -72,6 +82,7 @@
 	   		<column name="creator" type="int">
 	   			<constraints nullable="false"/>
 	   		</column>
+	   		<column name="title" type="varchar(255)"/>
 	   		<column name="changed_by" type="int"/>
 	   		<column name="voided_by" type="int"/>
  			<column name="void_reason" type="varchar(255)"/>

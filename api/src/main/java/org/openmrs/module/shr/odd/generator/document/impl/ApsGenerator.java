@@ -62,7 +62,7 @@ public class ApsGenerator extends DocumentGeneratorImpl {
 			MedicationsSectionGenerator.class,
 			PlanOfCareSectionGenerator.class,
 			AdvanceDirectivesSectionGenerator.class,
-			ProblemSectionGenerator.class
+			ProblemSectionGenerator.class			
 		);
 		
 		// retVal.getComponent().getBodyChoiceIfStructuredBody().getComponent().addAll(sections);

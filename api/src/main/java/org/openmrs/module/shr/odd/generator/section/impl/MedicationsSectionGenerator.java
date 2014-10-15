@@ -90,20 +90,23 @@ public class MedicationsSectionGenerator extends SectionGeneratorImpl {
 				else if(data instanceof Obs)
 					sbadm = super.createSubstanceAdministration(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_ACTIVITY, CdaHandlerConstants.ENT_TEMPLATE_MEDICATIONS),(Obs)data);
 				
-				retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, sbadm));
+				if(sbadm != null)
+					retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, sbadm));
 			}
 			
-			retVal.setText(super.generateLevel3Text(retVal));
-			
 		}
-		else
+
+
+		if(retVal.getEntry().size() == 0)
 		{
 			// Generate the no medications known entry
 			SubstanceAdministration sbadm = super.createNoSubstanceAdministration(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_ACTIVITY, CdaHandlerConstants.ENT_TEMPLATE_MEDICATIONS, CdaHandlerConstants.ENT_TEMPLATE_MEDICATIONS_NORMAL_DOSING));
 			retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, sbadm));
-			retVal.setText(super.generateLevel3Text(retVal));
 		}
-		
+
+		if(retVal.getEntry().size() > 0)
+			retVal.setText(super.generateLevel3Text(retVal));
+
 		return retVal;
 	}
 	

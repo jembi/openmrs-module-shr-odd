@@ -258,7 +258,7 @@ public final class CdaTextUtil {
 	 */
 	private StructDocElementNode createCodeTextCell(CV<String> code) {
 		StructDocElementNode retVal = null;
-		if(code == null || code.getOriginalText() == null)
+		if(code == null)
 		{
 			retVal = new StructDocElementNode("td","N/A");
 		}
@@ -273,8 +273,10 @@ public final class CdaTextUtil {
 			code.getOriginalText().setReference(new TEL(String.format("#%s", id)));
 			retVal = cellNode;
 		}
-		else
+		else if(code.getDisplayName() != null)
 			retVal = new StructDocElementNode("td", code.getDisplayName());
+		else
+			retVal = new StructDocElementNode("td", String.format("%s [%s]", code.getCode(), code.getCodeSystem()));
 		retVal.setNamespaceUri("urn:hl7-org:v3");
 		return retVal;
     }

@@ -194,7 +194,11 @@ public final class OddMetadataUtil {
 	    	retVal.setCode(referenceTerm.getCode());
 	    	if(retVal instanceof CV)
 	    	{
-	    		((CV<?>)retVal).setDisplayName(referenceTerm.getDescription());
+	    		
+	    		if(referenceTerm.getDescription() == null)
+	    			((CV<?>)retVal).setDisplayName(referenceTerm.getName());
+	    		else
+	    			((CV<?>)retVal).setDisplayName(referenceTerm.getDescription());
 	    		if(originalConcept.getPreferredName(Context.getLocale()) != null)
 	    			((CV<?>)retVal).setOriginalText(new ED(originalConcept.getPreferredName(Context.getLocale()).getName(), Context.getLocale().toLanguageTag()));
 	    		((CV<?>)retVal).setCodeSystemName(referenceTerm.getConceptSource().getName());

@@ -17,7 +17,7 @@ public class PlanOfCareSectionGenerator extends GenericLevel2SectionGenerator {
 	 */
 	@Override
 	protected List<String> getTemplateIds() {
-		return Arrays.asList(CdaHandlerConstants.SCT_TEMPLATE_CCD_PLAN_OF_CARE);
+		return Arrays.asList(CdaHandlerConstants.SCT_TEMPLATE_CCD_PLAN_OF_CARE, CdaHandlerConstants.SCT_TEMPLATE_CARE_PLAN);
 	}
 
 	/**

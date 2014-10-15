@@ -134,6 +134,8 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 
 	protected static final String REGEX_IVL_PQ = "^\\{?([\\d.]*)?\\s(\\w*)?\\s?\\.*\\s?([\\d.]*)?\\s?([\\w]*?)?\\}?$";
 
+	private static final CD<String> s_drugTreatmentUnknownCode = new CD<String>("182904002", CdaHandlerConstants.CODE_SYSTEM_SNOMED, null, null, "Drug Treatment Unknown", null);
+	
 	// log
 	protected final Log log = LogFactory.getLog(this.getClass());
 	
@@ -676,6 +678,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	 * Create a substance administration from an observation
 	 */
 	public SubstanceAdministration createSubstanceAdministration(List<String> templateIds, Obs sourceObs) {
+		
 		SubstanceAdministration retVal = new SubstanceAdministration();
 
 		Reference original = this.createReferenceToDocument(sourceObs);
@@ -948,6 +951,10 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    			break;
 	    		case CdaHandlerConstants.CONCEPT_ID_PROCEDURE:
 					retVal.setCode(this.m_oddMetadataUtil.getStandardizedCode(component.getValueCoded(), null, CD.class));
+					
+					// Treatment is unknown?
+					if(retVal.getCode().semanticEquals(s_drugTreatmentUnknownCode) == BL.TRUE)
+						return null;
 					break;
 	    		default:
 	    			// The codes that need to be determined at runtime
@@ -1088,7 +1095,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		retVal.getEffectiveTime().add(new IVL<TS>(new TS(), TS.now()));
 		((IVL<TS>)retVal.getEffectiveTime().get(0)).getLow().setNullFlavor(NullFlavor.Unknown);
 		
-		retVal.setCode(new CD<String>("182904002", CdaHandlerConstants.CODE_SYSTEM_SNOMED, null, null, "Drug Treatment Unknown", null));
+		retVal.setCode(s_drugTreatmentUnknownCode);
 		
 		retVal.setStatusCode(ActStatus.Completed);
 		
@@ -1252,5 +1259,42 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		return retVal;
 
 	}
+
+	/**
+	 * Create a "no known problem" or "no known allergy" act
+	 */
+	protected Act createNoKnownProblemAct(List<String> templateIds, CD<String> code, CD<String> valueCode) {
+		
+		Act retVal = new Act(x_ActClassDocumentEntryAct.Act, x_DocumentActMood.Eventoccurrence);
+		retVal.setStatusCode(ActStatus.Completed);
+		retVal.setTemplateId(this.getTemplateIdList(templateIds));
+		retVal.setEffectiveTime(new TS(), TS.now());
+		retVal.getEffectiveTime().getLow().setNullFlavor(NullFlavor.Unknown);
+		retVal.setCode(new CD<String>());
+		retVal.getCode().setNullFlavor(NullFlavor.NotApplicable);
+		retVal.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
+		retVal.setId(SET.createSET(new II(UUID.randomUUID())));
+
+		// Observation
+		Observation probObs = new Observation(x_ActMoodDocumentObservation.Eventoccurrence);
+		probObs.setStatusCode(ActStatus.Completed);
+		probObs.setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION)));
+		if(templateIds.contains(CdaHandlerConstants.ENT_TEMPLATE_ALLERGIES_AND_INTOLERANCES_CONCERN))
+		{
+			probObs.getTemplateId().add(new II(CdaHandlerConstants.ENT_TEMPLATE_CCD_ALERT_OBSERVATION));
+			probObs.getTemplateId().add(new II(CdaHandlerConstants.ENT_TEMPLATE_ALLERGY_AND_INTOLERANCE_OBSERVATION));
+		}
+		probObs.setCode(code);
+		probObs.setValue(valueCode);
+		probObs.setEffectiveTime(new TS(), TS.now());
+		probObs.getEffectiveTime().getLow().setNullFlavor(NullFlavor.Unknown);
+		probObs.setId(SET.createSET(new II(UUID.randomUUID())));
+		probObs.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
+
+		retVal.getEntryRelationship().add(new EntryRelationship(x_ActRelationshipEntryRelationship.SUBJ, BL.TRUE, probObs));
+		retVal.getEntryRelationship().get(0).setInversionInd(BL.FALSE);
+		return retVal;
+		
+    }
 
 }

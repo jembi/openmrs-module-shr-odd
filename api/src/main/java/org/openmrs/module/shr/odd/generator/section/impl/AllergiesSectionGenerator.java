@@ -54,7 +54,7 @@ import org.openmrs.module.shr.cdahandler.obs.ExtendedObs;
 public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 	
 	// The section code
-	private final CE<String> m_sectionCode = new CE<String>("48765-2", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "PROBLEM LIST", null);
+	private final CE<String> m_sectionCode = new CE<String>("48765-2", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "Allergies, adverse reactions, alerts", null);
 	private final Concept m_sectionConcept;
 	
 	/**
@@ -216,31 +216,47 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 			requiredAllergyAssertions.clear();
 			super.generateLevel2Content(retVal);
 		}
+		else
+		{
+			
+			Act problemAct = super.createNoKnownProblemAct(
+				Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_ALLERGIES_AND_INTOLERANCES_CONCERN, CdaHandlerConstants.ENT_TEMPLATE_CONCERN_ENTRY, CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_ACT),
+				new CD<String>("ALG", CdaHandlerConstants.CODE_SYSTEM_ACT_CODE, null, null, "Other Allergy", null),
+				new CD<String>("160244002", CdaHandlerConstants.CODE_SYSTEM_SNOMED, null, null, "No known allergies", null));
+			retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, problemAct));
+			super.generateLevel3Text(retVal);
+
+		}
 		
 		// Now we add the mandatory assertions
 		for(Concept allergen : requiredAllergyAssertions)
 		{
 			Act allergenAct = new Act(x_ActClassDocumentEntryAct.Act, x_DocumentActMood.Eventoccurrence);
+			allergenAct.setTemplateId(super.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_ALLERGIES_AND_INTOLERANCES_CONCERN, CdaHandlerConstants.ENT_TEMPLATE_CONCERN_ENTRY, CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_ACT)));
 			allergenAct.setId(SET.createSET(new II(UUID.randomUUID())));
 			allergenAct.setCode(new CD<String>());
 			allergenAct.getCode().setNullFlavor(NullFlavor.NotApplicable);
 			allergenAct.setStatusCode(ActStatus.Completed);
-			allergenAct.setEffectiveTime(null, TS.now());
-			
+			allergenAct.setEffectiveTime(new TS(), TS.now());
+			allergenAct.getEffectiveTime().getLow().setNullFlavor(NullFlavor.Unknown);
+
 			// Set the author as the device!
 			allergenAct.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
 			
 			// Add then observation
 			Observation allergenObs = new Observation(x_ActMoodDocumentObservation.Eventoccurrence);
+			allergenObs.setTemplateId(super.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_CCD_ALERT_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_ALLERGY_AND_INTOLERANCE_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION)));
 			allergenObs.setNegationInd(BL.TRUE);
 			allergenObs.setId(SET.createSET(new II(UUID.randomUUID())));
 			allergenObs.setCode(new CD<String>("ALG", CdaHandlerConstants.CODE_SYSTEM_ACT_CODE, "ObservationIntoleranceType", null, "Other Allergy", null));
 			allergenObs.setStatusCode(ActStatus.Completed);
-			allergenObs.setEffectiveTime(new IVL<TS>());
-			allergenObs.getEffectiveTime().setNullFlavor(NullFlavor.NoInformation);
+			allergenObs.setEffectiveTime(new TS(), new TS());
+			allergenObs.getEffectiveTime().getHigh().setNullFlavor(NullFlavor.Unknown);
+			allergenObs.getEffectiveTime().getLow().setNullFlavor(NullFlavor.Unknown);
 			allergenObs.setValue(this.m_oddMetadataUtil.getStandardizedCode(allergen, CdaHandlerConstants.CODE_SYSTEM_SNOMED, CD.class));
 			allergenObs.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
 			allergenAct.getEntryRelationship().add(new EntryRelationship(x_ActRelationshipEntryRelationship.SUBJ, BL.TRUE, allergenObs));
+			allergenAct.getEntryRelationship().get(0).setInversionInd(BL.FALSE);
 			retVal.getEntry().add(new Entry(x_ActRelationshipEntry.DRIV, BL.TRUE, allergenAct));
 			
 		}

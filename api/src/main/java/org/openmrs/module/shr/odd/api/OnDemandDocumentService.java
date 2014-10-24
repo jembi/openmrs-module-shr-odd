@@ -11,7 +11,6 @@ import org.openmrs.Patient;
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.shr.odd.exception.OnDemandDocumentException;
 import org.openmrs.module.shr.odd.generator.DocumentGenerator;
-import org.openmrs.module.shr.odd.generator.document.impl.ApsGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;

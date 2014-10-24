@@ -20,11 +20,8 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.ModuleActivator;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
-import org.openmrs.module.shr.contenthandler.api.AlreadyRegisteredException;
 import org.openmrs.module.shr.contenthandler.api.ContentHandlerService;
-import org.openmrs.module.shr.contenthandler.api.InvalidContentTypeException;
 import org.openmrs.module.shr.odd.contenthandler.OnDemandDocumentContentHandler;
-import org.openmrs.module.shr.odd.exception.OnDemandDocumentException;
 import org.openmrs.module.shr.odd.subscriber.AntepartumSubscriber;
 import org.openmrs.module.shr.odd.subscriber.GenericDocumentSubscriber;
 

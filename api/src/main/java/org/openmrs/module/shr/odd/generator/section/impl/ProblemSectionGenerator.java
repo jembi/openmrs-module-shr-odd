@@ -4,14 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.marc.everest.datatypes.BL;
-import org.marc.everest.datatypes.NullFlavor;
-import org.marc.everest.datatypes.SD;
-import org.marc.everest.datatypes.TS;
 import org.marc.everest.datatypes.generic.CD;
 import org.marc.everest.datatypes.generic.CE;
-import org.marc.everest.datatypes.generic.IVL;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Act;
-import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Entry;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.EntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
@@ -24,9 +19,7 @@ import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentActMood;
 import org.openmrs.Concept;
 import org.openmrs.Obs;
 import org.openmrs.activelist.ActiveListItem;
-import org.openmrs.activelist.ActiveListType;
 import org.openmrs.activelist.Problem;
-import org.openmrs.activelist.ProblemModifier;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
@@ -45,7 +38,7 @@ public class ProblemSectionGenerator extends SectionGeneratorImpl {
 	 */
 	public ProblemSectionGenerator() throws DocumentImportException
 	{
-		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode);
+		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode, null);
 	}
 	
 	/**

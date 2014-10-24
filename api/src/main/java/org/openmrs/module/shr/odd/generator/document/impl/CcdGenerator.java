@@ -1,18 +1,14 @@
 package org.openmrs.module.shr.odd.generator.document.impl;
 
-import java.util.List;
-
 import org.marc.everest.datatypes.BL;
 import org.marc.everest.datatypes.II;
 import org.marc.everest.datatypes.generic.CE;
 import org.marc.everest.datatypes.generic.LIST;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Component2;
-import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Component3;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.StructuredBody;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActRelationshipHasComponent;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
-import org.openmrs.module.shr.cdahandler.processor.entry.impl.ihe.pcc.ImmunizationEntryProcessor;
 import org.openmrs.module.shr.odd.generator.section.impl.AdvanceDirectivesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.AllergiesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.FamilyHistorySectionGenerator;

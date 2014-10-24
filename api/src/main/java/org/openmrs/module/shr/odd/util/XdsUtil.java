@@ -2,7 +2,6 @@ package org.openmrs.module.shr.odd.util;
 
 import java.util.Date;
 
-import javax.sound.midi.MidiDevice.Info;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
@@ -10,6 +9,7 @@ import javax.xml.namespace.QName;
 import org.dcm4chee.xds2.common.XDSConstants;
 import org.dcm4chee.xds2.infoset.rim.AssociationType1;
 import org.dcm4chee.xds2.infoset.rim.ClassificationType;
+import org.dcm4chee.xds2.infoset.rim.ExternalIdentifierType;
 import org.dcm4chee.xds2.infoset.rim.ExtrinsicObjectType;
 import org.dcm4chee.xds2.infoset.rim.InternationalStringType;
 import org.dcm4chee.xds2.infoset.rim.LocalizedStringType;
@@ -20,7 +20,6 @@ import org.dcm4chee.xds2.infoset.rim.SubmitObjectsRequest;
 import org.dcm4chee.xds2.infoset.util.InfosetUtil;
 import org.marc.everest.datatypes.TS;
 import org.marc.everest.datatypes.generic.CV;
-import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.api.context.Context;
@@ -82,10 +81,9 @@ public final class XdsUtil {
 		registryRequest.setRegistryObjectList(new RegistryObjectListType());
 		ExtrinsicObjectType oddRegistryObject = new ExtrinsicObjectType();
 		// ODD
-		oddRegistryObject.setObjectType("urn:uuid:34268e47-fdf5-41a6-ba33-82133c465248");
 		oddRegistryObject.setId(String.format("Document%s", registration.getId().toString()));
 		oddRegistryObject.setMimeType("text/xml");
-		oddRegistryObject.setObjectType(XDSConstants.UUID_XDSDocumentEntry);
+//		oddRegistryObject.setObjectType(XDSConstants.UUID_XDSDocumentEntry);
 		oddRegistryObject.setName(new InternationalStringType());
 		oddRegistryObject.getName().getLocalizedString().add(new LocalizedStringType());
 		oddRegistryObject.getName().getLocalizedString().get(0).setValue(registration.getTitle());
@@ -103,9 +101,18 @@ public final class XdsUtil {
 			if(el.getEncounter().getVisit().getStopDatetime().after(lastEncounter))
 				lastEncounter = el.getEncounter().getVisit().getStopDatetime();
 		}
-		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_SERVICE_START_TIME, CdaDataUtil.getInstance().createTS(firstEncounter).getValue());
-		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_SERVICE_STOP_TIME, CdaDataUtil.getInstance().createTS(lastEncounter).getValue());
-
+		
+		TS firstEncounterTs = CdaDataUtil.getInstance().createTS(firstEncounter),
+				lastEncounterTs = CdaDataUtil.getInstance().createTS(lastEncounter),
+				creationTimeTs = TS.now();
+		
+		firstEncounterTs.setDateValuePrecision(TS.MINUTENOTIMEZONE);
+		lastEncounterTs.setDateValuePrecision(TS.MINUTENOTIMEZONE);
+		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_SERVICE_START_TIME, firstEncounterTs.getValue());
+		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_SERVICE_STOP_TIME, lastEncounterTs.getValue());
+		
+		oddRegistryObject.setObjectType("urn:uuid:34268e47-fdf5-41a6-ba33-82133c465248");
+		
 		// Add source patient information
 		TS patientDob = CdaDataUtil.getInstance().createTS(registration.getPatient().getBirthdate());
 		patientDob.setDateValuePrecision(TS.DAY);
@@ -116,10 +123,11 @@ public final class XdsUtil {
 			String.format("PID-7|%s", patientDob.getValue()),
 			String.format("PID-8|%s", registration.getPatient().getGender())
 			);
+		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_LANGUAGE_CODE, Context.getLocale().toLanguageTag());
 		
 		// Unique identifier
-		InfosetUtil.setExternalIdentifierValue(XDSConstants.UUID_XDSDocumentEntry_uniqueId, registration.getAccessionNumber(), oddRegistryObject);
-		InfosetUtil.setExternalIdentifierValue(XDSConstants.UUID_XDSDocumentEntry_patientId, this.getPatientIdentifier(registration.getPatient()), oddRegistryObject);
+		this.addExtenalIdentifier(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_uniqueId, registration.getAccessionNumber());
+		this.addExtenalIdentifier(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_patientId, this.getPatientIdentifier(registration.getPatient()));
 		
 		// Set classifications
 		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_classCode, "code", "codingScheme");
@@ -141,14 +149,15 @@ public final class XdsUtil {
 		this.addCodedValueClassification(regPackage, XDSConstants.UUID_XDSSubmissionSet_contentTypeCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystem());
 		
 		// Submission set external identifiers
-		InfosetUtil.setExternalIdentifierValue(XDSConstants.UUID_XDSSubmissionSet_uniqueId, registration.getAccessionNumber() + "." + now.getValue(), regPackage);
-		InfosetUtil.setExternalIdentifierValue(XDSConstants.UUID_XDSSubmissionSet_sourceId, registration.getAccessionNumber(), regPackage);
-		InfosetUtil.setExternalIdentifierValue(XDSConstants.UUID_XDSSubmissionSet_patientId, this.getPatientIdentifier(registration.getPatient()), regPackage);
 
+		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_uniqueId, registration.getAccessionNumber() + ".1." + now.getValue());
+		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_sourceId, registration.getAccessionNumber());
+		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_patientId, this.getPatientIdentifier(registration.getPatient()));
+		
 		// Add the eo to the submission
 		registryRequest.getRegistryObjectList().getIdentifiable().add(
 			new JAXBElement<ExtrinsicObjectType>(
-					new QName("ExtinsicObject"),
+					new QName("urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0","ExtrinsicObject"),
 					ExtrinsicObjectType.class,
 					oddRegistryObject
 				)
@@ -157,7 +166,7 @@ public final class XdsUtil {
 		// Add the package to the submission
 		registryRequest.getRegistryObjectList().getIdentifiable().add(
 			new JAXBElement<RegistryPackageType>(
-					new QName("RegistryPackage"),
+					new QName("urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0","RegistryPackage"),
 					RegistryPackageType.class,
 					regPackage
 				)
@@ -166,7 +175,7 @@ public final class XdsUtil {
 		// Add classification for the submission set
 		registryRequest.getRegistryObjectList().getIdentifiable().add(
 			new JAXBElement<ClassificationType>(
-					new QName("Classification"), 
+					new QName("urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0", "Classification"), 
 					ClassificationType.class, 
 					new ClassificationType() {{
 						setId("cl01");
@@ -185,7 +194,7 @@ public final class XdsUtil {
 		InfosetUtil.addOrOverwriteSlot(association, XDSConstants.SLOT_NAME_SUBMISSIONSET_STATUS, "Original");
 		registryRequest.getRegistryObjectList().getIdentifiable().add(
 			new JAXBElement<AssociationType1>(
-					new QName("Association"), 
+					new QName("urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0", "Association"), 
 					AssociationType1.class, 
 					association)
 			);
@@ -199,6 +208,20 @@ public final class XdsUtil {
         }
     }
 
+	/**
+	 * Add external identifier
+	 */
+	private ExternalIdentifierType addExtenalIdentifier(final RegistryObjectType classifiedObj, final String uuid, final String id) throws JAXBException {
+	
+		ExternalIdentifierType retVal = new ExternalIdentifierType();
+		retVal.setRegistryObject(classifiedObj.getId());
+		retVal.setIdentificationScheme(uuid);
+		retVal.setValue(id);
+		retVal.setId(String.format("eid%s", classifiedObj.getExternalIdentifier().size()));
+		classifiedObj.getExternalIdentifier().add(retVal);
+		return retVal;
+	}
+	
 	/**
 	 * Create a codified value classification
 	 * @throws JAXBException 

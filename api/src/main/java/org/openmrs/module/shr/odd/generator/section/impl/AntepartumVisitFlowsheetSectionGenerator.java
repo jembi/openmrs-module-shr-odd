@@ -39,7 +39,7 @@ public class AntepartumVisitFlowsheetSectionGenerator extends SectionGeneratorIm
 	 */
 	public AntepartumVisitFlowsheetSectionGenerator() throws DocumentImportException
 	{
-		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode);
+		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode, null);
 	}
 	
 	/**

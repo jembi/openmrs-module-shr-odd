@@ -1,8 +1,5 @@
 package org.openmrs.module.shr.odd.generator.section.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.shr.odd.generator.SectionGenerator;

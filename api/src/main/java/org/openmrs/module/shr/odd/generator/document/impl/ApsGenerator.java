@@ -9,22 +9,15 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Component2;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.StructuredBody;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActRelationshipHasComponent;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
-import org.openmrs.module.shr.cdahandler.processor.entry.impl.ihe.pcc.AntepartumFlowsheetBatteryEntryProcessor;
-import org.openmrs.module.shr.contenthandler.api.CodedValue;
 import org.openmrs.module.shr.odd.generator.section.impl.AdvanceDirectivesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.AllergiesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.AntenatalTestingAndSurveillanceSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.AntepartumVisitFlowsheetSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.EstimatedDeliveryDatesSectionGenerator;
-import org.openmrs.module.shr.odd.generator.section.impl.FamilyHistorySectionGenerator;
-import org.openmrs.module.shr.odd.generator.section.impl.ImmunizationsSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.MedicationsSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.PlanOfCareSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.ProblemSectionGenerator;
-import org.openmrs.module.shr.odd.generator.section.impl.ProceduresSectionGenerator;
-import org.openmrs.module.shr.odd.generator.section.impl.PurposeOfUseSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.SurgicalProceduresSectionGenerator;
-import org.openmrs.module.shr.odd.generator.section.impl.VitalSignsSectionGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 
 /**

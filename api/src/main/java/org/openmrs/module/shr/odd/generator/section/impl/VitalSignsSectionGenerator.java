@@ -6,13 +6,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Set;
+import java.util.UUID;
 
 import org.marc.everest.datatypes.BL;
 import org.marc.everest.datatypes.II;
 import org.marc.everest.datatypes.SD;
-import org.marc.everest.datatypes.doc.StructDocElementNode;
 import org.marc.everest.datatypes.generic.CD;
 import org.marc.everest.datatypes.generic.CE;
 import org.marc.everest.datatypes.generic.SET;
@@ -27,7 +26,6 @@ import org.openmrs.Concept;
 import org.openmrs.Obs;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
-import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 
 /**
  * Vital signs section generator
@@ -92,7 +90,7 @@ public class VitalSignsSectionGenerator extends SectionGeneratorImpl {
 				if(vitalSignTypes.size() == 0)
 					vitalSignTypes = this.m_conceptUtil.getOrCreateConcept(m_sectionCode).getSetMembers();
 				// Get all obs in organizers (that were created properly)
-				List<Obs> candidateObsInOrganizers = this.m_service.getObsGroupMembers(super.getAllObservationsOfType(this.m_conceptUtil.getConcept(m_organizerCode)), vitalSignTypes);
+				List<Obs> candidateObsInOrganizers = this.m_service.getObsGroupMembers(super.getAllObservationsOfType(this.m_conceptUtil.getConcept(m_organizerCode, null)), vitalSignTypes);
 				// Get all obs in just the sections if needed
 				candidateObsInOrganizers.addAll(this.m_service.getObsGroupMembers(super.getSectionObs(), vitalSignTypes));
 				

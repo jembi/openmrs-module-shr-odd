@@ -72,6 +72,11 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 		Context.getAdministrationService().saveGlobalProperty(saveDir);
 		executeDataSet(ACTIVE_LIST_INITIAL_XML);
 		executeDataSet(CIEL_LIST_INITIAL_XML);
+		// Register the handler for a generic
+		this.m_importService.subscribeImport(null, GenericDocumentSubscriber.getInstance());
+		this.m_importService.subscribeImport(CdaHandlerConstants.DOC_TEMPLATE_ANTEPARTUM_SUMMARY, AntepartumSubscriber.getInstance());
+		this.m_importService.subscribeImport(CdaHandlerConstants.DOC_TEMPLATE_ANTEPARTUM_HISTORY_AND_PHYSICAL, AntepartumSubscriber.getInstance());
+
 	}
 	
 	/**
@@ -116,35 +121,34 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 	@Test
 	public void testWasTriggerFired()
 	{
-		// Register the handler for a generic
-		this.m_importService.subscribeImport(null, GenericDocumentSubscriber.getInstance());
 		// First import the APS document
 		Visit visit = this.doParseCda("/validAphpSampleFullSections.xml");
 		// Get patient information by name
 		List<Patient> patient = Context.getPatientService().getPatients("Sarah Levin");
 		Assert.assertEquals(1, patient.size());
 		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
-		Assert.assertEquals(1, oddDocuments.size());
+		Assert.assertEquals(2, oddDocuments.size());
 	}
 	
 	/**
 	 * Test the generation of an CCD document
 	 */
 	@Test
-	public void testGenerateAPSDocument()
+	public void testGenerateAPSAndCCDDocument()
 	{
 		// Register the handler for a generic
-		this.m_importService.subscribeImport(CdaHandlerConstants.DOC_TEMPLATE_ANTEPARTUM_HISTORY_AND_PHYSICAL, AntepartumSubscriber.getInstance());
 		// First import the APS document
 		Visit visit = this.doParseCda("/validAphpSampleFullSections.xml");
 		// Get patient information by name
 		List<Patient> patient = Context.getPatientService().getPatients("Sarah Levin");
 		Assert.assertEquals(1, patient.size());
 		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
-		Assert.assertEquals(1, oddDocuments.size());
+		Assert.assertEquals(2, oddDocuments.size());
 		// Generate CCD
 		try {
 	        ClinicalDocument doc = this.m_oddService.generateOnDemandDocument(oddDocuments.get(0));
+	        log.error(CdaLoggingUtils.getCdaAsString(doc));
+	        doc = this.m_oddService.generateOnDemandDocument(oddDocuments.get(1));
 	        log.error(CdaLoggingUtils.getCdaAsString(doc));
 
         }
@@ -161,8 +165,6 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 	@Test
 	public void testGenerateCCDTwoEncounters()
 	{
-		// Register the handler for a generic
-		this.m_importService.subscribeImport(null, GenericDocumentSubscriber.getInstance());
 		// First import the APS document
 		Visit visit1 = this.doParseCda("/validAphpSamplePovich.xml"),
 				visit2 = this.doParseCda("/validAphpSamplePovich2.xml");
@@ -170,8 +172,9 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 		List<Patient> patient = Context.getPatientService().getPatients("Mary Levin");
 		Assert.assertEquals(1, patient.size());
 		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
-		Assert.assertEquals(1, oddDocuments.size());
-		Assert.assertEquals(2, oddDocuments.get(0).getEncounterLinks().size());
+		// One APS one CCD
+		Assert.assertEquals(3, oddDocuments.size());
+		Assert.assertEquals(2, oddDocuments.get(1).getEncounterLinks().size());
 		
 		// Generate CCD
 		try {
@@ -183,35 +186,7 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 	        fail(e.getMessage());
         }
 	}
-	
-	/**
-	 * Test the generation of an CCD document with two encounters
-	 */
-	@Test
-	public void testGenerateAPSTwoEncounters()
-	{
-		// Register the handler for a generic
-		this.m_importService.subscribeImport(CdaHandlerConstants.DOC_TEMPLATE_ANTEPARTUM_HISTORY_AND_PHYSICAL, AntepartumSubscriber.getInstance());
-		// First import the APS document
-		Visit visit1 = this.doParseCda("/validAphpSamplePovich.xml"),
-				visit2 = this.doParseCda("/validAphpSamplePovich2.xml");
-		// Get patient information by name
-		List<Patient> patient = Context.getPatientService().getPatients("Mary Levin");
-		Assert.assertEquals(1, patient.size());
-		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
-		Assert.assertEquals(1, oddDocuments.size());
-		Assert.assertEquals(2, oddDocuments.get(0).getEncounterLinks().size());
-		
-		// Generate CCD
-		try {
-	        ClinicalDocument doc = this.m_oddService.generateOnDemandDocument(oddDocuments.get(0));
-	        log.error(CdaLoggingUtils.getCdaAsString(doc));
-        }
-        catch (Exception e) {
-	        log.error("Error generated", e);
-	        fail(e.getMessage());
-        }
-	}
+
 	
 	/**
 	 * Test the generation of a CCD document with problems and meds
@@ -220,8 +195,6 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 	@Test
 	public void testGenerateCCDFullProblemsAndMeds()
 	{
-		// Register the handler for a generic
-		this.m_importService.subscribeImport(null, GenericDocumentSubscriber.getInstance());
 		// First import the APS document
 		Visit visit1 = this.doParseCda("/validCdaLevel3Sample.xml");
 		// Get patient information by name

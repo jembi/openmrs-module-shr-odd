@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javassist.NotFoundException;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,7 +16,6 @@ import org.openmrs.EncounterType;
 import org.openmrs.Patient;
 import org.openmrs.Provider;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.shr.cdahandler.contenthandler.CdaContentHandler;
 import org.openmrs.module.shr.cdahandler.everest.EverestUtil;
 import org.openmrs.module.shr.contenthandler.api.Content;
 import org.openmrs.module.shr.contenthandler.api.ContentHandler;

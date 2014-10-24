@@ -37,7 +37,7 @@ public class AntenatalTestingAndSurveillanceSectionGenerator extends SectionGene
 	 */
 	public AntenatalTestingAndSurveillanceSectionGenerator() throws DocumentImportException
 	{
-		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode);
+		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode, null);
 	}
 	
 

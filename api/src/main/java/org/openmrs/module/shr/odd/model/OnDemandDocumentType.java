@@ -1,7 +1,5 @@
 package org.openmrs.module.shr.odd.model;
 
-import java.util.UUID;
-
 import org.openmrs.BaseOpenmrsMetadata;
 
 /**

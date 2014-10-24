@@ -10,13 +10,11 @@ import org.marc.everest.datatypes.ENXP;
 import org.marc.everest.datatypes.II;
 import org.marc.everest.datatypes.NullFlavor;
 import org.marc.everest.datatypes.PN;
-import org.marc.everest.datatypes.SD;
 import org.marc.everest.datatypes.TS;
 import org.marc.everest.datatypes.generic.CD;
 import org.marc.everest.datatypes.generic.CE;
 import org.marc.everest.datatypes.generic.CS;
 import org.marc.everest.datatypes.generic.CV;
-import org.marc.everest.datatypes.generic.IVL;
 import org.marc.everest.datatypes.generic.LIST;
 import org.marc.everest.datatypes.generic.SET;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Act;
@@ -41,7 +39,6 @@ import org.openmrs.Obs;
 import org.openmrs.activelist.ActiveListItem;
 import org.openmrs.activelist.Allergy;
 import org.openmrs.activelist.AllergySeverity;
-import org.openmrs.activelist.Problem;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
@@ -62,7 +59,7 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 	 */
 	public AllergiesSectionGenerator() throws DocumentImportException
 	{
-		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode);
+		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode, null);
 	}
 	
 	@Override

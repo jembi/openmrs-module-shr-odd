@@ -1,9 +1,14 @@
 package org.openmrs.module.shr.odd.api.impl;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.jfree.util.Log;
+import org.marc.everest.formatters.interfaces.IFormatterGraphResult;
+import org.marc.everest.formatters.xml.its1.XmlIts1Formatter;
+import org.marc.everest.interfaces.IResultDetail;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.openmrs.Concept;
 import org.openmrs.Encounter;
@@ -12,6 +17,7 @@ import org.openmrs.Order;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
+import org.openmrs.module.shr.cdahandler.everest.EverestUtil;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.api.db.OnDemandDocumentDAO;
 import org.openmrs.module.shr.odd.exception.OnDemandDocumentException;
@@ -64,7 +70,18 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
         
         if(generatorInstance == null)
         	throw new OnDemandDocumentException("Could not create document generator");
-        return generatorInstance.generateDocument(registrationEntry);
+        ClinicalDocument doc = generatorInstance.generateDocument(registrationEntry);
+        
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		
+		// Output
+		XmlIts1Formatter fmtr = EverestUtil.createFormatter();
+		IFormatterGraphResult result = fmtr.graph(bos, doc);
+		for(IResultDetail dtl : result.getDetails())
+			if(dtl.getException() != null)
+				dtl.getException().printStackTrace();
+		Log.debug(new String(bos.toByteArray()));
+        return doc;
 		
     }
 

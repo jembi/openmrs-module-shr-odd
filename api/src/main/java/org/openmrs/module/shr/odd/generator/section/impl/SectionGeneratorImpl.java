@@ -1294,4 +1294,32 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		
     }
 
+	
+	/**
+	 * Create an external references act
+	 */
+	protected Act createExternalReferenceAct(Obs data) {
+		 Act retVal = new Act(x_ActClassDocumentEntryAct.Act, x_DocumentActMood.Eventoccurrence);
+		retVal.setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_EXTERNAL_REFERENCES_ENTRY)));
+		retVal.setId(SET.createSET(new II(UUID.randomUUID())));
+		retVal.setCode(new CD<String>());
+		retVal.getCode().setNullFlavor(NullFlavor.NotApplicable);
+		
+		for(Obs subObs : this.m_service.getObsGroupMembers(data))
+		{
+			Reference ref = new Reference();
+			ref.setTypeCode(this.m_oddMetadataUtil.getStandardizedCode(subObs.getConcept(), x_ActRelationshipExternalReference.ELNK.getCodeSystem(), CS.class));
+			ref.setExternalActChoice(new ExternalDocument());
+			ref.getExternalActChoiceIfExternalDocument().setId(SET.createSET(this.m_cdaDataUtil.parseIIFromString(subObs.getValueText())));
+			if(subObs.getComment() != null)
+				ref.getExternalActChoiceIfExternalDocument().setText(new ED(subObs.getComment()));
+			retVal.getReference().add(ref);
+		}
+		
+		if(data.getComment() != null)
+			retVal.setText(new ED(data.getComment()));
+		
+		return retVal;
+	}
+
 }

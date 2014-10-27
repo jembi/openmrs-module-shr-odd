@@ -82,11 +82,7 @@ public class ProceduresSectionGenerator extends SectionGeneratorImpl {
 			{
 				if(data.getVoided()) continue;
 				
-				Procedure procedure = null;
-				if(data instanceof ProcedureOrder)
-					procedure = super.createProcedure(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROCEDURE_ACTIVITY, CdaHandlerConstants.ENT_TEMPLATE_PROCEDURE_ENTRY), (ProcedureOrder)data);
-				else if(data instanceof Obs)
-					procedure = super.createProcedure(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROCEDURE_ACTIVITY, CdaHandlerConstants.ENT_TEMPLATE_PROCEDURE_ENTRY),(Obs)data);
+				Procedure procedure = super.createProcedure(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROCEDURE_ACTIVITY, CdaHandlerConstants.ENT_TEMPLATE_PROCEDURE_ENTRY),(Obs)data);
 				
 				if(procedure != null)
 					retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, procedure));

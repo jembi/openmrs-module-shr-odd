@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.jfree.util.Log;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.marc.everest.formatters.interfaces.IFormatterGraphResult;
 import org.marc.everest.formatters.xml.its1.XmlIts1Formatter;
 import org.marc.everest.interfaces.IResultDetail;
@@ -35,7 +36,8 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
 	
 	// Dao
 	private OnDemandDocumentDAO dao;
-
+	private Log log = LogFactory.getLog(OnDemandDocumentServiceImpl.class);
+	
 	/**
 	 * Save an on-demand document
 	 * @see org.openmrs.module.shr.odd.api.OnDemandDocumentService#saveOnDemandDocument(org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration)
@@ -74,13 +76,8 @@ public class OnDemandDocumentServiceImpl extends BaseOpenmrsService implements O
         
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		
-		// Output
-		XmlIts1Formatter fmtr = EverestUtil.createFormatter();
-		IFormatterGraphResult result = fmtr.graph(bos, doc);
-		for(IResultDetail dtl : result.getDetails())
-			if(dtl.getException() != null)
-				dtl.getException().printStackTrace();
-		Log.debug(new String(bos.toByteArray()));
+		// Audit
+		
         return doc;
 		
     }

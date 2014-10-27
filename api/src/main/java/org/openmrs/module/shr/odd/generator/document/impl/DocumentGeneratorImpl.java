@@ -69,7 +69,7 @@ public abstract class DocumentGeneratorImpl implements DocumentGenerator {
 		TS idDate = TS.now();
 		idDate.setDateValuePrecision(TS.SECONDNOTIMEZONE);
 		String oddRoot = String.format("%s.%s", this.m_configuration.getOnDemandDocumentRoot(), oddRegistration.getType().getId()),
-				oddExtension = String.format("%s-%s", oddRegistration.getPatient().getId(), idDate.toString());
+				oddExtension = String.format("%s.%s", oddRegistration.getPatient().getId(), idDate.toString());
 		log.info(String.format("Preparing document %s^^^&%s&ISO", oddExtension, oddRoot));
 		
 		// Set core properties

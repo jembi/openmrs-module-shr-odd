@@ -58,5 +58,15 @@
 	</messages>
 	<!-- /Internationalization -->
 
+	<globalProperty>
+		<property>shr-odd.useCcdPlus</property>
+		<defaultValue>false</defaultValue>
+		<description>When true, indicates the SHR should generate on-demand documents using CCD+ instead of CCD</description>
+	</globalProperty>
+	<globalProperty>
+		<property>shr-odd.id.regex</property>
+		<defaultValue>^(.*)?\\^\\^\\^\\&amp;(.*)?\\&amp;ISO$</defaultValue>
+		<description>Indicates the format of identifiers stored in the OpenSHR datastore</description>
+	</globalProperty>
 </module>
 

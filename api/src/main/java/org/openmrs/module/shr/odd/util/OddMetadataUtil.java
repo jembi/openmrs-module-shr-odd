@@ -6,6 +6,7 @@ import java.util.Queue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.marc.everest.datatypes.ED;
+import org.marc.everest.datatypes.II;
 import org.marc.everest.datatypes.NullFlavor;
 import org.marc.everest.datatypes.generic.CD;
 import org.marc.everest.datatypes.generic.CE;
@@ -146,14 +147,20 @@ public final class OddMetadataUtil {
 	        
 	        // No SAME-AS but maybe a narrower code?
 	        if(preferredCodes.size() == 0)
-	        	preferredCodes.add(narrowerCodes.poll());
-	        
+	        {
+	        	if(narrowerCodes.size() > 0)
+	        		preferredCodes.add(narrowerCodes.poll());
+	        	else
+	        		log.warn(String.format("Could not find code for %s in %s", value, targetCodeSystem));
+	        }
 	        // Now that we have a term, let's see if we can select a preferred term
 	        ConceptReferenceTerm preferredTerm = preferredCodes.poll();
 	        if(preferredTerm == null) // No preferred terms!
 	        {
 	        	retVal = clazz.newInstance();
 	        	retVal.setNullFlavor(NullFlavor.Other);
+	        	if(retVal instanceof CV)
+	        		((CV<?>)retVal).setCodeSystem(targetCodeSystemName);
 	        }
 	        else
 	        	retVal = this.createCode(preferredTerm, clazz);
@@ -176,7 +183,9 @@ public final class OddMetadataUtil {
 		        while(preferredCodes.peek() != null)
 		        {
 		        	preferredTerm = preferredCodes.poll();
-		        	translations.add(this.createCode(preferredTerm,  CD.class));
+		        	CD<?> trans = this.createCode(preferredTerm, CD.class);
+	        		if(trans != null)
+	        			translations.add(trans);
 		        }
 
 		        // Fallback to others if we're going for broke
@@ -184,7 +193,11 @@ public final class OddMetadataUtil {
 		        	while(equivalentCodes.peek() != null)
 		        	{
 		        		preferredTerm = equivalentCodes.poll();
-		        		translations.add(this.createCode(preferredTerm, CD.class));
+		        		
+		        		// Does the equivalent code have an oid?
+		        		CD<?> trans = this.createCode(preferredTerm, CD.class);
+		        		if(trans != null)
+		        			translations.add(trans);
 		        	}
 		        
 		        // Add translations if any
@@ -217,7 +230,20 @@ public final class OddMetadataUtil {
 	    		else
 	    			((CV<?>)retVal).setDisplayName(referenceTerm.getDescription());
 	    		((CV<?>)retVal).setCodeSystemName(referenceTerm.getConceptSource().getName());
-	    		((CV<?>)retVal).setCodeSystem(this.m_conceptUtil.mapConceptSourceNameToOid(referenceTerm.getConceptSource().getName()));
+	    		
+	    		String codeSystemHl7 = referenceTerm.getConceptSource().getHl7Code();
+	    		if(codeSystemHl7 != null && II.isRootOid(new II(codeSystemHl7)))
+    			{
+    				((CV<?>)retVal).setCodeSystem(this.m_conceptUtil.mapConceptSourceNameToOid(referenceTerm.getConceptSource().getName()));
+    			}
+	    		else
+	    		{
+	    			codeSystemHl7 = this.m_conceptUtil.mapConceptSourceNameToOid(referenceTerm.getConceptSource().getName());
+	    			if(II.isRootOid(new II(codeSystemHl7)))
+	    				((CV<?>)retVal).setCodeSystem(codeSystemHl7);
+	    			else 
+	    				return null;
+	    		}
 	    	}
 	    	
 	    	return retVal;

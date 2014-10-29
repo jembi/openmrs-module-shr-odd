@@ -171,7 +171,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		// Localization for title
 		ResourceBundle strings = ResourceBundle.getBundle("messages");
 		retVal.setTitle(strings.getString(String.format("shr-odd.%s", titleMessageKey)));
-		retVal.setText(new SD());
+		//retVal.setText(new SD());
 		retVal.setCode(code);
 		retVal.setId(new II(UUID.randomUUID()));
 		// Set templates
@@ -297,6 +297,8 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		StructDocElementNode listNode = text.createElement("list", DatatypeFormatter.NS_HL7);
 		for(Obs obs : sectionObs)
 		{
+			if(obs.getVoided())
+				continue; // skip voided
 			StructDocElementNode listItem = listNode.addElement("item");
 			listItem.addElement("caption", String.format("From %s on %s (created by %s))", obs.getEncounter().getEncounterType().getName(), obs.getObsDatetime(), obs.getCreator().getPersonName()));
 			

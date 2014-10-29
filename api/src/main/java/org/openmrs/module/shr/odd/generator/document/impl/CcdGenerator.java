@@ -11,7 +11,14 @@ import org.marc.everest.rmim.uv.cdar2.vocabulary.ActRelationshipHasComponent;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.odd.generator.section.impl.AdvanceDirectivesSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.AllergiesSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.AntenatalTestingAndSurveillanceSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.AntepartumVisitFlowsheetSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.BirthPlanSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.FamilyHistorySectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.FunctionalStatusSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.HistoryOfBloodTransfusionSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.HistoryOfPresentIllnessSectionGenerator;
+import org.openmrs.module.shr.odd.generator.section.impl.HistoryOfSurgicalProceduresSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.ImmunizationsSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.MedicationsSectionGenerator;
 import org.openmrs.module.shr.odd.generator.section.impl.PlanOfCareSectionGenerator;
@@ -48,26 +55,56 @@ public class CcdGenerator extends DocumentGeneratorImpl {
 			new II(CdaHandlerConstants.DOC_TEMPLATE_CDA4CDT)
 		));
 		
+		if(this.m_configuration.getUseCcdPlus())
+			retVal.getTemplateId().add(new II(CdaHandlerConstants.DOC_TEMPLATE_CCD_PLUS));
+		
 		// CCD body must be structured
 		retVal.setComponent(new Component2(ActRelationshipHasComponent.HasComponent, BL.TRUE));
 		retVal.getComponent().setBodyChoice(new StructuredBody());
 		
 		// Now add the required sections
-		super.generateSections(oddRegistration,
-			retVal,
-			PurposeOfUseSectionGenerator.class,
-			AdvanceDirectivesSectionGenerator.class,
-			PlanOfCareSectionGenerator.class,
-			VitalSignsSectionGenerator.class,
-			ProblemSectionGenerator.class,
-			AllergiesSectionGenerator.class,
-			FamilyHistorySectionGenerator.class,
-			MedicationsSectionGenerator.class,
-			ImmunizationsSectionGenerator.class,
-			ProceduresSectionGenerator.class,
-			SocialHistorySectionGenerator.class,
-			ResultsSectionGenerator.class
-		);
+		// HACK: CCD+ Should be configurable in some way...
+		if(this.m_configuration.getUseCcdPlus())
+			super.generateSections(oddRegistration,
+				retVal,
+				PurposeOfUseSectionGenerator.class,
+				AdvanceDirectivesSectionGenerator.class,
+				PlanOfCareSectionGenerator.class,
+				VitalSignsSectionGenerator.class,
+				ProblemSectionGenerator.class,
+				AllergiesSectionGenerator.class,
+				FamilyHistorySectionGenerator.class,
+				MedicationsSectionGenerator.class,
+				ImmunizationsSectionGenerator.class,
+				ProceduresSectionGenerator.class,
+				SocialHistorySectionGenerator.class,
+				ResultsSectionGenerator.class,
+				AntepartumVisitFlowsheetSectionGenerator.class,
+				AntenatalTestingAndSurveillanceSectionGenerator.class,
+				HistoryOfSurgicalProceduresSectionGenerator.class,
+				HistoryOfPresentIllnessSectionGenerator.class,
+				BirthPlanSectionGenerator.class, 
+				HistoryOfBloodTransfusionSectionGenerator.class,
+				FunctionalStatusSectionGenerator.class
+				//HistoryOfPastIllnessSectionGenerator.class,
+				//PregnancyHistorySectionGenerator.class
+			);
+		else
+			super.generateSections(oddRegistration,
+				retVal,
+				PurposeOfUseSectionGenerator.class,
+				AdvanceDirectivesSectionGenerator.class,
+				PlanOfCareSectionGenerator.class,
+				VitalSignsSectionGenerator.class,
+				ProblemSectionGenerator.class,
+				AllergiesSectionGenerator.class,
+				FamilyHistorySectionGenerator.class,
+				MedicationsSectionGenerator.class,
+				ImmunizationsSectionGenerator.class,
+				ProceduresSectionGenerator.class,
+				SocialHistorySectionGenerator.class,
+				ResultsSectionGenerator.class
+			);
 		
 		// retVal.getComponent().getBodyChoiceIfStructuredBody().getComponent().addAll(sections);
 		

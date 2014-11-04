@@ -1324,4 +1324,45 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		return retVal;
 	}
 
+	/**
+	 * Correct a code to a more preferred code system
+	 */
+	protected void correctCode(CE<?> code, String... codeSystems) {
+
+		if(code.isNull())
+			return;
+
+		// Already preferred
+		for(String cs : codeSystems)
+			if(code.getCodeSystem().equals(cs))
+				return; 
+		
+		// Get translation
+		code.getTranslation().add(new CD(code.getCode(), code.getCodeSystem(), code.getCodeSystemName(), code.getCodeSystemVersion(), code.getDisplayName(), null));
+		// Move the first translation to the root code
+		for(String cs : codeSystems)
+		{
+			for(CD<?> tx : code.getTranslation())
+				if(tx.getCodeSystem().equals(cs))
+				{
+					code.setCode(tx.getCode());
+					code.setCodeSystem(tx.getCodeSystem());
+					code.setDisplayName(tx.getDisplayName());
+					code.setCodeSystemName(tx.getCodeSystemName());
+					code.setCodeSystemVersion(tx.getCodeSystemVersion());
+					code.getTranslation().remove(tx);
+					return;
+				}
+		}
+		
+		// Not found :| ... Null Flavor it with OTH
+		code.setNullFlavor(NullFlavor.Other);
+		code.setCodeSystemName(null);
+		code.setDisplayName(null);
+		code.setCodeSystemVersion(null);
+		code.setCode(null);
+		code.setCodeSystem(codeSystems[0]);
+		
+    }
+
 }

@@ -106,6 +106,8 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 					problemObs, 
 					CdaHandlerConstants.CODE_SYSTEM_SNOMED);
 				
+				super.correctCode((CD<?>)problemObservation.getValue(), CdaHandlerConstants.CODE_SYSTEM_RXNORM, CdaHandlerConstants.CODE_SYSTEM_SNOMED, CdaHandlerConstants.CODE_SYSTEM_ICD_10);
+				
 				// Now for allergy information
 				String typeMnemonic = "", display = "";
 				switch(allergy.getAllergyType())
@@ -151,6 +153,8 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 				PlayingEntity playingEntity = new PlayingEntity(EntityClassRoot.ManufacturedMaterial);
 				
 				playingEntity.setCode(this.m_oddMetadataUtil.getStandardizedCode(allergy.getAllergen(), null, CE.class));
+				super.correctCode(playingEntity.getCode(), CdaHandlerConstants.CODE_SYSTEM_RXNORM, CdaHandlerConstants.CODE_SYSTEM_SNOMED, CdaHandlerConstants.CODE_SYSTEM_ICD_10);
+
 				playingEntity.setName(SET.createSET(new PN(Arrays.asList(new ENXP(allergy.getAllergen().getName().getName())))));
 				problemObservation.getParticipant().get(0).getParticipantRole().setPlayingEntityChoice(playingEntity);
 				
@@ -194,6 +198,9 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 	                	EntryRelationship manifestation = new EntryRelationship(x_ActRelationshipEntryRelationship.MFST, BL.TRUE);
 	                	manifestation.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_MANIFESTATION_RELATION)));
 	                	Observation manifestationObservation = super.createObs(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_REACTION_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION), eobs, CdaHandlerConstants.CODE_SYSTEM_IHE_ACT_CODE);
+	                	if(manifestationObservation.getValue() instanceof CE)
+	                		super.correctCode((CE)manifestationObservation.getValue(), CdaHandlerConstants.CODE_SYSTEM_ICD_10, CdaHandlerConstants.CODE_SYSTEM_SNOMED);
+
 	                	manifestation.setClinicalStatement(manifestationObservation);
 	                	problemObservation.getEntryRelationship().add(manifestation);
 	                }

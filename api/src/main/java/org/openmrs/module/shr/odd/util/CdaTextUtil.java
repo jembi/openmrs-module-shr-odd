@@ -470,7 +470,7 @@ public final class CdaTextUtil {
 		StructDocElementNode authorCol = retVal.addElement("td");
 		for(Author aut : observation.getAuthor())
 		{
-			authorCol.getChildren().add(this.generateAuthorDisplay(aut.getAssignedAuthor().getId().get(0), document));
+			authorCol.getChildren().add(this.generateAuthorDisplay(aut, document));
 			authorCol.addElement("br");
 		}
 		
@@ -616,17 +616,16 @@ public final class CdaTextUtil {
 	/**
 	 * Generate display for the author
 	 */
-	private StructDocTextNode generateAuthorDisplay(II authorId, ClinicalDocument document)
+	private StructDocTextNode generateAuthorDisplay(Author authorInfo, ClinicalDocument document)
 	{
 		// Find the author
-		for(Author aut : document.getAuthor())
-			if(aut.getAssignedAuthor().getId().contains(authorId))
-			{
-				if(aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson() != null)
-					return new StructDocTextNode(aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson().getName().get(0).toString());
-				else
-					return new StructDocTextNode(String.format("Device Authored : %s", aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedAuthoringDevice().getSoftwareName()));
-			}
+		if(authorInfo != null)
+		{
+			if(authorInfo.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson() != null)
+				return new StructDocTextNode(authorInfo.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson().getName().get(0).toString());
+			else
+				return new StructDocTextNode(String.format("Device Authored : %s", authorInfo.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedAuthoringDevice().getSoftwareName()));
+		}
 		return new StructDocTextNode("Unknown");
 	}
 	/**

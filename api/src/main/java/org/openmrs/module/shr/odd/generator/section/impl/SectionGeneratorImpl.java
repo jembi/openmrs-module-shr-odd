@@ -67,6 +67,7 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Reference;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Section;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.SubstanceAdministration;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Supply;
+import org.marc.everest.rmim.uv.cdar2.vocabulary.ActPriority;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActStatus;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ContextControl;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ObservationInterpretation;
@@ -91,6 +92,7 @@ import org.openmrs.Person;
 import org.openmrs.Provider;
 import org.openmrs.VisitAttribute;
 import org.openmrs.VisitAttributeType;
+import org.openmrs.Order.Urgency;
 import org.openmrs.activelist.ActiveListItem;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
@@ -136,52 +138,10 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	// log
 	protected final Log log = LogFactory.getLog(this.getClass());
 	
-	// Section concepts
-	protected abstract Concept getSectionObsGroupConcept();
-	
 	// The odd registration context
 	protected OnDemandDocumentRegistration m_registration;
-	protected ClinicalDocument m_documentContext;
 	
-	/**
-     * @see org.openmrs.module.shr.odd.generator.SectionGenerator#setRegistration(org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration)
-     */
-    @Override
-    public void setRegistration(OnDemandDocumentRegistration context) {
-    	this.m_registration = context;
-    }
-
-    /**
-     * Sets the clinical document context 
-     * @see org.openmrs.module.shr.odd.generator.SectionGenerator#setGeneratedDocument(org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument)
-     */
-    public void setGeneratedDocument(ClinicalDocument context)
-    {
-    	this.m_documentContext = context;
-    }
-    
-	/**
-	 * Create the specified section scaffolding
-	 */
-	public Section createSection(List<String> templateIds, String titleMessageKey, CE<String> code) {
-		Section retVal = new Section();
-		
-		// TODO: ID
-		
-		// Localization for title
-		ResourceBundle strings = ResourceBundle.getBundle("messages");
-		retVal.setTitle(strings.getString(String.format("shr-odd.%s", titleMessageKey)));
-		//retVal.setText(new SD());
-		retVal.setCode(code);
-		retVal.setId(new II(UUID.randomUUID()));
-		// Set templates
-		LIST<II> sectionTemplate = new LIST<II>();
-		for(String template : templateIds)
-			sectionTemplate.add(new II(template));
-		retVal.setTemplateId(sectionTemplate);
-		return retVal;
-    }
-
+	protected ClinicalDocument m_documentContext;
 	/**
 	 * Returns true if all the provided encounter parts have discrete components
 	 * That is, that the ObsGroups representing the 
@@ -238,134 +198,47 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		return hasComponents;
     }
 
-	/**
-	 * Get all orders in the sections
+    /**
+	 * Correct a code to a more preferred code system
 	 */
-	private List<Order> getEncounterOrders() {
-		return this.m_service.getEncounterOrders(this.getDocEncounters());
-    }
+	protected void correctCode(CE<?> code, String... codeSystems) {
 
-	/**
-	 * Get section level observations
-	 */
-	protected List<Obs> getSectionObs() {
-		
-	
-		// To appease the search function
-		List<Person> recordTarget = new ArrayList<Person>();
-		recordTarget.add(this.m_registration.getPatient());
-		Concept sectionConcept = this.getSectionObsGroupConcept();
-		
-		// Get all obs matching the specified section concept(s) 
-		return Context.getObsService().getObservations(
-					recordTarget,
-					this.getDocEncounters(), 
-					Arrays.asList(sectionConcept), 
-					null,
-					null, 
-					null, 
-					null, 
-					null, 
-					null, 
-					null, 
-					null, 
-					false);    
-		}
+		if(code.isNull())
+			return;
 
-	/**
-	 * Get encounters which are included in this document
-	 */
-	protected List<Encounter> getDocEncounters() {
-		List<Encounter> docEncounters = new ArrayList<Encounter>();
-		for(OnDemandDocumentEncounterLink encounterLink : this.m_registration.getEncounterLinks())
-			if(!encounterLink.getVoided() && !encounterLink.getEncounter().getVoided())
-				docEncounters.add(encounterLink.getEncounter());
-		return docEncounters;
-    }
-
-	/**
-	 * Merge the text components of each section obs together into a single obs 
-	 */
-	public Section generateLevel2Content(Section section) {
-
-		SD text = new SD();
+		// Already preferred
+		for(String cs : codeSystems)
+			if(code.getCodeSystem().equals(cs))
+				return; 
 		
-		// Render a list row per 
-		List<Obs> sectionObs = this.getSectionObs();
-		
-		// List node
-		StructDocElementNode listNode = text.createElement("list", DatatypeFormatter.NS_HL7);
-		for(Obs obs : sectionObs)
+		// Get translation
+		code.getTranslation().add(new CD(code.getCode(), code.getCodeSystem(), code.getCodeSystemName(), code.getCodeSystemVersion(), code.getDisplayName(), null));
+		// Move the first translation to the root code
+		for(String cs : codeSystems)
 		{
-			if(obs.getVoided())
-				continue; // skip voided
-			StructDocElementNode listItem = listNode.addElement("item");
-			listItem.addElement("caption", String.format("From %s on %s (created by %s))", obs.getEncounter().getEncounterType().getName(), obs.getObsDatetime(), obs.getCreator().getPersonName()));
-			
-			StructDocNode childNode = this.m_cdaDataUtil.createText(obs);
-			if(!(childNode instanceof StructDocElementNode))
-				childNode = listItem.addElement("content", childNode);
-			else
-			{
-				// Scrub the child node's ID because this is level 2 content and no entries reference
-				childNode = this.m_cdaDataUtil.scrubIDs(childNode);
-	
-				// TODO: Add an ID in case we want to add this as a discrete act at a later time (to be determined with the SHR group)
-				((StructDocElementNode)childNode).addAttribute("ID", String.format("obs%s", obs.getId().toString()));
-				listItem.getChildren().add(childNode);
-			}
+			for(CD<?> tx : code.getTranslation())
+				if(tx.getCodeSystem().equals(cs))
+				{
+					code.setCode(tx.getCode());
+					code.setCodeSystem(tx.getCodeSystem());
+					code.setDisplayName(tx.getDisplayName());
+					code.setCodeSystemName(tx.getCodeSystemName());
+					code.setCodeSystemVersion(tx.getCodeSystemVersion());
+					code.getTranslation().remove(tx);
+					return;
+				}
 		}
 		
-		text.getContent().add(listNode);
-		section.setText(text);
-		
-		return section;
-    }
-
-	/**
-	 * Get all obs in this set of allowed encounters having the 
-	 * specified observation
-	 */
-	public List<Obs> getAllObservationsOfType(Concept concept) {
-
-		// Get the section obs
-		return Context.getObsService().getObservations(
-			Arrays.asList((Person)this.m_registration.getPatient()), 
-			this.getDocEncounters(), 
-			Arrays.asList(concept), 
-			null, 
-			null, 
-			null, 
-			null, 
-			null, 
-			null, 
-			null, 
-			null, 
-			false); // this.m_service.getObsGroupMembers(this.getSectionObs(), Arrays.asList(concept));
+		// Not found :| ... Null Flavor it with OTH
+		code.setNullFlavor(NullFlavor.Other);
+		code.setCodeSystemName(null);
+		code.setDisplayName(null);
+		code.setCodeSystemVersion(null);
+		code.setCode(null);
+		code.setCodeSystem(codeSystems[0]);
 		
     }
-
-	/**
-	 * Creates an organizer from the specified content
-	 */
-	public Organizer createOrganizer(x_ActClassDocumentEntryOrganizer classCode, List<String> templateId, CD<String> code, II id, ActStatus status,
-                                     Date effectiveTime) {
-		Organizer retVal = new Organizer(classCode, status);
-		retVal.setTemplateId(this.getTemplateIdList(templateId));
-		
-		// Other attributes
-		if(id != null)
-			retVal.setId(SET.createSET(id));
-		
-		// code and effective time
-		retVal.setCode(code);
-		retVal.setEffectiveTime(this.m_cdaDataUtil.createTS(effectiveTime));
-		
-		return retVal;
-		
-    }
-
-
+    
 	/**
 	 * Create an Act
 	 */
@@ -426,7 +299,176 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    
 		return retVal;
     }
+
+	/**
+	 * Create an author node that points to correct information
+	 */
+	protected Author createAuthorPointer(BaseOpenmrsData sourceData) {
+		Author retVal = new Author(ContextControl.OverridingPropagating);
+		if(sourceData.getChangedBy() != null)
+		{
+			retVal.setTime(this.m_cdaDataUtil.createTS(sourceData.getDateChanged()));
+			Collection<Provider> providers = Context.getProviderService().getProvidersByPerson(sourceData.getChangedBy().getPerson());
+			Provider pvdr = providers.iterator().next();
+			retVal.setAssignedAuthor(this.m_cdaDataUtil.createAuthorPerson(pvdr));
+//			retVal.setAssignedAuthor(new AssignedAuthor(SET.createSET(new II(this.m_cdaConfiguration.getUserRoot(), sourceData.getChangedBy().getId().toString()))));
+		}
+		else
+		{
+			retVal.setTime(this.m_cdaDataUtil.createTS(sourceData.getDateCreated()));
+			Collection<Provider> providers = Context.getProviderService().getProvidersByPerson(sourceData.getCreator().getPerson());
+			Provider pvdr = providers.iterator().next();
+			retVal.setAssignedAuthor(this.m_cdaDataUtil.createAuthorPerson(pvdr));
+			//retVal.setAssignedAuthor(new AssignedAuthor(SET.createSET(new II(this.m_cdaConfiguration.getUserRoot(), sourceData.getCreator().getId().toString()))));
+		}
+		return retVal;
+    }
 	
+	/**
+	 * Create a consumable
+	 */
+	private Consumable createConsumable(Drug valueDrug) {
+		// Create the product
+		Consumable consumable = new Consumable();
+		ManufacturedProduct product = new ManufacturedProduct(RoleClassManufacturedProduct.ManufacturedProduct);
+		product.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_PRODUCT), new II(CdaHandlerConstants.ENT_TEMPLATE_PRODUCT)));
+
+		Material manufacturedMaterial = new Material();
+		product.setManufacturedDrugOrOtherMaterial(manufacturedMaterial);
+		// Drug code
+		CE<String> drugCode = this.m_oddMetadataUtil.getStandardizedCode(valueDrug.getConcept(), CdaHandlerConstants.CODE_SYSTEM_RXNORM, CE.class);
+		if(drugCode != null && drugCode.isNull())
+		{
+			CE<String> cvxCode = this.m_oddMetadataUtil.getStandardizedCode(valueDrug.getConcept(), CdaHandlerConstants.CODE_SYSTEM_CVX, CE.class);
+			if(!cvxCode.isNull())
+				manufacturedMaterial.setCode(cvxCode);
+		}
+		if(manufacturedMaterial.getCode() == null)
+			manufacturedMaterial.setCode(drugCode);
+		
+		// Now get the drug from the concept
+		if(valueDrug.getName() != null)
+			manufacturedMaterial.setName(new EN(Arrays.asList(new ENXP(valueDrug.getName()))));
+
+		consumable.setManufacturedProduct(product);
+		return consumable;
+    }
+
+	/**
+	 * Create an external references act
+	 */
+	protected Act createExternalReferenceAct(Obs data) {
+		 Act retVal = new Act(x_ActClassDocumentEntryAct.Act, x_DocumentActMood.Eventoccurrence);
+		retVal.setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_EXTERNAL_REFERENCES_ENTRY)));
+		retVal.setId(SET.createSET(new II(UUID.randomUUID())));
+		retVal.setCode(new CD<String>());
+		retVal.getCode().setNullFlavor(NullFlavor.NotApplicable);
+		
+		for(Obs subObs : this.m_service.getObsGroupMembers(data))
+		{
+			Reference ref = new Reference();
+			ref.setTypeCode(this.m_oddMetadataUtil.getStandardizedCode(subObs.getConcept(), x_ActRelationshipExternalReference.ELNK.getCodeSystem(), CS.class));
+			ref.setExternalActChoice(new ExternalDocument());
+			ref.getExternalActChoiceIfExternalDocument().setId(SET.createSET(this.m_cdaDataUtil.parseIIFromString(subObs.getValueText())));
+			if(subObs.getComment() != null)
+				ref.getExternalActChoiceIfExternalDocument().setText(new ED(subObs.getComment()));
+			retVal.getReference().add(ref);
+		}
+		
+		if(data.getComment() != null)
+			retVal.setText(new ED(data.getComment()));
+		
+		return retVal;
+	}
+
+	/**
+	 * Create an internal reference 
+	 */
+	private ClinicalStatement createInternalReference(String valueText) {
+		Act retVal = new Act();
+		
+		retVal.setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_INTERNAL_REFERENCE)));
+		II referencedObjectId = this.m_cdaDataUtil.parseIIFromString(valueText);
+		retVal.setId(SET.createSET(referencedObjectId));
+		retVal.setCode(new CD<String>());
+		// TODO: Find out how to get this code?
+		retVal.getCode().setNullFlavor(NullFlavor.NoInformation);
+		
+		return retVal;
+    }
+
+	/**
+	 * Create a "no known problem" or "no known allergy" act
+	 */
+	protected Act createNoKnownProblemAct(List<String> templateIds, CD<String> code, CD<String> valueCode) {
+		
+		Act retVal = new Act(x_ActClassDocumentEntryAct.Act, x_DocumentActMood.Eventoccurrence);
+		retVal.setStatusCode(ActStatus.Completed);
+		retVal.setTemplateId(this.getTemplateIdList(templateIds));
+		retVal.setEffectiveTime(new TS(), TS.now());
+		retVal.getEffectiveTime().getLow().setNullFlavor(NullFlavor.Unknown);
+		retVal.setCode(new CD<String>());
+		retVal.getCode().setNullFlavor(NullFlavor.NotApplicable);
+		retVal.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
+		retVal.setId(SET.createSET(new II(UUID.randomUUID())));
+
+		// Observation
+		Observation probObs = new Observation(x_ActMoodDocumentObservation.Eventoccurrence);
+		probObs.setStatusCode(ActStatus.Completed);
+		probObs.setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION)));
+		if(templateIds.contains(CdaHandlerConstants.ENT_TEMPLATE_ALLERGIES_AND_INTOLERANCES_CONCERN))
+		{
+			probObs.getTemplateId().add(new II(CdaHandlerConstants.ENT_TEMPLATE_CCD_ALERT_OBSERVATION));
+			probObs.getTemplateId().add(new II(CdaHandlerConstants.ENT_TEMPLATE_ALLERGY_AND_INTOLERANCE_OBSERVATION));
+		}
+		probObs.setCode(code);
+		probObs.setValue(valueCode);
+		probObs.setEffectiveTime(new TS(), TS.now());
+		probObs.getEffectiveTime().getLow().setNullFlavor(NullFlavor.Unknown);
+		probObs.setId(SET.createSET(new II(UUID.randomUUID())));
+		probObs.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
+
+		retVal.getEntryRelationship().add(new EntryRelationship(x_ActRelationshipEntryRelationship.SUBJ, BL.TRUE, probObs));
+		retVal.getEntryRelationship().get(0).setInversionInd(BL.FALSE);
+		return retVal;
+		
+    }
+
+	/**
+	 * Unknown drug treatment
+	 */
+	public SubstanceAdministration createNoSubstanceAdministration(List<String> templateIds) {
+		SubstanceAdministration retVal = new SubstanceAdministration(x_DocumentSubstanceMood.Eventoccurrence);
+		retVal.setTemplateId(this.getTemplateIdList(templateIds));
+		
+		retVal.getEffectiveTime().add(new IVL<TS>(new TS(), TS.now()));
+		((IVL<TS>)retVal.getEffectiveTime().get(0)).getLow().setNullFlavor(NullFlavor.Unknown);
+		
+		retVal.setCode(s_drugTreatmentUnknownCode);
+		
+		retVal.setStatusCode(ActStatus.Completed);
+		
+		retVal.setId(SET.createSET(new II(UUID.randomUUID())));
+//		retVal.getId().get(0).setNullFlavor(NullFlavor.NotApplicable);
+		
+		retVal.setDoseQuantity(new PQ());
+		retVal.getDoseQuantity().setNullFlavor(NullFlavor.NotApplicable);
+		
+		retVal.setAdministrationUnitCode(new CE<String>());
+		retVal.getAdministrationUnitCode().setNullFlavor(NullFlavor.NotApplicable);
+		
+		retVal.setConsumable(new Consumable());
+		retVal.getConsumable().setManufacturedProduct(new ManufacturedProduct());
+		retVal.getConsumable().getManufacturedProduct().setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_PRODUCT, CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_PRODUCT)));
+		retVal.getConsumable().getManufacturedProduct().setManufacturedDrugOrOtherMaterial(new Material());
+		retVal.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedMaterial().setCode(new CE<String>());
+		retVal.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedMaterial().getCode().setNullFlavor(NullFlavor.NotApplicable);
+		retVal.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedMaterial().getCode().setOriginalText(new ED("Not Applicable"));
+		
+		retVal.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
+		return retVal;
+    }
+
 	/**
 	 * Create an observation
 	 */
@@ -436,7 +478,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    // Set template id
 	    retVal.setTemplateId(this.getTemplateIdList(templateId));
 	    
-		Reference original = this.createReferenceToDocument(sourceObs);
+		Reference original = this.createReferenceToDocument(sourceObs.getEncounter());
 		if(original != null) retVal.getReference().add(original);
 
 	    // Add identifier
@@ -456,7 +498,6 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	            retVal.setText(sourceObs.getComment());
             }
             catch (UnsupportedEncodingException e) {
-	            // TODO Auto-generated catch block
 	            log.error("Error generated", e);
             }
 
@@ -490,7 +531,6 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	        	}
         }
         catch (DocumentImportException e) {
-	        // TODO Auto-generated catch block
 	        log.error("Error generated", e);
         }
 	    
@@ -511,165 +551,303 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
     }
 
 	/**
-	 * Get the identifier list
+	 * Creates an organizer from the specified content
 	 */
-	protected SET<II> getIdentifierList(Obs sourceObs) {
-		SET<II> retVal = new SET<II>();
-	    if(sourceObs.getAccessionNumber() != null && !sourceObs.getAccessionNumber().isEmpty())
-	    	retVal.add(this.m_cdaDataUtil.parseIIFromString(sourceObs.getAccessionNumber()));
-	    retVal.add(new II(this.m_cdaConfiguration.getObsRoot(), sourceObs.getId().toString()));
+	public Organizer createOrganizer(x_ActClassDocumentEntryOrganizer classCode, List<String> templateId, CD<String> code, II id, ActStatus status,
+                                     Date effectiveTime) {
+		Organizer retVal = new Organizer(classCode, status);
+		retVal.setTemplateId(this.getTemplateIdList(templateId));
+		
+		// Other attributes
+		if(id != null)
+			retVal.setId(SET.createSET(id));
+		
+		// code and effective time
+		retVal.setCode(code);
+		retVal.setEffectiveTime(this.m_cdaDataUtil.createTS(effectiveTime));
+		
+		return retVal;
+		
+    }
+
+
+	/**
+	 * Create previous order link
+	 * @param data
+	 * @return
+	 */
+	private Reference createPreviousOrderLink(Order data) {
+    	Reference prevRef = new Reference(x_ActRelationshipExternalReference.RPLC);
+    	ExternalAct externalAct = new ExternalAct(new CD<String>("OBS"));
+    	externalAct.setId(SET.createSET(new II(this.m_cdaConfiguration.getObsRoot(), data.getPreviousOrder().getId().toString())));
+    	if(data.getPreviousOrder().getAccessionNumber() != null)
+    		externalAct.getId().add(this.m_cdaDataUtil.parseIIFromString(data.getPreviousOrder().getAccessionNumber()));
+    	prevRef.setExternalActChoice(externalAct);
+    	return prevRef;
+	}
+	
+	/**
+	 * Create the procedure entry
+	 */
+	public Procedure createProcedure(List<String> templateIds, Obs sourceObs) {
+		
+		Procedure retVal = new Procedure();
+
+	    // Identifiers
+		retVal.setId(this.getIdentifierList(sourceObs));
+	    
+	    retVal.getAuthor().add(this.createAuthorPointer(sourceObs));
+
+		Reference original = this.createReferenceToDocument(sourceObs.getEncounter());
+		if(original != null) retVal.getReference().add(original);
+
+		// Extended observations
+		ExtendedObs extendedObs = Context.getService(CdaImportService.class).getExtendedObs(sourceObs.getId());
+		
+		// Set the mood code
+		retVal.setTemplateId(this.getTemplateIdList(templateIds));
+		retVal.setMoodCode(this.getMoodCode(sourceObs, x_DocumentProcedureMood.class));
+		retVal.setStatusCode(this.getStatusCode(sourceObs));
+		retVal.setEffectiveTime(this.getEffectiveTime(sourceObs));
+		
+		// Component obs
+		for(Obs component : this.m_service.getObsGroupMembers(sourceObs))
+		{
+			switch(component.getConcept().getId())
+			{
+				case CdaHandlerConstants.CONCEPT_ID_PROCEDURE:
+					retVal.setCode(this.m_oddMetadataUtil.getStandardizedCode(component.getConcept(), null, CD.class));
+					break;
+				case CdaHandlerConstants.CONCEPT_ID_PROCEDURE_DATE:
+					if(extendedObs == null)
+					{
+						retVal.setEffectiveTime(this.m_cdaDataUtil.createTS(component.getValueDate()));
+						retVal.getEffectiveTime().getValue().setDateValuePrecision(TS.DAY);
+					}
+					break;
+				case CdaHandlerConstants.CONCEPT_ID_PROVIDER_NAME:
+					// Get the provider
+					Provider provider = Context.getProviderService().getProviderByIdentifier(component.getValueText());
+					if(provider != null)
+						retVal.getPerformer().add(new Performer2(this.m_cdaDataUtil.createAssignedEntity(provider)));
+					break;
+				case CdaHandlerConstants.CONCEPT_ID_PROCEDURE_HISTORY: // A sub-observation
+	    		{
+	    			Procedure statement = this.createProcedure(templateIds, component);
+	    			EntryRelationship entryRelation = new EntryRelationship(x_ActRelationshipEntryRelationship.HasComponent, BL.TRUE);
+	    			entryRelation.setClinicalStatement(statement);
+	    			retVal.getEntryRelationship().add(entryRelation);
+	    			
+	    			break;
+	    		}
+				default:
+					if(component.getConcept().getUuid().equals(CdaHandlerConstants.RMIM_CONCEPT_UUID_APPROACH_SITE))
+					{
+						if(retVal.getApproachSiteCode() == null)
+							retVal.setApproachSiteCode(new SET<CD<String>>());
+						retVal.getApproachSiteCode().add(this.m_oddMetadataUtil.getStandardizedCode(component.getValueCoded(), null, CD.class))
+							;
+					}
+					else if(component.getConcept().getUuid().equals(CdaHandlerConstants.RMIM_CONCEPT_UUID_TARGET_SITE))
+					{
+						if(retVal.getTargetSiteCode() == null)
+							retVal.setTargetSiteCode(new SET<CD<String>>());
+						retVal.getTargetSiteCode().add(this.m_oddMetadataUtil.getStandardizedCode(component.getConcept(), null, CD.class));
+					}
+					else if(component.getConcept().getUuid().equals(CdaHandlerConstants.RMIM_CONCEPT_UUID_REASON))
+					{
+						EntryRelationship er = new EntryRelationship(x_ActRelationshipEntryRelationship.HasReason, BL.TRUE);
+						er.setClinicalStatement(this.createInternalReference(component.getValueText()));
+						retVal.getEntryRelationship().add(er);
+					}
+					else if(component.getConcept().getUuid().equals(CdaHandlerConstants.RMIM_CONCEPT_UUID_REFERENCE))
+					{
+						EntryRelationship er = new EntryRelationship(x_ActRelationshipEntryRelationship.HasComponent, BL.TRUE);
+						er.setInversionInd(BL.TRUE);
+						er.setClinicalStatement(this.createInternalReference(component.getValueText()));
+						retVal.getEntryRelationship().add(er);
+					}
+					else
+                    	throw new RuntimeException("Don't understand how to represent procedure component observation");
+
+					break;
+			}
+		}
+		
+
+    	if(sourceObs.getComment() != null)
+    		retVal.setText(new ED(sourceObs.getComment()));
+	    return retVal;
+		
+    }
+
+	/**
+	 * Create procedure based on an order
+	 */
+	public Procedure createProcedure(List<String> templateIds, ProcedureOrder data) {
+
+		Procedure retVal = new Procedure(x_DocumentProcedureMood.Intent);
+
+		retVal.setCode(this.m_oddMetadataUtil.getStandardizedCode(data.getConcept(), CdaHandlerConstants.CODE_SYSTEM_LOINC, CD.class));
+		
+	    // Identifiers
+		retVal.setId(SET.createSET(new II(this.m_cdaConfiguration.getOrderRoot(), data.getId().toString())));
+		if(data.getAccessionNumber() != null)
+			retVal.getId().add(this.m_cdaDataUtil.parseIIFromString(data.getAccessionNumber()));
+	    
+	    retVal.getAuthor().add(this.createAuthorPointer(data));
+
+		Reference original = this.createReferenceToDocument(data.getEncounter());
+		if(original != null) retVal.getReference().add(original);
+
+		// Set the mood code
+		retVal.setTemplateId(this.getTemplateIdList(templateIds));
+
+		CS<String> status = this.m_oddMetadataUtil.getStandardizedCode(data.getStatus(), ActStatus.Aborted.getCodeSystem(), CS.class);
+		retVal.setStatusCode(new CS<ActStatus>(new ActStatus(status.getCode(), ActStatus.Completed.getCodeSystem())));
+		retVal.setEffectiveTime(this.getEffectiveTime(data));
+		
+
+		retVal.getReference().add(this.createPreviousOrderLink(data));
+
+	    if(data.getInstructions() != null)
+	    	retVal.setText(new ED(data.getInstructions()));
+	    
+	    if(data.getOrderer() != null)
+	    	retVal.getAuthor().add(new Author(ContextControl.AdditiveNonpropagating, null, this.m_cdaDataUtil.createAuthorPerson(data.getOrderer())));
+	    
+	    retVal.setPriorityCode(this.getActPriorityCode(data));
+
+	    if(data.getApproachSite() != null)
+	    	retVal.setApproachSiteCode(SET.createSET((CD<String>)this.m_oddMetadataUtil.getStandardizedCode(data.getApproachSite(), null, CD.class)));
+	    if(data.getTargetSite() != null)
+	    	retVal.setTargetSiteCode(SET.createSET((CD<String>)this.m_oddMetadataUtil.getStandardizedCode(data.getTargetSite(), null, CD.class)));
+	    
+	    
+	    
 	    return retVal;
     }
 
 	/**
-	 * Set extended observation properties
+	 * Create a reference to a source document
 	 */
-	protected void setExtendedObservationProperties(Observation cdaObservation, ExtendedObs extendedObs) {
-
-    	if(extendedObs.getObsInterpretation() != null)
-    		cdaObservation.setInterpretationCode(SET.createSET((CE<ObservationInterpretation>)this.m_oddMetadataUtil.getStandardizedCode(extendedObs.getObsInterpretation(), ObservationInterpretation.Abnormal.getCodeSystem(), CE.class)));
-    	if(extendedObs.getObsRepeatNumber() != null)
-    		cdaObservation.setRepeatNumber(new INT(extendedObs.getObsRepeatNumber()));
-    	
-    }
-
-	/**
-	 * Get the mood code
-	 */
-	protected <T extends IEnumeratedVocabulary> CS<T> getMoodCode(Obs obs, Class<T> vocabulary) {
-		 if(obs instanceof ExtendedObs)
-		    {
-		    	ExtendedObs extendedObs = (ExtendedObs)obs;
-		    	CS<String> status = this.m_oddMetadataUtil.getStandardizedCode(extendedObs.getObsMood(), x_DocumentProcedureMood.Eventoccurrence.getCodeSystem(), CS.class);
-		    	if(status.isNull())
-		    		return new CS<T>(FormatterUtil.fromWireFormat("EVN", vocabulary));
-		    	else
-		    		return new CS<T>(FormatterUtil.fromWireFormat(status.getCode(), vocabulary));
-		    }
-			 else
-			 {
-				 return new CS<T>(FormatterUtil.fromWireFormat("EVN", vocabulary));
-			 }
-    }
-
-	/**
-	 * Get the effective time
-	 */
-	protected IVL<TS> getEffectiveTime(Obs obs) {
-		IVL<TS> retVal = new IVL<TS>();
+	protected Reference createReferenceToDocument(Encounter enc) {
 		
-		if(obs instanceof ExtendedObs)
+		Reference retVal = null;
+		if(enc.getVisit() != null)
 		{
-			ExtendedObs extendedObs = (ExtendedObs)obs;
-	    	// status?
-	    	if(extendedObs.getObsDatetime() != null &&
-	    			extendedObs.getObsStartDate() == null &&
-	    			extendedObs.getObsEndDate() == null)
-	    		retVal.setValue(this.m_cdaDataUtil.createTS(extendedObs.getObsDatetime()));
-	    	else
-	    	{
-	    		retVal.setValue(null);
-		    	if(extendedObs.getObsStartDate() != null)
-		    		retVal.setLow(this.m_cdaDataUtil.createTS(extendedObs.getObsStartDate()));
-		    	if(extendedObs.getObsEndDate() != null)
-		    		retVal.setHigh(this.m_cdaDataUtil.createTS(extendedObs.getObsEndDate()));
-			}
-	    	
-	    	// Null ?
-	    	if(extendedObs.getObsDatePrecision() == 0)
-	    		retVal.setNullFlavor(NullFlavor.Unknown);
-	    	
-	    	// Set precision
-	    	if(retVal.getValue() != null)
-	    		retVal.getValue().setDateValuePrecision(extendedObs.getObsDatePrecision());
-	    	if(retVal.getLow() != null)
-	    		retVal.getLow().setDateValuePrecision(extendedObs.getObsDatePrecision());
-	    	if(retVal.getHigh() != null)
-	    		retVal.getHigh().setDateValuePrecision(extendedObs.getObsDatePrecision());
+            try {
+            	retVal = new Reference();
+        		ExternalDocument ed = new ExternalDocument();
+        		
+            	VisitAttributeType vat = this.m_conceptUtil.getOrCreateVisitExternalIdAttributeType();
+    			for(VisitAttribute attr : enc.getVisit().getActiveAttributes())
+    				if(attr.getAttributeType().equals(vat))
+    					ed.setId(SET.createSET(this.m_cdaDataUtil.parseIIFromString(attr.getValue().toString())));
+
+    			retVal.setTypeCode(x_ActRelationshipExternalReference.REFR);
+    			retVal.setExternalActChoice(ed);
+
+            }
+            catch (DocumentImportException e) {
+	            log.error("Error generated", e);
+            }
 		}
-		else
-			retVal.setValue(this.m_cdaDataUtil.createTS(obs.getObsDatetime()));
 		
 		return retVal;
     }
 
 	/**
-	 * Get the status code of the object
+	 * Create the specified section scaffolding
 	 */
-	protected CS<ActStatus> getStatusCode(Obs obs) {
-		 if(obs instanceof ExtendedObs)
-	    {
-	    	ExtendedObs extendedObs = (ExtendedObs)obs;
-	    	CS<String> status = this.m_oddMetadataUtil.getStandardizedCode(extendedObs.getObsStatus(), ActStatus.Aborted.getCodeSystem(), CS.class);
-	    	return new CS<ActStatus>(new ActStatus(status.getCode(), ActStatus.Completed.getCodeSystem()));
-	    }
-		 else
-			 return new CS<ActStatus>(ActStatus.Completed);
-    }
-
-	/**
-	 * Create an author node that points to correct information
-	 */
-	protected Author createAuthorPointer(BaseOpenmrsData sourceData) {
-		Author retVal = new Author(ContextControl.OverridingPropagating);
-		if(sourceData.getChangedBy() != null)
-		{
-			retVal.setTime(this.m_cdaDataUtil.createTS(sourceData.getDateChanged()));
-			Collection<Provider> providers = Context.getProviderService().getProvidersByPerson(sourceData.getChangedBy().getPerson());
-			Provider pvdr = providers.iterator().next();
-			retVal.setAssignedAuthor(this.m_cdaDataUtil.createAuthorPerson(pvdr));
-//			retVal.setAssignedAuthor(new AssignedAuthor(SET.createSET(new II(this.m_cdaConfiguration.getUserRoot(), sourceData.getChangedBy().getId().toString()))));
-		}
-		else
-		{
-			retVal.setTime(this.m_cdaDataUtil.createTS(sourceData.getDateCreated()));
-			Collection<Provider> providers = Context.getProviderService().getProvidersByPerson(sourceData.getCreator().getPerson());
-			Provider pvdr = providers.iterator().next();
-			retVal.setAssignedAuthor(this.m_cdaDataUtil.createAuthorPerson(pvdr));
-			//retVal.setAssignedAuthor(new AssignedAuthor(SET.createSET(new II(this.m_cdaConfiguration.getUserRoot(), sourceData.getCreator().getId().toString()))));
-		}
+	public Section createSection(List<String> templateIds, String titleMessageKey, CE<String> code) {
+		Section retVal = new Section();
+		
+		retVal.setId(UUID.randomUUID());
+		// Localization for title
+		ResourceBundle strings = ResourceBundle.getBundle("messages");
+		retVal.setTitle(strings.getString(String.format("shr-odd.%s", titleMessageKey)));
+		//retVal.setText(new SD());
+		retVal.setCode(code);
+		retVal.setId(new II(UUID.randomUUID()));
+		// Set templates
+		LIST<II> sectionTemplate = new LIST<II>();
+		for(String template : templateIds)
+			sectionTemplate.add(new II(template));
+		retVal.setTemplateId(sectionTemplate);
 		return retVal;
     }
-
-	/**
-	 * Generate the Level 3 content text
-	 */
-	protected SD generateLevel3Text(Section section)
-	{
-		SD retVal = new SD();
-		Class<? extends ClinicalStatement> previousStatementType = null;
-		StructDocElementNode context = null; 
-		for(Entry ent : section.getEntry())
-		{
-			// Is this different than the previous?
-			if(!ent.getClinicalStatement().getClass().equals(previousStatementType))
-			{
-				// Add existing context node before generating another
-				if(context!=null)
-					retVal.getContent().add(context);
-				// Force the generation of new context
-				context = null;
-			}
-			StructDocElementNode genNode = this.m_cdaTextUtil.generateText(ent.getClinicalStatement(), context, this.m_documentContext);
-			
-			// Set the context node
-			if(context == null)
-				context = genNode;
-			previousStatementType = ent.getClinicalStatement().getClass();
-			
-			ent.setTypeCode(x_ActRelationshipEntry.DRIV);
-		}
-		if(context != null && !retVal.getContent().contains(context))
-			retVal.getContent().add(context);
-		return retVal;
-	}
 
 	/**
 	 * Create a substance administration from a drug order
 	 */
-	public SubstanceAdministration createSubstanceAdministration(List<String> templateIds, DrugOrder data) {
+	public SubstanceAdministration createSubstanceAdministration(List<String> templateIds, DrugOrder order) {
 	    SubstanceAdministration retVal = new SubstanceAdministration(x_DocumentSubstanceMood.Intent); // Intent (order) to administer
 	    retVal.setTemplateId(this.getTemplateIdList(templateIds));
+	    
+	    // ID
+	    retVal.setId(SET.createSET(new II(this.m_cdaConfiguration.getOrderRoot(), order.getId().toString())));
+	    if(order.getAccessionNumber() != null)
+	    	retVal.getId().add(this.m_cdaDataUtil.parseIIFromString(order.getAccessionNumber()));
+	    
+	    // Set author info
+	    retVal.getAuthor().add(this.createAuthorPointer(order));
+	    retVal.setCode(this.m_oddMetadataUtil.getStandardizedCode(order.getConcept(), null, CD.class));
+	    
+	    // Effective time
+	    retVal.getEffectiveTime().add(this.getEffectiveTime(order));
+	    // Frequency?
+	    retVal.getEffectiveTime().add(this.getFrequencyExpression(order.getFrequency().getConcept()));
+	    
+	    // Dose
+	    if(order.getDose() != null)
+	    	retVal.setDoseQuantity(new PQ(BigDecimal.valueOf(order.getDose()), null));
+	    if(order.getDoseUnits() != null)
+	    	retVal.getDoseQuantity().getValue().setUnit(this.m_oddMetadataUtil.getStandardizedCode(order.getDoseUnits(), CdaHandlerConstants.CODE_SYSTEM_UCUM, CD.class).getCode().toString());
+	    
+	    // Route
+	    if(order.getRoute() != null)
+	    	retVal.setRouteCode(this.m_oddMetadataUtil.getStandardizedCode(order.getRoute(), CdaHandlerConstants.CODE_SYSTEM_ROUTE_OF_ADMINISTRATION, CD.class));
+	    
+	    // Drug
+	    if(order.getDrug() != null)
+	    	retVal.setConsumable(this.createConsumable(order.getDrug()));
+
+	    
+	    // Instructions
+	    if(order.getInstructions() != null)
+	    {
+	    	Act instructionAct = new Act(x_ActClassDocumentEntryAct.Act, x_DocumentActMood.Eventoccurrence);
+	    	instructionAct.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_MEDICATION_INSTRUCTIONS)));
+	    	instructionAct.setCode(new CD<String>());
+	    	instructionAct.getCode().setNullFlavor(NullFlavor.NotApplicable);
+	    	//Typing in turbulandce noty verty fun.. very slow... At least Slayer i soplaying
+	    	retVal.getEntryRelationship().add(new EntryRelationship(x_ActRelationshipEntryRelationship.HasComponent, BL.TRUE, instructionAct));
+	    }
+	    
+	    // Dosing instructions
+	    if(order.getDosingInstructions() != null)
+	    {
+	    	Precondition condition = new Precondition();
+	    	condition.setCriterion(new Criterion());
+	    	condition.getCriterion().setText(new ED(order.getDosingInstructions()));
+	    	condition.getCriterion().setCode(new CD<String>());
+	    	condition.getCriterion().getCode().setNullFlavor(NullFlavor.NoInformation);
+	    }
+	    
+	    // Number of refills etc.
+	    Supply supply = new Supply(x_DocumentSubstanceMood.Intent);
+	    if(order.getNumRefills() != null)
+	    	supply.setRepeatNumber(new INT(order.getNumRefills()));
+	    if(order.getOrderer() != null)
+	    	supply.getAuthor().add(new Author(ContextControl.AdditiveNonpropagating, null, this.m_cdaDataUtil.createAuthorPerson(order.getOrderer())));
+	    
+	    // Reference previous
+	    retVal.getReference().add(this.createPreviousOrderLink(order));
+	    retVal.getReference().add(this.createReferenceToDocument(order.getEncounter()));
+	    
+	    // Priority
+	    retVal.setPriorityCode(this.getActPriorityCode(order));
 	    return retVal;
     }
 
@@ -680,7 +858,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		
 		SubstanceAdministration retVal = new SubstanceAdministration();
 
-		Reference original = this.createReferenceToDocument(sourceObs);
+		Reference original = this.createReferenceToDocument(sourceObs.getEncounter());
 		if(original != null) retVal.getReference().add(original);
 		
 		// Set the mood code
@@ -771,7 +949,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    			
 	    		case CdaHandlerConstants.CONCEPT_ID_MEDICATION_DRUG:
 	    		case CdaHandlerConstants.CONCEPT_ID_IMMUNIZATION_DRUG:
-	    			retVal.setConsumable(this.createConsumable(component.getValueDrug(), sourceObs.getConcept().getId()));
+	    			retVal.setConsumable(this.createConsumable(component.getValueDrug()));
 	    			break;
 	    		case CdaHandlerConstants.CONCEPT_ID_IMMUNIZATION_SEQUENCE:
 	    			Observation seriesObservation = new Observation(x_ActMoodDocumentObservation.Eventoccurrence);
@@ -846,7 +1024,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    						supplyRelationship.setSequenceNumber(supplyComponent.getValueNumeric().intValue());
 	    						break;
 	    					case CdaHandlerConstants.CONCEPT_ID_MEDICATION_DRUG:
-	    						Consumable cons = this.createConsumable(supplyComponent.getValueDrug(), sourceObs.getConcept().getId());
+	    						Consumable cons = this.createConsumable(supplyComponent.getValueDrug());
 	    						supply.setProduct(new Product(cons.getManufacturedProduct()));
 	    						break;
     						default:
@@ -857,74 +1035,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    			break;
 	    		}
 	    		case CdaHandlerConstants.CONCEPT_ID_MEDICATION_FREQUENCY:
-	    			switch(component.getValueCoded().getId())
-	    			{
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_ONCE:
-	    					frequencyExpression = null;
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_30_MINS:
-	    					frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("30"), "min"));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_8_HOURS:
-	    					frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("8"), "h"));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_12_HOURS:
-	    					frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("12"), "h"));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_24_HOURS:
-	    					frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("24"), "h"));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_36_HOURS:
-	    					frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("36"), "h"));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_48_HOURS:
-	    					frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("48"), "h"));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_72_HOURS:
-	    					frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("72"), "h"));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_ONCE_DAILY:
-	    					frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("1"), "d"));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_AT_BEDTIME:
-	    					frequencyExpression = new EIVL<TS>(DomainTimingEvent.HourOfSleep, null);
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_ONCE_DAILY_EVENING:
-	    					frequencyExpression = new EIVL<TS>(DomainTimingEvent.BetweenDinnerAndSleep, null);
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_ONCE_DAILY_MORNING:
-	    					frequencyExpression = new EIVL<TS>(DomainTimingEvent.BeforeBreakfast, null);
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_TWICE_DAILY_AFTER_MEALS:
-	    					frequencyExpression = new EIVL<TS>(DomainTimingEvent.AfterMeal, new IVL<PQ>(new PQ(new BigDecimal("12"), "h")));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_THRICE_DAILY_AFTER_MEALS:
-	    					frequencyExpression = new EIVL<TS>(DomainTimingEvent.AfterMeal, new IVL<PQ>(new PQ(new BigDecimal("8"), "h")));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_FOUR_TIMES_DAILY_AFTER_MEALS:
-	    					frequencyExpression = new EIVL<TS>(DomainTimingEvent.AfterMeal, new IVL<PQ>(new PQ(new BigDecimal("6"), "h")));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_TWICE_DAILY_BEFORE_MEALS:
-	    					frequencyExpression = new EIVL<TS>(DomainTimingEvent.BeforeMeal, new IVL<PQ>(new PQ(new BigDecimal("12"), "h")));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_THRICE_DAILY_BEFORE_MEALS:
-	    					frequencyExpression = new EIVL<TS>(DomainTimingEvent.BeforeMeal, new IVL<PQ>(new PQ(new BigDecimal("8"), "h")));
-	    					break;
-	    				case CdaHandlerConstants.MEDICATION_FREQUENCY_FOUR_TIMES_DAILY_BEFORE_MEALS:
-	    					frequencyExpression = new EIVL<TS>(DomainTimingEvent.BeforeMeal, new IVL<PQ>(new PQ(new BigDecimal("6"), "h")));
-	    					break;
-    					default:
-    						if(component.getValueCoded().getId() > CdaHandlerConstants.MEDICATION_FREQUENCY_30_MINS && component.getValueCoded().getId() < CdaHandlerConstants.MEDICATION_FREQUENCY_8_HOURS)
-    							frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal(component.getValueCoded().getId() - CdaHandlerConstants.MEDICATION_FREQUENCY_30_MINS), "h"));
-    						else
-    						{
-    							EIVL<TS> other = new EIVL<TS>();
-    							CV<String> domainTimingEvent = this.m_oddMetadataUtil.getStandardizedCode(component.getValueCoded(), DomainTimingEvent.AfterBreakfast.getCodeSystem(), CV.class);
-    							other.setEvent(new CS<DomainTimingEvent>(FormatterUtil.fromWireFormat(domainTimingEvent.getCode(), DomainTimingEvent.class)));
-    							frequencyExpression = other;
-    						}
-    						break;
-	    			}
+	    			frequencyExpression = this.getFrequencyExpression(component.getValueCoded());
     				break;
 	    		case CdaHandlerConstants.CONCEPT_ID_MEDICATION_STRENGTH: // use strength
 	    			// Strength is measured as a IVL<PQ> which is serialized to a string when stored in OpenMRS
@@ -993,34 +1104,373 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
     }
 
 	/**
-	 * Create a reference to a source document
+	 * Merge the text components of each section obs together into a single obs 
 	 */
-	protected Reference createReferenceToDocument(Obs sourceObs) {
+	public Section generateLevel2Content(Section section) {
+
+		SD text = new SD();
 		
-		Reference retVal = null;
-		if(sourceObs.getEncounter().getVisit() != null)
+		// Render a list row per 
+		List<Obs> sectionObs = this.getSectionObs();
+		
+		// List node
+		StructDocElementNode listNode = text.createElement("list", DatatypeFormatter.NS_HL7);
+		for(Obs obs : sectionObs)
 		{
-            try {
-            	retVal = new Reference();
-        		ExternalDocument ed = new ExternalDocument();
-        		
-            	VisitAttributeType vat = this.m_conceptUtil.getOrCreateVisitExternalIdAttributeType();
-    			for(VisitAttribute attr : sourceObs.getEncounter().getVisit().getActiveAttributes())
-    				if(attr.getAttributeType().equals(vat))
-    					ed.setId(SET.createSET(this.m_cdaDataUtil.parseIIFromString(attr.getValue().toString())));
-
-    			retVal.setTypeCode(x_ActRelationshipExternalReference.REFR);
-    			retVal.setExternalActChoice(ed);
-
-            }
-            catch (DocumentImportException e) {
-	            // TODO Auto-generated catch block
-	            log.error("Error generated", e);
-            }
+			if(obs.getVoided())
+				continue; // skip voided
+			StructDocElementNode listItem = listNode.addElement("item");
+			listItem.addElement("caption", String.format("From %s on %s (created by %s))", obs.getEncounter().getEncounterType().getName(), obs.getObsDatetime(), obs.getCreator().getPersonName()));
+			
+			StructDocNode childNode = this.m_cdaDataUtil.createText(obs);
+			if(!(childNode instanceof StructDocElementNode))
+				childNode = listItem.addElement("content", childNode);
+			else
+			{
+				// Scrub the child node's ID because this is level 2 content and no entries reference
+				childNode = this.m_cdaDataUtil.scrubIDs(childNode);
+	
+				((StructDocElementNode)childNode).addAttribute("ID", String.format("obs%s", obs.getId().toString()));
+				listItem.getChildren().add(childNode);
+			}
 		}
+		
+		text.getContent().add(listNode);
+		section.setText(text);
+		
+		return section;
+    }
+
+	/**
+	 * Generate the Level 3 content text
+	 */
+	protected SD generateLevel3Text(Section section)
+	{
+		SD retVal = new SD();
+		Class<? extends ClinicalStatement> previousStatementType = null;
+		StructDocElementNode context = null; 
+		for(Entry ent : section.getEntry())
+		{
+			// Is this different than the previous?
+			if(!ent.getClinicalStatement().getClass().equals(previousStatementType))
+			{
+				// Add existing context node before generating another
+				if(context!=null)
+					retVal.getContent().add(context);
+				// Force the generation of new context
+				context = null;
+			}
+			StructDocElementNode genNode = this.m_cdaTextUtil.generateText(ent.getClinicalStatement(), context, this.m_documentContext);
+			
+			// Set the context node
+			if(context == null)
+				context = genNode;
+			previousStatementType = ent.getClinicalStatement().getClass();
+			
+			ent.setTypeCode(x_ActRelationshipEntry.DRIV);
+		}
+		if(context != null && !retVal.getContent().contains(context))
+			retVal.getContent().add(context);
+		return retVal;
+	}
+
+	/**
+	 * Get priority
+	 * @param data
+	 * @return
+	 */
+	private ActPriority getActPriorityCode(Order data) {
+		if(data.getUrgency().equals(Urgency.STAT))
+		{
+			if(data.getCommentToFulfiller().equals("ASAP"))
+				return ActPriority.ASAP;
+			else if(data.getCommentToFulfiller().equals("Emergency"))
+				return ActPriority.Emergency;
+			else 
+				return ActPriority.Stat;
+		}
+		else if(data instanceof DrugOrder && ((DrugOrder)data).getAsNeeded())
+			return ActPriority.AsNeeded;
+		else if(data.getUrgency().equals(Urgency.ON_SCHEDULED_DATE))
+			return ActPriority.TimingCritical;
+		else if(data.getUrgency().equals(Urgency.ROUTINE))
+			return ActPriority.Routine;
+		else
+			return null;
+	}
+
+	/**
+	 * Get all obs in this set of allowed encounters having the 
+	 * specified observation
+	 */
+	public List<Obs> getAllObservationsOfType(Concept concept) {
+
+		// Get the section obs
+		return Context.getObsService().getObservations(
+			Arrays.asList((Person)this.m_registration.getPatient()), 
+			this.getDocEncounters(), 
+			Arrays.asList(concept), 
+			null, 
+			null, 
+			null, 
+			null, 
+			null, 
+			null, 
+			null, 
+			null, 
+			false); // this.m_service.getObsGroupMembers(this.getSectionObs(), Arrays.asList(concept));
+		
+    }
+
+	/**
+	 * Get encounters which are included in this document
+	 */
+	protected List<Encounter> getDocEncounters() {
+		List<Encounter> docEncounters = new ArrayList<Encounter>();
+		for(OnDemandDocumentEncounterLink encounterLink : this.m_registration.getEncounterLinks())
+			if(!encounterLink.getVoided() && !encounterLink.getEncounter().getVoided())
+				docEncounters.add(encounterLink.getEncounter());
+		return docEncounters;
+    }
+
+	/**
+	 * Get the effective time
+	 */
+	protected IVL<TS> getEffectiveTime(Obs obs) {
+		IVL<TS> retVal = new IVL<TS>();
+		
+		if(obs instanceof ExtendedObs)
+		{
+			ExtendedObs extendedObs = (ExtendedObs)obs;
+	    	// status?
+	    	if(extendedObs.getObsDatetime() != null &&
+	    			extendedObs.getObsStartDate() == null &&
+	    			extendedObs.getObsEndDate() == null)
+	    		retVal.setValue(this.m_cdaDataUtil.createTS(extendedObs.getObsDatetime()));
+	    	else
+	    	{
+	    		retVal.setValue(null);
+		    	if(extendedObs.getObsStartDate() != null)
+		    		retVal.setLow(this.m_cdaDataUtil.createTS(extendedObs.getObsStartDate()));
+		    	if(extendedObs.getObsEndDate() != null)
+		    		retVal.setHigh(this.m_cdaDataUtil.createTS(extendedObs.getObsEndDate()));
+			}
+	    	
+	    	// Null ?
+	    	if(extendedObs.getObsDatePrecision() == 0)
+	    		retVal.setNullFlavor(NullFlavor.Unknown);
+	    	
+	    	// Set precision
+	    	if(retVal.getValue() != null)
+	    		retVal.getValue().setDateValuePrecision(extendedObs.getObsDatePrecision());
+	    	if(retVal.getLow() != null)
+	    		retVal.getLow().setDateValuePrecision(extendedObs.getObsDatePrecision());
+	    	if(retVal.getHigh() != null)
+	    		retVal.getHigh().setDateValuePrecision(extendedObs.getObsDatePrecision());
+		}
+		else
+			retVal.setValue(this.m_cdaDataUtil.createTS(obs.getObsDatetime()));
 		
 		return retVal;
     }
+
+	/**
+	 * Get the effective time
+	 */
+	private IVL<TS> getEffectiveTime(Order data) {
+		IVL<TS> retVal = new IVL<TS>();
+		
+		if(data.getDateActivated() != null)
+			retVal.setLow(this.m_cdaDataUtil.createTS(data.getDateActivated()));
+		else 
+			retVal.setLow(this.m_cdaDataUtil.createTS(data.getScheduledDate()));
+		
+		if(data.getDateStopped() != null)
+			retVal.setHigh(this.m_cdaDataUtil.createTS(data.getDateStopped()));
+		else
+			retVal.setHigh(this.m_cdaDataUtil.createTS(data.getAutoExpireDate()));
+		
+		return retVal;
+	}
+
+	/**
+	 * Get all orders in the sections
+	 */
+	private List<Order> getEncounterOrders() {
+		return this.m_service.getEncounterOrders(this.getDocEncounters());
+    }
+
+	/**
+	 * Get the frequency expression of the specified concept
+	 * @param valueCoded
+	 * @return
+	 */
+	private ISetComponent<TS> getFrequencyExpression(Concept concept) {
+		ISetComponent<TS> frequencyExpression = null;
+		switch(concept.getId())
+		{
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_ONCE:
+				frequencyExpression = null;
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_30_MINS:
+				frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("30"), "min"));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_8_HOURS:
+				frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("8"), "h"));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_12_HOURS:
+				frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("12"), "h"));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_24_HOURS:
+				frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("24"), "h"));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_36_HOURS:
+				frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("36"), "h"));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_48_HOURS:
+				frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("48"), "h"));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_72_HOURS:
+				frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("72"), "h"));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_ONCE_DAILY:
+				frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal("1"), "d"));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_AT_BEDTIME:
+				frequencyExpression = new EIVL<TS>(DomainTimingEvent.HourOfSleep, null);
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_ONCE_DAILY_EVENING:
+				frequencyExpression = new EIVL<TS>(DomainTimingEvent.BetweenDinnerAndSleep, null);
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_ONCE_DAILY_MORNING:
+				frequencyExpression = new EIVL<TS>(DomainTimingEvent.BeforeBreakfast, null);
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_TWICE_DAILY_AFTER_MEALS:
+				frequencyExpression = new EIVL<TS>(DomainTimingEvent.AfterMeal, new IVL<PQ>(new PQ(new BigDecimal("12"), "h")));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_THRICE_DAILY_AFTER_MEALS:
+				frequencyExpression = new EIVL<TS>(DomainTimingEvent.AfterMeal, new IVL<PQ>(new PQ(new BigDecimal("8"), "h")));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_FOUR_TIMES_DAILY_AFTER_MEALS:
+				frequencyExpression = new EIVL<TS>(DomainTimingEvent.AfterMeal, new IVL<PQ>(new PQ(new BigDecimal("6"), "h")));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_TWICE_DAILY_BEFORE_MEALS:
+				frequencyExpression = new EIVL<TS>(DomainTimingEvent.BeforeMeal, new IVL<PQ>(new PQ(new BigDecimal("12"), "h")));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_THRICE_DAILY_BEFORE_MEALS:
+				frequencyExpression = new EIVL<TS>(DomainTimingEvent.BeforeMeal, new IVL<PQ>(new PQ(new BigDecimal("8"), "h")));
+				break;
+			case CdaHandlerConstants.MEDICATION_FREQUENCY_FOUR_TIMES_DAILY_BEFORE_MEALS:
+				frequencyExpression = new EIVL<TS>(DomainTimingEvent.BeforeMeal, new IVL<PQ>(new PQ(new BigDecimal("6"), "h")));
+				break;
+			default:
+				if(concept.getId() > CdaHandlerConstants.MEDICATION_FREQUENCY_30_MINS && concept.getId() < CdaHandlerConstants.MEDICATION_FREQUENCY_8_HOURS)
+					frequencyExpression = new PIVL<TS>(null, new PQ(new BigDecimal(concept.getId() - CdaHandlerConstants.MEDICATION_FREQUENCY_30_MINS), "h"));
+				else
+				{
+					EIVL<TS> other = new EIVL<TS>();
+					CV<String> domainTimingEvent = this.m_oddMetadataUtil.getStandardizedCode(concept, DomainTimingEvent.AfterBreakfast.getCodeSystem(), CV.class);
+					other.setEvent(new CS<DomainTimingEvent>(FormatterUtil.fromWireFormat(domainTimingEvent.getCode(), DomainTimingEvent.class)));
+					frequencyExpression = other;
+				}
+				break;
+		}
+		return frequencyExpression;
+	}
+
+	/**
+	 * Get the identifier list
+	 */
+	protected SET<II> getIdentifierList(Obs sourceObs) {
+		SET<II> retVal = new SET<II>();
+	    if(sourceObs.getAccessionNumber() != null && !sourceObs.getAccessionNumber().isEmpty())
+	    	retVal.add(this.m_cdaDataUtil.parseIIFromString(sourceObs.getAccessionNumber()));
+	    retVal.add(new II(this.m_cdaConfiguration.getObsRoot(), sourceObs.getId().toString()));
+	    return retVal;
+    }
+
+	/**
+	 * Get the mood code
+	 */
+	protected <T extends IEnumeratedVocabulary> CS<T> getMoodCode(Obs obs, Class<T> vocabulary) {
+		 if(obs instanceof ExtendedObs)
+		    {
+		    	ExtendedObs extendedObs = (ExtendedObs)obs;
+		    	CS<String> status = this.m_oddMetadataUtil.getStandardizedCode(extendedObs.getObsMood(), x_DocumentProcedureMood.Eventoccurrence.getCodeSystem(), CS.class);
+		    	if(status.isNull())
+		    		return new CS<T>(FormatterUtil.fromWireFormat("EVN", vocabulary));
+		    	else
+		    		return new CS<T>(FormatterUtil.fromWireFormat(status.getCode(), vocabulary));
+		    }
+			 else
+			 {
+				 return new CS<T>(FormatterUtil.fromWireFormat("EVN", vocabulary));
+			 }
+    }
+
+	/**
+	 * Get section level observations
+	 */
+	protected List<Obs> getSectionObs() {
+		
+	
+		// To appease the search function
+		List<Person> recordTarget = new ArrayList<Person>();
+		recordTarget.add(this.m_registration.getPatient());
+		Concept sectionConcept = this.getSectionObsGroupConcept();
+		
+		// Get all obs matching the specified section concept(s) 
+		return Context.getObsService().getObservations(
+					recordTarget,
+					this.getDocEncounters(), 
+					Arrays.asList(sectionConcept), 
+					null,
+					null, 
+					null, 
+					null, 
+					null, 
+					null, 
+					null, 
+					null, 
+					false);    
+		}
+	
+	// Section concepts
+	protected abstract Concept getSectionObsGroupConcept();
+
+	/**
+	 * Get the status code of the object
+	 */
+	protected CS<ActStatus> getStatusCode(Obs obs) {
+		 if(obs instanceof ExtendedObs)
+	    {
+	    	ExtendedObs extendedObs = (ExtendedObs)obs;
+	    	CS<String> status = this.m_oddMetadataUtil.getStandardizedCode(extendedObs.getObsStatus(), ActStatus.Aborted.getCodeSystem(), CS.class);
+	    	return new CS<ActStatus>(new ActStatus(status.getCode(), ActStatus.Completed.getCodeSystem()));
+	    }
+		 else
+			 return new CS<ActStatus>(ActStatus.Completed);
+    }
+
+	/**
+	 * Get the template id list
+	 * Auto generated method comment
+	 * 
+	 * @param templateIds
+	 * @return
+	 */
+	protected LIST<II> getTemplateIdList(List<String> templateIds)
+	{
+		LIST<II> retVal = null;
+		if(templateIds.size() > 0)
+		{
+			retVal = new LIST<II>();
+			for(String tplId : templateIds)
+				retVal.add(new II(tplId));
+		}
+		return retVal;
+
+	}
 
 	/**
 	 * Parse dose quantity
@@ -1055,314 +1505,33 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	}
 
 	/**
-	 * Create a consumable
+	 * Set extended observation properties
 	 */
-	private Consumable createConsumable(Drug valueDrug, int containerConcent) {
-		// Create the product
-		Consumable consumable = new Consumable();
-		ManufacturedProduct product = new ManufacturedProduct(RoleClassManufacturedProduct.ManufacturedProduct);
-		product.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_PRODUCT), new II(CdaHandlerConstants.ENT_TEMPLATE_PRODUCT)));
+	protected void setExtendedObservationProperties(Observation cdaObservation, ExtendedObs extendedObs) {
 
-		Material manufacturedMaterial = new Material();
-		product.setManufacturedDrugOrOtherMaterial(manufacturedMaterial);
-		// Drug code
-		CE<String> drugCode = this.m_oddMetadataUtil.getStandardizedCode(valueDrug.getConcept(), CdaHandlerConstants.CODE_SYSTEM_RXNORM, CE.class);
-		if(drugCode != null && drugCode.isNull())
-		{
-			CE<String> cvxCode = this.m_oddMetadataUtil.getStandardizedCode(valueDrug.getConcept(), CdaHandlerConstants.CODE_SYSTEM_CVX, CE.class);
-			if(!cvxCode.isNull())
-				manufacturedMaterial.setCode(cvxCode);
-		}
-		if(manufacturedMaterial.getCode() == null)
-			manufacturedMaterial.setCode(drugCode);
-		
-		// Now get the drug from the concept
-		if(valueDrug.getName() != null)
-			manufacturedMaterial.setName(new EN(Arrays.asList(new ENXP(valueDrug.getName()))));
-
-		consumable.setManufacturedProduct(product);
-		return consumable;
-    }
-
-	/**
-	 * Unknown drug treatment
-	 */
-	public SubstanceAdministration createNoSubstanceAdministration(List<String> templateIds) {
-		SubstanceAdministration retVal = new SubstanceAdministration(x_DocumentSubstanceMood.Eventoccurrence);
-		retVal.setTemplateId(this.getTemplateIdList(templateIds));
-		
-		retVal.getEffectiveTime().add(new IVL<TS>(new TS(), TS.now()));
-		((IVL<TS>)retVal.getEffectiveTime().get(0)).getLow().setNullFlavor(NullFlavor.Unknown);
-		
-		retVal.setCode(s_drugTreatmentUnknownCode);
-		
-		retVal.setStatusCode(ActStatus.Completed);
-		
-		retVal.setId(SET.createSET(new II(UUID.randomUUID())));
-//		retVal.getId().get(0).setNullFlavor(NullFlavor.NotApplicable);
-		
-		retVal.setDoseQuantity(new PQ());
-		retVal.getDoseQuantity().setNullFlavor(NullFlavor.NotApplicable);
-		
-		retVal.setAdministrationUnitCode(new CE<String>());
-		retVal.getAdministrationUnitCode().setNullFlavor(NullFlavor.NotApplicable);
-		
-		retVal.setConsumable(new Consumable());
-		retVal.getConsumable().setManufacturedProduct(new ManufacturedProduct());
-		retVal.getConsumable().getManufacturedProduct().setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_PRODUCT, CdaHandlerConstants.ENT_TEMPLATE_CCD_MEDICATION_PRODUCT)));
-		retVal.getConsumable().getManufacturedProduct().setManufacturedDrugOrOtherMaterial(new Material());
-		retVal.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedMaterial().setCode(new CE<String>());
-		retVal.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedMaterial().getCode().setNullFlavor(NullFlavor.NotApplicable);
-		retVal.getConsumable().getManufacturedProduct().getManufacturedDrugOrOtherMaterialIfManufacturedMaterial().getCode().setOriginalText(new ED("Not Applicable"));
-		
-		retVal.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
-		return retVal;
-    }
-
-	/**
-	 * Create the procedure entry
-	 */
-	public Procedure createProcedure(List<String> templateIds, Obs sourceObs) {
-		
-		Procedure retVal = new Procedure();
-
-	    // Identifiers
-		retVal.setId(this.getIdentifierList(sourceObs));
-	    
-	    retVal.getAuthor().add(this.createAuthorPointer(sourceObs));
-
-		Reference original = this.createReferenceToDocument(sourceObs);
-		if(original != null) retVal.getReference().add(original);
-
-		// Extended observations
-		ExtendedObs extendedObs = Context.getService(CdaImportService.class).getExtendedObs(sourceObs.getId());
-		
-		// Set the mood code
-		retVal.setTemplateId(this.getTemplateIdList(templateIds));
-		retVal.setMoodCode(this.getMoodCode(sourceObs, x_DocumentProcedureMood.class));
-		retVal.setStatusCode(this.getStatusCode(sourceObs));
-		retVal.setEffectiveTime(this.getEffectiveTime(sourceObs));
-		
-		// Component obs
-		for(Obs component : this.m_service.getObsGroupMembers(sourceObs))
-		{
-			switch(component.getConcept().getId())
-			{
-				case CdaHandlerConstants.CONCEPT_ID_PROCEDURE:
-					retVal.setCode(this.m_oddMetadataUtil.getStandardizedCode(component.getConcept(), null, CD.class));
-					break;
-				case CdaHandlerConstants.CONCEPT_ID_PROCEDURE_DATE:
-					if(extendedObs == null)
-					{
-						retVal.setEffectiveTime(this.m_cdaDataUtil.createTS(component.getValueDate()));
-						retVal.getEffectiveTime().getValue().setDateValuePrecision(TS.DAY);
-					}
-					break;
-				case CdaHandlerConstants.CONCEPT_ID_PROVIDER_NAME:
-					// Get the provider
-					Provider provider = Context.getProviderService().getProviderByIdentifier(component.getValueText());
-					if(provider != null)
-						retVal.getPerformer().add(new Performer2(this.m_cdaDataUtil.createAssignedEntity(provider)));
-					break;
-				case CdaHandlerConstants.CONCEPT_ID_PROCEDURE_HISTORY: // A sub-observation
-	    		{
-	    			Procedure statement = this.createProcedure(templateIds, component);
-	    			EntryRelationship entryRelation = new EntryRelationship(x_ActRelationshipEntryRelationship.HasComponent, BL.TRUE);
-	    			entryRelation.setClinicalStatement(statement);
-	    			retVal.getEntryRelationship().add(entryRelation);
-	    			
-	    			break;
-	    		}
-				default:
-					if(component.getConcept().getUuid().equals(CdaHandlerConstants.RMIM_CONCEPT_UUID_APPROACH_SITE))
-					{
-						if(retVal.getApproachSiteCode() == null)
-							retVal.setApproachSiteCode(new SET<CD<String>>());
-						retVal.getApproachSiteCode().add(this.m_oddMetadataUtil.getStandardizedCode(component.getValueCoded(), null, CD.class))
-							;
-					}
-					else if(component.getConcept().getUuid().equals(CdaHandlerConstants.RMIM_CONCEPT_UUID_TARGET_SITE))
-					{
-						if(retVal.getTargetSiteCode() == null)
-							retVal.setTargetSiteCode(new SET<CD<String>>());
-						retVal.getTargetSiteCode().add(this.m_oddMetadataUtil.getStandardizedCode(component.getConcept(), null, CD.class));
-					}
-					else if(component.getConcept().getUuid().equals(CdaHandlerConstants.RMIM_CONCEPT_UUID_REASON))
-					{
-						EntryRelationship er = new EntryRelationship(x_ActRelationshipEntryRelationship.HasReason, BL.TRUE);
-						er.setClinicalStatement(this.createInternalReference(component.getValueText()));
-						retVal.getEntryRelationship().add(er);
-					}
-					else if(component.getConcept().getUuid().equals(CdaHandlerConstants.RMIM_CONCEPT_UUID_REFERENCE))
-					{
-						EntryRelationship er = new EntryRelationship(x_ActRelationshipEntryRelationship.HasComponent, BL.TRUE);
-						er.setInversionInd(BL.TRUE);
-						er.setClinicalStatement(this.createInternalReference(component.getValueText()));
-						retVal.getEntryRelationship().add(er);
-					}
-					else
-                    	throw new RuntimeException("Don't understand how to represent procedure component observation");
-
-					break;
-			}
-		}
-		
-
-    	if(sourceObs.getComment() != null)
-    		retVal.setText(new ED(sourceObs.getComment()));
-	    return retVal;
-		
-    }
-
-	/**
-	 * Create an internal reference 
-	 */
-	private ClinicalStatement createInternalReference(String valueText) {
-		Act retVal = new Act();
-		
-		retVal.setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_INTERNAL_REFERENCE)));
-		II referencedObjectId = this.m_cdaDataUtil.parseIIFromString(valueText);
-		retVal.setId(SET.createSET(referencedObjectId));
-		retVal.setCode(new CD<String>());
-		// TODO: Find out how to get this code?
-		retVal.getCode().setNullFlavor(NullFlavor.NoInformation);
-		
-		return retVal;
-    }
-
-	/**
-	 * Create procedure based on an order
-	 */
-	public Procedure createProcedure(List<String> asList, ProcedureOrder data) {
-
-		// TODO Auto-generated method stub
-	    return null;
-    }
-	
-	/**
-	 * Get the template id list
-	 * Auto generated method comment
-	 * 
-	 * @param templateIds
-	 * @return
-	 */
-	protected LIST<II> getTemplateIdList(List<String> templateIds)
-	{
-		LIST<II> retVal = null;
-		if(templateIds.size() > 0)
-		{
-			retVal = new LIST<II>();
-			for(String tplId : templateIds)
-				retVal.add(new II(tplId));
-		}
-		return retVal;
-
-	}
-
-	/**
-	 * Create a "no known problem" or "no known allergy" act
-	 */
-	protected Act createNoKnownProblemAct(List<String> templateIds, CD<String> code, CD<String> valueCode) {
-		
-		Act retVal = new Act(x_ActClassDocumentEntryAct.Act, x_DocumentActMood.Eventoccurrence);
-		retVal.setStatusCode(ActStatus.Completed);
-		retVal.setTemplateId(this.getTemplateIdList(templateIds));
-		retVal.setEffectiveTime(new TS(), TS.now());
-		retVal.getEffectiveTime().getLow().setNullFlavor(NullFlavor.Unknown);
-		retVal.setCode(new CD<String>());
-		retVal.getCode().setNullFlavor(NullFlavor.NotApplicable);
-		retVal.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
-		retVal.setId(SET.createSET(new II(UUID.randomUUID())));
-
-		// Observation
-		Observation probObs = new Observation(x_ActMoodDocumentObservation.Eventoccurrence);
-		probObs.setStatusCode(ActStatus.Completed);
-		probObs.setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION)));
-		if(templateIds.contains(CdaHandlerConstants.ENT_TEMPLATE_ALLERGIES_AND_INTOLERANCES_CONCERN))
-		{
-			probObs.getTemplateId().add(new II(CdaHandlerConstants.ENT_TEMPLATE_CCD_ALERT_OBSERVATION));
-			probObs.getTemplateId().add(new II(CdaHandlerConstants.ENT_TEMPLATE_ALLERGY_AND_INTOLERANCE_OBSERVATION));
-		}
-		probObs.setCode(code);
-		probObs.setValue(valueCode);
-		probObs.setEffectiveTime(new TS(), TS.now());
-		probObs.getEffectiveTime().getLow().setNullFlavor(NullFlavor.Unknown);
-		probObs.setId(SET.createSET(new II(UUID.randomUUID())));
-		probObs.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
-
-		retVal.getEntryRelationship().add(new EntryRelationship(x_ActRelationshipEntryRelationship.SUBJ, BL.TRUE, probObs));
-		retVal.getEntryRelationship().get(0).setInversionInd(BL.FALSE);
-		return retVal;
-		
+    	if(extendedObs.getObsInterpretation() != null)
+    		cdaObservation.setInterpretationCode(SET.createSET((CE<ObservationInterpretation>)this.m_oddMetadataUtil.getStandardizedCode(extendedObs.getObsInterpretation(), ObservationInterpretation.Abnormal.getCodeSystem(), CE.class)));
+    	if(extendedObs.getObsRepeatNumber() != null)
+    		cdaObservation.setRepeatNumber(new INT(extendedObs.getObsRepeatNumber()));
+    	
     }
 
 	
 	/**
-	 * Create an external references act
-	 */
-	protected Act createExternalReferenceAct(Obs data) {
-		 Act retVal = new Act(x_ActClassDocumentEntryAct.Act, x_DocumentActMood.Eventoccurrence);
-		retVal.setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_EXTERNAL_REFERENCES_ENTRY)));
-		retVal.setId(SET.createSET(new II(UUID.randomUUID())));
-		retVal.setCode(new CD<String>());
-		retVal.getCode().setNullFlavor(NullFlavor.NotApplicable);
-		
-		for(Obs subObs : this.m_service.getObsGroupMembers(data))
-		{
-			Reference ref = new Reference();
-			ref.setTypeCode(this.m_oddMetadataUtil.getStandardizedCode(subObs.getConcept(), x_ActRelationshipExternalReference.ELNK.getCodeSystem(), CS.class));
-			ref.setExternalActChoice(new ExternalDocument());
-			ref.getExternalActChoiceIfExternalDocument().setId(SET.createSET(this.m_cdaDataUtil.parseIIFromString(subObs.getValueText())));
-			if(subObs.getComment() != null)
-				ref.getExternalActChoiceIfExternalDocument().setText(new ED(subObs.getComment()));
-			retVal.getReference().add(ref);
-		}
-		
-		if(data.getComment() != null)
-			retVal.setText(new ED(data.getComment()));
-		
-		return retVal;
-	}
+     * Sets the clinical document context 
+     * @see org.openmrs.module.shr.odd.generator.SectionGenerator#setGeneratedDocument(org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument)
+     */
+    public void setGeneratedDocument(ClinicalDocument context)
+    {
+    	this.m_documentContext = context;
+    }
 
 	/**
-	 * Correct a code to a more preferred code system
-	 */
-	protected void correctCode(CE<?> code, String... codeSystems) {
-
-		if(code.isNull())
-			return;
-
-		// Already preferred
-		for(String cs : codeSystems)
-			if(code.getCodeSystem().equals(cs))
-				return; 
-		
-		// Get translation
-		code.getTranslation().add(new CD(code.getCode(), code.getCodeSystem(), code.getCodeSystemName(), code.getCodeSystemVersion(), code.getDisplayName(), null));
-		// Move the first translation to the root code
-		for(String cs : codeSystems)
-		{
-			for(CD<?> tx : code.getTranslation())
-				if(tx.getCodeSystem().equals(cs))
-				{
-					code.setCode(tx.getCode());
-					code.setCodeSystem(tx.getCodeSystem());
-					code.setDisplayName(tx.getDisplayName());
-					code.setCodeSystemName(tx.getCodeSystemName());
-					code.setCodeSystemVersion(tx.getCodeSystemVersion());
-					code.getTranslation().remove(tx);
-					return;
-				}
-		}
-		
-		// Not found :| ... Null Flavor it with OTH
-		code.setNullFlavor(NullFlavor.Other);
-		code.setCodeSystemName(null);
-		code.setDisplayName(null);
-		code.setCodeSystemVersion(null);
-		code.setCode(null);
-		code.setCodeSystem(codeSystems[0]);
-		
+     * @see org.openmrs.module.shr.odd.generator.SectionGenerator#setRegistration(org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration)
+     */
+    @Override
+    public void setRegistration(OnDemandDocumentRegistration context) {
+    	this.m_registration = context;
     }
 
 }

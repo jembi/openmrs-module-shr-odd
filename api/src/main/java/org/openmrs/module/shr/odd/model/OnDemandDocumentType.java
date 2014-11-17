@@ -1,5 +1,7 @@
 package org.openmrs.module.shr.odd.model;
 
+import java.util.List;
+
 import org.openmrs.BaseOpenmrsMetadata;
 
 /**
@@ -15,7 +17,26 @@ public class OnDemandDocumentType extends BaseOpenmrsMetadata {
 	private String name;
 	// Format code
 	private String formatCode;
+	// Sections
+	private List<OnDemandDocumentSectionType> sections;
+
+	/**
+	 * Get sections
+	 * @return
+	 */
+    public List<OnDemandDocumentSectionType> getSections() {
+		return sections;
+	}
+
     /**
+     * Set the sections
+     * @param sections
+     */
+	public void setSections(List<OnDemandDocumentSectionType> sections) {
+		this.sections = sections;
+	}
+
+	/**
      * @return the id
      */
     public Integer getId() {

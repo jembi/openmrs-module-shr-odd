@@ -126,17 +126,17 @@ public final class XdsUtil {
 		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_LANGUAGE_CODE, Context.getLocale().toLanguageTag());
 		
 		// Unique identifier
-		this.addExtenalIdentifier(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_uniqueId, registration.getAccessionNumber());
-		this.addExtenalIdentifier(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_patientId, this.getPatientIdentifier(registration.getPatient()));
+		this.addExtenalIdentifier(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_uniqueId, registration.getAccessionNumber(), "XDSDocumentEntry.uniqueId");
+		this.addExtenalIdentifier(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_patientId, this.getPatientIdentifier(registration.getPatient()), "XDSDocumentEntry.patientId");
 		
 		// Set classifications
-		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_classCode, "code", "codingScheme");
-		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_confidentialityCode, "1.3.6.1.4.1.21367.2006.7.101", "Connect-a-thon confidentialityCodes");
+		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_confidentialityCode, "1.3.6.1.4.1.21367.2006.7.101", "Connect-a-thon confidentialityCodes", "confidentialityCode");
 		CV<String> formatCode = CdaDataUtil.getInstance().parseCodeFromString(registration.getType().getFormatCode(), CV.class);
-		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_formatCode, formatCode.getCode(), formatCode.getCodeSystem());
-		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_healthCareFacilityTypeCode, "Not Available", "Connect-a-thon healthcareFacilityTypeCodes");
-		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_practiceSettingCode, "Not Available", "Connect-a-thon practiceSettingCodes");
-		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_typeCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystemName());
+		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_formatCode, formatCode.getCode(), formatCode.getCodeSystem(), "formatCode");
+		//this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_healthCareFacilityTypeCode, "Not Available", "Connect-a-thon healthcareFacilityTypeCodes");
+		//this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_practiceSettingCode, "Not Available", "Connect-a-thon practiceSettingCodes");
+		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_typeCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystemName(), "typeCode");
+		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_classCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystemName(), "classCode");
 		
 		// Create the submission set
 		TS now = TS.now();
@@ -146,13 +146,13 @@ public final class XdsUtil {
 		regPackage.setId(String.format("SubmissionSet%s", registration.getId().toString()));
 		InfosetUtil.addOrOverwriteSlot(regPackage, XDSConstants.SLOT_NAME_SUBMISSION_TIME, now.getValue());
 		regPackage.setName(oddRegistryObject.getName());
-		this.addCodedValueClassification(regPackage, XDSConstants.UUID_XDSSubmissionSet_contentTypeCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystem());
+		this.addCodedValueClassification(regPackage, XDSConstants.UUID_XDSSubmissionSet_contentTypeCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystem(), "contentTypeCode");
 		
 		// Submission set external identifiers
 
-		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_uniqueId, registration.getAccessionNumber() + ".1." + now.getValue());
-		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_sourceId, registration.getAccessionNumber());
-		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_patientId, this.getPatientIdentifier(registration.getPatient()));
+		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_uniqueId, registration.getAccessionNumber() + ".1." + now.getValue(), "XDSSubmissionSet.uniqueId");
+		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_sourceId, registration.getAccessionNumber(), "XDSSubmissionSet.sourceId");
+		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_patientId, this.getPatientIdentifier(registration.getPatient()), "XDSSubmissionSet.patientId");
 		
 		// Add the eo to the submission
 		registryRequest.getRegistryObjectList().getIdentifiable().add(
@@ -188,7 +188,7 @@ public final class XdsUtil {
 		// Add an association
 		AssociationType1 association = 	new AssociationType1();
 		association.setId("as01");
-		association.setAssociationType("HasMember");
+		association.setAssociationType("urn:oasis:names:tc:ebxml-regrep:AssociationType:HasMember");
 		association.setSourceObject(String.format("SubmissionSet%s", registration.getId().toString()));
 		association.setTargetObject(String.format("Document%s", registration.getId().toString()));
 		InfosetUtil.addOrOverwriteSlot(association, XDSConstants.SLOT_NAME_SUBMISSIONSET_STATUS, "Original");
@@ -211,13 +211,16 @@ public final class XdsUtil {
 	/**
 	 * Add external identifier
 	 */
-	private ExternalIdentifierType addExtenalIdentifier(final RegistryObjectType classifiedObj, final String uuid, final String id) throws JAXBException {
+	private ExternalIdentifierType addExtenalIdentifier(final RegistryObjectType classifiedObj, final String uuid, final String id, final String name) throws JAXBException {
 	
 		ExternalIdentifierType retVal = new ExternalIdentifierType();
 		retVal.setRegistryObject(classifiedObj.getId());
 		retVal.setIdentificationScheme(uuid);
 		retVal.setValue(id);
 		retVal.setId(String.format("eid%s", classifiedObj.getExternalIdentifier().size()));
+		retVal.setName(new InternationalStringType());
+		retVal.getName().getLocalizedString().add(new LocalizedStringType());
+		retVal.getName().getLocalizedString().get(0).setValue(name);
 		classifiedObj.getExternalIdentifier().add(retVal);
 		return retVal;
 	}
@@ -226,7 +229,7 @@ public final class XdsUtil {
 	 * Create a codified value classification
 	 * @throws JAXBException 
 	 */
-	private ClassificationType addCodedValueClassification(final RegistryObjectType classifiedObj, final String uuid, final String code, final String scheme) throws JAXBException {
+	private ClassificationType addCodedValueClassification(final RegistryObjectType classifiedObj, final String uuid, final String code, final String scheme, String name) throws JAXBException {
 	    ClassificationType retVal = new ClassificationType();
 	    retVal.setClassifiedObject(classifiedObj.getId());
 	    retVal.setClassificationScheme(uuid);
@@ -234,6 +237,10 @@ public final class XdsUtil {
 	    
 	    retVal.setId(String.format("cl%s",retVal.hashCode()));
 	    InfosetUtil.addOrOverwriteSlot(retVal, "codingScheme", scheme);
+
+	    retVal.setName(new InternationalStringType());
+		retVal.getName().getLocalizedString().add(new LocalizedStringType());
+		retVal.getName().getLocalizedString().get(0).setValue(name);
 	    
 	    classifiedObj.getClassification().add(retVal);
 	    

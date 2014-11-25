@@ -4,6 +4,7 @@ import org.marc.everest.formatters.FormatterUtil;
 import org.openmrs.GlobalProperty;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
+import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfigurationFactory;
 
 /**
  * Configuration for the OnDemandDocument module
@@ -14,7 +15,7 @@ public final class OnDemandDocumentConfiguration {
 	private static final Object s_lockObject = new Object();
 	private static OnDemandDocumentConfiguration s_instance;
 	// Some data is borrowed from the cdaImport configuration
-	private CdaHandlerConfiguration m_cdaImportConfiguration = CdaHandlerConfiguration.getInstance();
+	private CdaHandlerConfiguration m_cdaImportConfiguration = CdaHandlerConfigurationFactory.getInstance();
 	
 	// Configuration constants
     public static final String PROP_ID_REGEX = "shr-odd.id.regex";

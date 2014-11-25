@@ -81,10 +81,12 @@ public class FamilyHistorySectionGenerator extends SectionGeneratorImpl {
 			// Group these observations by family member! eek
 			Map<Concept, List<Obs>> organizedFamilyHistoryObs = new HashMap<Concept, List<Obs>>();
 			Concept familyMemberRelationConcept = Context.getConceptService().getConcept(1560);
+			
 			for(Obs familyHistoryListObs : encounterFamilyHistoryObs)
 			{
 				if(familyHistoryListObs.getVoided()) continue;
 				
+				// Get the relationship observation
 				List<Obs> familyRelationObs = super.m_service.getObsGroupMembers(familyHistoryListObs, Arrays.asList(familyMemberRelationConcept));
 				if(familyRelationObs.size() == 0) 
 					continue;

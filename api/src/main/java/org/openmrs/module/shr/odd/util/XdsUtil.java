@@ -24,6 +24,7 @@ import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
+import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfigurationFactory;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.configuration.OnDemandDocumentConfiguration;
 import org.openmrs.module.shr.odd.contenthandler.OnDemandDocumentContentHandler;
@@ -43,7 +44,7 @@ public final class XdsUtil {
 	private static final Object s_lockObject = new Object();
 	private static XdsUtil s_instance;
 	private final OnDemandDocumentConfiguration m_configuration = OnDemandDocumentConfiguration.getInstance();
-	private final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfiguration.getInstance();
+	private final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfigurationFactory.getInstance();
 	
 	/**
 	 * Private ctor

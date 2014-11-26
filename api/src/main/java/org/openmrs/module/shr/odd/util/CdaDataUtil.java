@@ -609,7 +609,8 @@ public final class CdaDataUtil {
 	public SET<PN> createNameSet(org.openmrs.Person person) {
 		SET<PN> retVal = new SET<PN>();
 		for(PersonName name : person.getNames())
-			retVal.add(this.createPN(name));
+			if(!name.getFamilyName().equals("*")) // HACK: Name is requiredso this is the hackery that I use to bypass it
+				retVal.add(this.createPN(name));
 		if(retVal.size() > 0)
 			return retVal;
 		return null;

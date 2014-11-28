@@ -24,7 +24,6 @@ import org.openmrs.Visit;
 import org.openmrs.VisitAttribute;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
-import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfigurationFactory;
 import org.openmrs.module.shr.cdahandler.processor.util.OpenmrsConceptUtil;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
@@ -43,7 +42,7 @@ public final class OddMetadataUtil {
 	
 	// Get the ODD service
 	private final OnDemandDocumentService m_oddService = Context.getService(OnDemandDocumentService.class);
-	private final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfigurationFactory.getInstance();
+	private final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfiguration.getInstance();
 	private final OpenmrsConceptUtil m_conceptUtil = OpenmrsConceptUtil.getInstance();
 	
 	
@@ -235,7 +234,7 @@ public final class OddMetadataUtil {
 	    		String codeSystemHl7 = referenceTerm.getConceptSource().getHl7Code();
 	    		if(codeSystemHl7 != null && II.isRootOid(new II(codeSystemHl7)))
     			{
-    				((CV<?>)retVal).setCodeSystem(this.m_conceptUtil.mapConceptSourceNameToOid(referenceTerm.getConceptSource().getName()));
+    				((CV<?>)retVal).setCodeSystem(this.m_conceptUtil.mapConceptSourceNameToOid(referenceTerm.getConceptSource().getHl7Code()));
     			}
 	    		else
 	    		{

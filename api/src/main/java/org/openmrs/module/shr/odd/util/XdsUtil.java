@@ -24,7 +24,6 @@ import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
-import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfigurationFactory;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.configuration.OnDemandDocumentConfiguration;
 import org.openmrs.module.shr.odd.contenthandler.OnDemandDocumentContentHandler;
@@ -44,7 +43,7 @@ public final class XdsUtil {
 	private static final Object s_lockObject = new Object();
 	private static XdsUtil s_instance;
 	private final OnDemandDocumentConfiguration m_configuration = OnDemandDocumentConfiguration.getInstance();
-	private final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfigurationFactory.getInstance();
+	private final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfiguration.getInstance();
 	
 	/**
 	 * Private ctor
@@ -131,7 +130,7 @@ public final class XdsUtil {
 		this.addExtenalIdentifier(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_patientId, this.getPatientIdentifier(registration.getPatient()));
 		
 		// Set classifications
-		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_classCode, "code", "codingScheme");
+		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_classCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystemName());
 		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_confidentialityCode, "1.3.6.1.4.1.21367.2006.7.101", "Connect-a-thon confidentialityCodes");
 		CV<String> formatCode = CdaDataUtil.getInstance().parseCodeFromString(registration.getType().getFormatCode(), CV.class);
 		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_formatCode, formatCode.getCode(), formatCode.getCodeSystem());
@@ -212,7 +211,7 @@ public final class XdsUtil {
 	/**
 	 * Add external identifier
 	 */
-	private ExternalIdentifierType addExtenalIdentifier(final RegistryObjectType classifiedObj, final String uuid, final String id) throws JAXBException {
+	public ExternalIdentifierType addExtenalIdentifier(final RegistryObjectType classifiedObj, final String uuid, final String id) throws JAXBException {
 	
 		ExternalIdentifierType retVal = new ExternalIdentifierType();
 		retVal.setRegistryObject(classifiedObj.getId());
@@ -227,7 +226,7 @@ public final class XdsUtil {
 	 * Create a codified value classification
 	 * @throws JAXBException 
 	 */
-	private ClassificationType addCodedValueClassification(final RegistryObjectType classifiedObj, final String uuid, final String code, final String scheme) throws JAXBException {
+	public ClassificationType addCodedValueClassification(final RegistryObjectType classifiedObj, final String uuid, final String code, final String scheme) throws JAXBException {
 	    ClassificationType retVal = new ClassificationType();
 	    retVal.setClassifiedObject(classifiedObj.getId());
 	    retVal.setClassificationScheme(uuid);
@@ -252,7 +251,7 @@ public final class XdsUtil {
 	/**
 	 * Get the ECID identifier for the patient
 	 */
-	private String getPatientIdentifier(Patient patient) {
+	public String getPatientIdentifier(Patient patient) {
 		for(PatientIdentifier pid : patient.getIdentifiers())
 			if(pid.getIdentifierType().getName().equals(this.m_cdaConfiguration.getEcidRoot())) // prefer the ecid
 				return this.formatId(pid.getIdentifierType().getName(), pid.getIdentifier());

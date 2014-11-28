@@ -81,7 +81,7 @@ public class ImmunizationsSectionGenerator extends SectionGeneratorImpl {
 	 * @see org.openmrs.module.shr.odd.generator.section.impl.SectionGeneratorImpl#getSectionObsGroupConcept()
 	 */
 	@Override
-	protected Concept getSectionObsGroupConcept() {
+	public Concept getSectionObsGroupConcept() {
 		return this.m_sectionConcept;
 	}
 	

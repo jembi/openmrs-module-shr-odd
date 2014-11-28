@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLInputFactory;
 
+import org.jfree.util.Log;
 import org.marc.everest.datatypes.AD;
 import org.marc.everest.datatypes.ADXP;
 import org.marc.everest.datatypes.ANY;
@@ -78,7 +79,6 @@ import org.openmrs.Relationship;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
-import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfigurationFactory;
 import org.openmrs.module.shr.cdahandler.processor.util.OpenmrsConceptUtil;
 import org.openmrs.module.shr.odd.configuration.OnDemandDocumentConfiguration;
 import org.openmrs.util.OpenmrsConstants;
@@ -94,7 +94,7 @@ public final class CdaDataUtil {
 	private static CdaDataUtil s_instance;
 	
 	// Cda Handler Configuration
-	private final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfigurationFactory.getInstance();
+	private final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfiguration.getInstance();
 	private final OnDemandDocumentConfiguration m_oddConfiguration = OnDemandDocumentConfiguration.getInstance();
 	private final OddMetadataUtil m_metaDataUtil = OddMetadataUtil.getInstance();
 	private final OpenmrsConceptUtil m_conceptUtil = OpenmrsConceptUtil.getInstance();
@@ -214,34 +214,36 @@ public final class CdaDataUtil {
 	 * Creates a set of telecoms
 	 */
 	public SET<TEL> createTelecomSet(org.openmrs.Person person) {
+		
 		SET<TEL> retVal = new SET<TEL>();
-		for(PersonAttribute patt : person.getAttributes())
-		{
-			if(patt.getAttributeType().getName().equals(CdaHandlerConstants.ATTRIBUTE_NAME_TELECOM))
+		if(person != null)
+			for(PersonAttribute patt : person.getAttributes())
 			{
-				TEL tel = new TEL();
-				if(patt.getValue().contains(":"))
+				if(patt.getAttributeType().getName().equals(CdaHandlerConstants.ATTRIBUTE_NAME_TELECOM))
 				{
-					String[] parts = {
-							patt.getValue().substring(0, patt.getValue().indexOf(":")),
-							patt.getValue().substring(patt.getValue().indexOf(":") + 1)
-					};
-					tel.setValue(parts[1].trim());
-					try {
-	                    tel.setUse((SET<CS<TelecommunicationsAddressUse>>) FormatterUtil.fromWireFormat(parts[0], AssignedEntity.class.getMethod("getTelecom", null).getGenericReturnType(), false));
-                    }
-                    catch (Exception e) {
-	                    // Safe to ignore?
-                    }
+					TEL tel = new TEL();
+					if(patt.getValue().contains(":"))
+					{
+						String[] parts = {
+								patt.getValue().substring(0, patt.getValue().indexOf(":")),
+								patt.getValue().substring(patt.getValue().indexOf(":") + 1)
+						};
+						tel.setValue(parts[1].trim());
+						try {
+		                    tel.setUse((SET<CS<TelecommunicationsAddressUse>>) FormatterUtil.fromWireFormat(parts[0], AssignedEntity.class.getMethod("getTelecom", null).getGenericReturnType(), false));
+	                    }
+	                    catch (Exception e) {
+		                    // Safe to ignore?
+	                    }
+					}
+					else
+						tel.setValue(patt.getValue());
+					
+					if(patt.getVoided())
+						tel.setUse(TelecommunicationsAddressUse.BadAddress);
+					retVal.add(tel);
 				}
-				else
-					tel.setValue(patt.getValue());
-				
-				if(patt.getVoided())
-					tel.setUse(TelecommunicationsAddressUse.BadAddress);
-				retVal.add(tel);
 			}
-		}
 		
 		if(retVal.size() == 0)
 		{
@@ -324,18 +326,22 @@ public final class CdaDataUtil {
 
 		
 		// Set telecom
-		retVal.setTelecom(this.createTelecomSet(pvdr.getPerson()));
-		
-		// Get the address
-		retVal.setAddr(this.createAddressSet(pvdr.getPerson()));
-		
-		// Get names
-		retVal.setAssignedAuthorChoice(new Person(this.createNameSet(pvdr.getPerson())));
-		
-		PersonAttribute orgAttribute = pvdr.getPerson().getAttribute(CdaHandlerConstants.ATTRIBUTE_NAME_ORGANIZATION);
-		if(orgAttribute != null)
-			retVal.setRepresentedOrganization(this.createOrganization((Location)orgAttribute.getHydratedObject()));
- 
+		if(pvdr.getPerson() != null)
+		{
+			retVal.setTelecom(this.createTelecomSet(pvdr.getPerson()));
+			
+			// Get the address
+			retVal.setAddr(this.createAddressSet(pvdr.getPerson()));
+			
+			// Get names
+			retVal.setAssignedAuthorChoice(new Person(this.createNameSet(pvdr.getPerson())));
+			
+			PersonAttribute orgAttribute = pvdr.getPerson().getAttribute(CdaHandlerConstants.ATTRIBUTE_NAME_ORGANIZATION);
+			if(orgAttribute != null)
+				retVal.setRepresentedOrganization(this.createOrganization((Location)orgAttribute.getHydratedObject()));
+		}
+		else
+			retVal.setAssignedAuthorChoice(new AuthoringDevice(null, new SC(pvdr.getName()), null, null));
 		return retVal;
     }
 
@@ -497,8 +503,22 @@ public final class CdaDataUtil {
 		// Identifiers
 		patientRole.setId(new SET<II>());
 		for(PatientIdentifier pid : patient.getActiveIdentifiers())
-			patientRole.getId().add(new II(pid.getIdentifierType().getName(), pid.getIdentifier()));
-		patientRole.getId().add(new II(this.m_cdaConfiguration.getPatientRoot(), patient.getId().toString()));
+		{
+			II ii = new II(pid.getIdentifierType().getName(), pid.getIdentifier());
+			try
+			{
+				if(!patientRole.getId().contains(ii))
+					patientRole.getId().add(ii);
+			}
+			catch(Exception e)
+			{
+				Log.error(e);
+			}
+		}
+		
+		II meId = new II(this.m_cdaConfiguration.getPatientRoot(), patient.getId().toString());
+		if(!patientRole.getId().contains(meId))
+			patientRole.getId().add(meId);
 		
 		// Address?
 		patientRole.setAddr(this.createAddressSet(patient));

@@ -96,7 +96,6 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
-import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfigurationFactory;
 import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
 import org.openmrs.module.shr.cdahandler.obs.ExtendedObs;
 import org.openmrs.module.shr.cdahandler.order.ProcedureOrder;
@@ -127,7 +126,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	protected final OnDemandDocumentService m_service = Context.getService(OnDemandDocumentService.class);
 	protected final CdaDataUtil m_cdaDataUtil = CdaDataUtil.getInstance();
 	protected final OnDemandDocumentConfiguration m_oddConfiguration = OnDemandDocumentConfiguration.getInstance();
-	protected final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfigurationFactory.getInstance();
+	protected final CdaHandlerConfiguration m_cdaConfiguration = CdaHandlerConfiguration.getInstance();
 	protected final CdaTextUtil m_cdaTextUtil = CdaTextUtil.getInstance();
 
 	protected static final String REGEX_IVL_PQ = "^\\{?([\\d.]*)?\\s(\\w*)?\\s?\\.*\\s?([\\d.]*)?\\s?([\\w]*?)?\\}?$";
@@ -517,7 +516,11 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	protected SET<II> getIdentifierList(Obs sourceObs) {
 		SET<II> retVal = new SET<II>();
 	    if(sourceObs.getAccessionNumber() != null && !sourceObs.getAccessionNumber().isEmpty())
-	    	retVal.add(this.m_cdaDataUtil.parseIIFromString(sourceObs.getAccessionNumber()));
+	    {
+	    	II ii = this.m_cdaDataUtil.parseIIFromString(sourceObs.getAccessionNumber());
+	    	if(ii.getRoot() != null && !ii.getRoot().isEmpty())
+	    		retVal.add(ii);
+	    }
 	    retVal.add(new II(this.m_cdaConfiguration.getObsRoot(), sourceObs.getId().toString()));
 	    return retVal;
     }
@@ -625,8 +628,11 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		{
 			retVal.setTime(this.m_cdaDataUtil.createTS(sourceData.getDateCreated()));
 			Collection<Provider> providers = Context.getProviderService().getProvidersByPerson(sourceData.getCreator().getPerson());
-			Provider pvdr = providers.iterator().next();
-			retVal.setAssignedAuthor(this.m_cdaDataUtil.createAuthorPerson(pvdr));
+			if(providers.size() > 0)
+			{
+				Provider pvdr = providers.iterator().next();
+				retVal.setAssignedAuthor(this.m_cdaDataUtil.createAuthorPerson(pvdr));
+			}
 			//retVal.setAssignedAuthor(new AssignedAuthor(SET.createSET(new II(this.m_cdaConfiguration.getUserRoot(), sourceData.getCreator().getId().toString()))));
 		}
 		return retVal;
@@ -772,10 +778,17 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    			
 	    		case CdaHandlerConstants.CONCEPT_ID_MEDICATION_DRUG:
 	    		case CdaHandlerConstants.CONCEPT_ID_IMMUNIZATION_DRUG:
-	    			retVal.setConsumable(this.createConsumable(component.getValueDrug(), sourceObs.getConcept().getId()));
+	    		{
+					Drug valueDrug = component.getValueDrug();
+					Concept concept = component.getValueCoded();
+					if(valueDrug != null)
+						concept = valueDrug.getConcept();
+	    			retVal.setConsumable(this.createConsumable(concept, valueDrug, sourceObs.getConcept().getId()));
+	    		}
 	    			break;
 	    		case CdaHandlerConstants.CONCEPT_ID_IMMUNIZATION_SEQUENCE:
 	    			Observation seriesObservation = new Observation(x_ActMoodDocumentObservation.Eventoccurrence);
+	    			seriesObservation.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_IMMUNIZATION_SERIES)));
 	    			seriesObservation.setStatusCode(ActStatus.Completed);
 	    			seriesObservation.setCode(new CD<String>("30973-2", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "Dose Number", null));
 	    			seriesObservation.setValue(new INT(component.getValueNumeric().intValue()));
@@ -847,8 +860,14 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    						supplyRelationship.setSequenceNumber(supplyComponent.getValueNumeric().intValue());
 	    						break;
 	    					case CdaHandlerConstants.CONCEPT_ID_MEDICATION_DRUG:
-	    						Consumable cons = this.createConsumable(supplyComponent.getValueDrug(), sourceObs.getConcept().getId());
+	    					{
+	    						Drug valueDrug = supplyComponent.getValueDrug();
+	    						Concept concept = supplyComponent.getValueCoded();
+	    						if(valueDrug != null)
+	    							concept = valueDrug.getConcept();
+	    						Consumable cons = this.createConsumable(concept, supplyComponent.getValueDrug(), sourceObs.getConcept().getId());
 	    						supply.setProduct(new Product(cons.getManufacturedProduct()));
+	    					}
 	    						break;
     						default:
     							throw new RuntimeException("Don't understand how to represent medication supply observation");
@@ -1058,7 +1077,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	/**
 	 * Create a consumable
 	 */
-	private Consumable createConsumable(Drug valueDrug, int containerConcent) {
+	private Consumable createConsumable(Concept valueConcept, Drug valueDrug, int containerConcent) {
 		// Create the product
 		Consumable consumable = new Consumable();
 		ManufacturedProduct product = new ManufacturedProduct(RoleClassManufacturedProduct.ManufacturedProduct);
@@ -1066,19 +1085,21 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 
 		Material manufacturedMaterial = new Material();
 		product.setManufacturedDrugOrOtherMaterial(manufacturedMaterial);
+		
+		
 		// Drug code
-		CE<String> drugCode = this.m_oddMetadataUtil.getStandardizedCode(valueDrug.getConcept(), CdaHandlerConstants.CODE_SYSTEM_RXNORM, CE.class);
-		if(drugCode != null && drugCode.isNull())
+		CE<String> cvxCode = this.m_oddMetadataUtil.getStandardizedCode(valueConcept, CdaHandlerConstants.CODE_SYSTEM_CVX, CE.class);
+		if(cvxCode != null && cvxCode.isNull())
 		{
-			CE<String> cvxCode = this.m_oddMetadataUtil.getStandardizedCode(valueDrug.getConcept(), CdaHandlerConstants.CODE_SYSTEM_CVX, CE.class);
-			if(!cvxCode.isNull())
-				manufacturedMaterial.setCode(cvxCode);
+			CE<String> drugCode = this.m_oddMetadataUtil.getStandardizedCode(valueConcept, CdaHandlerConstants.CODE_SYSTEM_RXNORM, CE.class);
+			if(!drugCode.isNull())
+				manufacturedMaterial.setCode(drugCode);
 		}
 		if(manufacturedMaterial.getCode() == null)
-			manufacturedMaterial.setCode(drugCode);
+			manufacturedMaterial.setCode(cvxCode);
 		
 		// Now get the drug from the concept
-		if(valueDrug.getName() != null)
+		if(valueDrug != null && valueDrug.getName() != null)
 			manufacturedMaterial.setName(new EN(Arrays.asList(new ENXP(valueDrug.getName()))));
 
 		consumable.setManufacturedProduct(product);

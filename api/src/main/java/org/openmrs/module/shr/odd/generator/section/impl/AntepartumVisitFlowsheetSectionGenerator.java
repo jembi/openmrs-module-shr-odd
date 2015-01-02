@@ -94,7 +94,7 @@ public class AntepartumVisitFlowsheetSectionGenerator extends SectionGeneratorIm
 					// Set additional core attributes
 					batteryOrganizer.setEffectiveTime(super.getEffectiveTime(battery));
 					batteryOrganizer.setStatusCode(super.getStatusCode(battery));
-					Reference original = super.createReferenceToDocument(battery);
+					Reference original = super.createReferenceToDocument(battery.getEncounter());
 					if(original != null) batteryOrganizer.getReference().add(original);
 					
 					// Sub observations in the battery 

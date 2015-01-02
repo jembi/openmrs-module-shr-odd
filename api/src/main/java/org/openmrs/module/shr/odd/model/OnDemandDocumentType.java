@@ -1,5 +1,7 @@
 package org.openmrs.module.shr.odd.model;
 
+import java.util.List;
+
 import org.openmrs.BaseOpenmrsMetadata;
 
 /**
@@ -15,7 +17,8 @@ public class OnDemandDocumentType extends BaseOpenmrsMetadata {
 	private String name;
 	// Format code
 	private String formatCode;
-    /**
+
+	/**
      * @return the id
      */
     public Integer getId() {

@@ -28,4 +28,5 @@
 		<many-to-one name="creator" class="org.openmrs.User" not-null="true" />
 	</class>
 	
+	
 </hibernate-mapping>

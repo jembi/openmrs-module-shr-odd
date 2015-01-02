@@ -1387,4 +1387,35 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		
     }
 
+	/**
+	 * Create a reference to a source document
+	 */
+	protected Reference createReferenceToDocument(Encounter enc) {
+		
+		Reference retVal = null;
+		if(enc.getVisit() != null)
+		{
+            try {
+            	retVal = new Reference();
+        		ExternalDocument ed = new ExternalDocument();
+        		
+            	VisitAttributeType vat = this.m_conceptUtil.getOrCreateVisitExternalIdAttributeType();
+    			for(VisitAttribute attr : enc.getVisit().getActiveAttributes())
+    				if(attr.getAttributeType().equals(vat))
+    					ed.setId(SET.createSET(this.m_cdaDataUtil.parseIIFromString(attr.getValue().toString())));
+
+    			retVal.setTypeCode(x_ActRelationshipExternalReference.REFR);
+    			retVal.setExternalActChoice(ed);
+
+            }
+            catch (DocumentImportException e) {
+	            log.error("Error generated", e);
+            }
+		}
+		
+		return retVal;
+    }
+
+
 }
+

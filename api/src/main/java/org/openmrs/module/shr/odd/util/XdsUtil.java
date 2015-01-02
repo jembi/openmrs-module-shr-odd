@@ -126,16 +126,14 @@ public final class XdsUtil {
 		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_LANGUAGE_CODE, Context.getLocale().toLanguageTag());
 		
 		// Unique identifier
-		this.addExtenalIdentifier(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_uniqueId, registration.getAccessionNumber());
-		this.addExtenalIdentifier(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_patientId, this.getPatientIdentifier(registration.getPatient()));
+		this.addExtenalIdentifier(oddRegistryObject, "XDSDocumentEntry.uniqueId", XDSConstants.UUID_XDSDocumentEntry_uniqueId, registration.getAccessionNumber());
+		this.addExtenalIdentifier(oddRegistryObject, "XDSDocumentEntry.patientId",  XDSConstants.UUID_XDSDocumentEntry_patientId, this.getPatientIdentifier(registration.getPatient()));
 		
 		// Set classifications
 		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_classCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystemName());
 		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_confidentialityCode, "1.3.6.1.4.1.21367.2006.7.101", "Connect-a-thon confidentialityCodes");
 		CV<String> formatCode = CdaDataUtil.getInstance().parseCodeFromString(registration.getType().getFormatCode(), CV.class);
 		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_formatCode, formatCode.getCode(), formatCode.getCodeSystem());
-		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_healthCareFacilityTypeCode, "Not Available", "Connect-a-thon healthcareFacilityTypeCodes");
-		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_practiceSettingCode, "Not Available", "Connect-a-thon practiceSettingCodes");
 		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_typeCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystemName());
 		
 		// Create the submission set
@@ -150,9 +148,9 @@ public final class XdsUtil {
 		
 		// Submission set external identifiers
 
-		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_uniqueId, registration.getAccessionNumber() + ".1." + now.getValue());
-		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_sourceId, registration.getAccessionNumber());
-		this.addExtenalIdentifier(regPackage, XDSConstants.UUID_XDSSubmissionSet_patientId, this.getPatientIdentifier(registration.getPatient()));
+		this.addExtenalIdentifier(regPackage, "XDSSubmissionSet.uniqueId", XDSConstants.UUID_XDSSubmissionSet_uniqueId, registration.getAccessionNumber() + ".1." + now.getValue());
+		this.addExtenalIdentifier(regPackage, "XDSSubmissionSet.sourceId", XDSConstants.UUID_XDSSubmissionSet_sourceId, registration.getAccessionNumber());
+		this.addExtenalIdentifier(regPackage, "XDSSubmissionSet.patientId", XDSConstants.UUID_XDSSubmissionSet_patientId, this.getPatientIdentifier(registration.getPatient()));
 		
 		// Add the eo to the submission
 		registryRequest.getRegistryObjectList().getIdentifiable().add(
@@ -188,7 +186,7 @@ public final class XdsUtil {
 		// Add an association
 		AssociationType1 association = 	new AssociationType1();
 		association.setId("as01");
-		association.setAssociationType("HasMember");
+		association.setAssociationType("urn:oasis:names:tc:ebxml-regrep:AssociationType:HasMember");
 		association.setSourceObject(String.format("SubmissionSet%s", registration.getId().toString()));
 		association.setTargetObject(String.format("Document%s", registration.getId().toString()));
 		InfosetUtil.addOrOverwriteSlot(association, XDSConstants.SLOT_NAME_SUBMISSIONSET_STATUS, "Original");
@@ -211,12 +209,15 @@ public final class XdsUtil {
 	/**
 	 * Add external identifier
 	 */
-	public ExternalIdentifierType addExtenalIdentifier(final RegistryObjectType classifiedObj, final String uuid, final String id) throws JAXBException {
+	public ExternalIdentifierType addExtenalIdentifier(final RegistryObjectType classifiedObj, final String name, final String uuid, final String id) throws JAXBException {
 	
 		ExternalIdentifierType retVal = new ExternalIdentifierType();
 		retVal.setRegistryObject(classifiedObj.getId());
 		retVal.setIdentificationScheme(uuid);
 		retVal.setValue(id);
+		retVal.setName(new InternationalStringType());
+		retVal.getName().getLocalizedString().add(new LocalizedStringType());
+		retVal.getName().getLocalizedString().get(0).setValue(name);
 		retVal.setId(String.format("eid%s", classifiedObj.getExternalIdentifier().size()));
 		classifiedObj.getExternalIdentifier().add(retVal);
 		return retVal;
@@ -231,7 +232,9 @@ public final class XdsUtil {
 	    retVal.setClassifiedObject(classifiedObj.getId());
 	    retVal.setClassificationScheme(uuid);
 	    retVal.setNodeRepresentation(code);
-	    
+	    retVal.setName(new InternationalStringType());
+		retVal.getName().getLocalizedString().add(new LocalizedStringType());
+		retVal.getName().getLocalizedString().get(0).setValue(code);
 	    retVal.setId(String.format("cl%s",retVal.hashCode()));
 	    InfosetUtil.addOrOverwriteSlot(retVal, "codingScheme", scheme);
 	    

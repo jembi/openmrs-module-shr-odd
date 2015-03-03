@@ -4,7 +4,7 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>shr-odd</artifactId>
-	<version>0.1.0</version>
+	<version>0.5.0</version>
 	<packaging>pom</packaging>
 	<name>SHR On Demand Documents</name>
 	<description>Provides content generators for CDA documents</description>
@@ -33,7 +33,7 @@
 	</modules>
 	
 	<properties>
-		<openMRSVersion>1.10.0-SNAPSHOT</openMRSVersion>
+		<openMRSVersion>1.10.0</openMRSVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 

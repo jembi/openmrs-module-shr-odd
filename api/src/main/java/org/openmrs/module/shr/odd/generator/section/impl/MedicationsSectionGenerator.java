@@ -8,14 +8,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.marc.everest.datatypes.BL;
-import org.marc.everest.datatypes.SD;
 import org.marc.everest.datatypes.generic.CE;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Entry;
-import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.EntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Section;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.SubstanceAdministration;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntry;
-import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntryRelationship;
 import org.openmrs.BaseOpenmrsData;
 import org.openmrs.Concept;
 import org.openmrs.DrugOrder;
@@ -39,7 +36,7 @@ public class MedicationsSectionGenerator extends SectionGeneratorImpl {
 	 */
 	public MedicationsSectionGenerator() throws DocumentImportException
 	{
-		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode);
+		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode, null);
 	}
 	/**
 	 * Generate the medications section

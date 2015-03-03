@@ -2,7 +2,6 @@ package org.openmrs.module.shr.odd.generator;
 
 import org.marc.everest.datatypes.generic.CE;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
-import org.openmrs.module.shr.contenthandler.api.CodedValue;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 
 /**

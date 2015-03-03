@@ -1,10 +1,6 @@
 package org.openmrs.module.shr.odd.generator.section.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,19 +16,16 @@ import org.marc.everest.datatypes.generic.SET;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Entry;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.EntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
-import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Procedure;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Section;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActStatus;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActMoodDocumentObservation;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntry;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntryRelationship;
-import org.openmrs.BaseOpenmrsData;
 import org.openmrs.Concept;
 import org.openmrs.Obs;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
-import org.openmrs.module.shr.cdahandler.order.ProcedureOrder;
 
 /**
  * Advance directives section generator
@@ -105,29 +98,35 @@ public class AdvanceDirectivesSectionGenerator extends SectionGeneratorImpl {
 		// Level 2?
 		else if(this.getSectionObs().size() > 0)
 			super.generateLevel2Content(retVal);
-		// Other
-		else
-			retVal.setText(new SD(SD.createText("No directives recorded")));
 
 		// Any required directives?
-		for(Concept directive : requiredDirectives)
+		if(requiredDirectives.size() > 0)
 		{
-			Observation directiveObs = new Observation(x_ActMoodDocumentObservation.Eventoccurrence);
-			directiveObs.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_ADVANCE_DIRECTIVE_OBSERVATION), new II(CdaHandlerConstants.ENT_TEMPLATE_CCD_ADVANCE_DIRECTIVE_OBSERVATION)));
-			directiveObs.setId(SET.createSET(new II(UUID.randomUUID())));
-			directiveObs.setNegationInd(BL.TRUE);
-			directiveObs.setValue(new BL());
-			directiveObs.getValue().setNullFlavor(NullFlavor.NoInformation);
-			directiveObs.setEffectiveTime(null, TS.now());
-			directiveObs.setStatusCode(ActStatus.Completed);
-			directiveObs.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
-			directiveObs.setCode(new CD<String>("(xx-bld-transf-ok)", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "Blood Tranfusion", null));
-			directiveObs.getEntryRelationship().add(this.createAdvanceDirectiveStatusObservation(null));
-			retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, directiveObs));
+			retVal.getTemplateId().add(new II(CdaHandlerConstants.SCT_TEMPLATE_CODED_ADVANCE_DIRECTIVES));
+			
+			for(Concept directive : requiredDirectives)
+			{
+				Observation directiveObs = new Observation(x_ActMoodDocumentObservation.Eventoccurrence);
+				directiveObs.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_ADVANCE_DIRECTIVE_OBSERVATION), new II(CdaHandlerConstants.ENT_TEMPLATE_CCD_ADVANCE_DIRECTIVE_OBSERVATION)));
+				//directiveObs.setId(SET.createSET(new II(UUID.randomUUID())));
+				directiveObs.setNegationInd(BL.TRUE);
+				directiveObs.setValue(new BL());
+				directiveObs.getValue().setNullFlavor(NullFlavor.NoInformation);
+				directiveObs.setEffectiveTime(null, TS.now());
+				directiveObs.setStatusCode(ActStatus.Completed);
+				directiveObs.getAuthor().add(this.m_cdaDataUtil.getOpenSHRInstanceAuthor());
+				directiveObs.setCode(new CD<String>("(xx-bld-transf-ok)", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "Blood Tranfusion", null));
+				directiveObs.getEntryRelationship().add(this.createAdvanceDirectiveStatusObservation(null));
+				retVal.getEntry().add(new Entry(x_ActRelationshipEntry.HasComponent, BL.TRUE, directiveObs));
+			}
+
 		}
 		
-		if(retVal.getEntry().size() > 0)
+		// Generate level 3 text
+		if(retVal.getEntry().size() > 0 && retVal.getText() == null)
 			retVal.setText(super.generateLevel3Text(retVal));
+		else if(retVal.getEntry().size() > 0)
+			retVal.getText().getContent().addAll(super.generateLevel3Text(retVal).getContent());
 
 		return retVal;
     }

@@ -6,14 +6,12 @@ import java.util.List;
 import org.marc.everest.datatypes.generic.CE;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 
-
 /**
- * Generic Level 2 section generator for surgical procedures
+ * History of Surgical Procedures Section Generator
  */
-public class SurgicalProceduresSectionGenerator extends GenericLevel2SectionGenerator {
-
+public class HistoryOfSurgicalProceduresSectionGenerator extends GenericLevel2SectionGenerator {
 	/**
-	 * Get template identifiers
+	 * Get the template identifiers
 	 * @see org.openmrs.module.shr.odd.generator.section.impl.GenericLevel2SectionGenerator#getTemplateIds()
 	 */
 	@Override
@@ -22,22 +20,20 @@ public class SurgicalProceduresSectionGenerator extends GenericLevel2SectionGene
     }
 
 	/**
-	 * Get the title
+	 * Get the title of the birth plan
 	 * @see org.openmrs.module.shr.odd.generator.section.impl.GenericLevel2SectionGenerator#getTitle()
 	 */
 	@Override
     protected String getTitle() {
-		return "section.surgicalProcedures.title";
+		return "section.historyOfSurgery.title";
     }
-
+	
 	/**
 	 * Get the section code
 	 * @see org.openmrs.module.shr.odd.generator.section.impl.GenericLevel2SectionGenerator#getSectionCode()
 	 */
 	@Override
     protected CE<String> getSectionCode() {
-		return new CE<String>("10167-5", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "HISTORY OF SURGERY", null);
-    }
-
-	
+		return new CE<String>("10167-5", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "HISTORY OF SURGICAL PROCEDURES", null);
+    }	
 }

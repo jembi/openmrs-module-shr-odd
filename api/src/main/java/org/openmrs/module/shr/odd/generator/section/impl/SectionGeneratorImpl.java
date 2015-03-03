@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.h2.util.New;
 import org.marc.everest.datatypes.BL;
 import org.marc.everest.datatypes.ED;
 import org.marc.everest.datatypes.EN;
@@ -47,7 +46,6 @@ import org.marc.everest.formatters.FormatterUtil;
 import org.marc.everest.formatters.xml.datatypes.r1.DatatypeFormatter;
 import org.marc.everest.interfaces.IEnumeratedVocabulary;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Act;
-import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssignedAuthor;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Author;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalStatement;
@@ -95,7 +93,6 @@ import org.openmrs.VisitAttribute;
 import org.openmrs.VisitAttributeType;
 import org.openmrs.activelist.ActiveListItem;
 import org.openmrs.api.context.Context;
-import org.openmrs.customdatatype.CustomValueDescriptor;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
 import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
@@ -174,7 +171,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		// Localization for title
 		ResourceBundle strings = ResourceBundle.getBundle("messages");
 		retVal.setTitle(strings.getString(String.format("shr-odd.%s", titleMessageKey)));
-		retVal.setText(new SD());
+		//retVal.setText(new SD());
 		retVal.setCode(code);
 		retVal.setId(new II(UUID.randomUUID()));
 		// Set templates
@@ -300,6 +297,8 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		StructDocElementNode listNode = text.createElement("list", DatatypeFormatter.NS_HL7);
 		for(Obs obs : sectionObs)
 		{
+			if(obs.getVoided())
+				continue; // skip voided
 			StructDocElementNode listItem = listNode.addElement("item");
 			listItem.addElement("caption", String.format("From %s on %s (created by %s))", obs.getEncounter().getEncounterType().getName(), obs.getObsDatetime(), obs.getCreator().getPersonName()));
 			
@@ -517,7 +516,11 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	protected SET<II> getIdentifierList(Obs sourceObs) {
 		SET<II> retVal = new SET<II>();
 	    if(sourceObs.getAccessionNumber() != null && !sourceObs.getAccessionNumber().isEmpty())
-	    	retVal.add(this.m_cdaDataUtil.parseIIFromString(sourceObs.getAccessionNumber()));
+	    {
+	    	II ii = this.m_cdaDataUtil.parseIIFromString(sourceObs.getAccessionNumber());
+	    	if(ii.getRoot() != null && !ii.getRoot().isEmpty())
+	    		retVal.add(ii);
+	    }
 	    retVal.add(new II(this.m_cdaConfiguration.getObsRoot(), sourceObs.getId().toString()));
 	    return retVal;
     }
@@ -625,8 +628,11 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		{
 			retVal.setTime(this.m_cdaDataUtil.createTS(sourceData.getDateCreated()));
 			Collection<Provider> providers = Context.getProviderService().getProvidersByPerson(sourceData.getCreator().getPerson());
-			Provider pvdr = providers.iterator().next();
-			retVal.setAssignedAuthor(this.m_cdaDataUtil.createAuthorPerson(pvdr));
+			if(providers.size() > 0)
+			{
+				Provider pvdr = providers.iterator().next();
+				retVal.setAssignedAuthor(this.m_cdaDataUtil.createAuthorPerson(pvdr));
+			}
 			//retVal.setAssignedAuthor(new AssignedAuthor(SET.createSET(new II(this.m_cdaConfiguration.getUserRoot(), sourceData.getCreator().getId().toString()))));
 		}
 		return retVal;
@@ -772,10 +778,17 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    			
 	    		case CdaHandlerConstants.CONCEPT_ID_MEDICATION_DRUG:
 	    		case CdaHandlerConstants.CONCEPT_ID_IMMUNIZATION_DRUG:
-	    			retVal.setConsumable(this.createConsumable(component.getValueDrug(), sourceObs.getConcept().getId()));
+	    		{
+					Drug valueDrug = component.getValueDrug();
+					Concept concept = component.getValueCoded();
+					if(valueDrug != null)
+						concept = valueDrug.getConcept();
+	    			retVal.setConsumable(this.createConsumable(concept, valueDrug, sourceObs.getConcept().getId()));
+	    		}
 	    			break;
 	    		case CdaHandlerConstants.CONCEPT_ID_IMMUNIZATION_SEQUENCE:
 	    			Observation seriesObservation = new Observation(x_ActMoodDocumentObservation.Eventoccurrence);
+	    			seriesObservation.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_IMMUNIZATION_SERIES)));
 	    			seriesObservation.setStatusCode(ActStatus.Completed);
 	    			seriesObservation.setCode(new CD<String>("30973-2", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "Dose Number", null));
 	    			seriesObservation.setValue(new INT(component.getValueNumeric().intValue()));
@@ -847,8 +860,14 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	    						supplyRelationship.setSequenceNumber(supplyComponent.getValueNumeric().intValue());
 	    						break;
 	    					case CdaHandlerConstants.CONCEPT_ID_MEDICATION_DRUG:
-	    						Consumable cons = this.createConsumable(supplyComponent.getValueDrug(), sourceObs.getConcept().getId());
+	    					{
+	    						Drug valueDrug = supplyComponent.getValueDrug();
+	    						Concept concept = supplyComponent.getValueCoded();
+	    						if(valueDrug != null)
+	    							concept = valueDrug.getConcept();
+	    						Consumable cons = this.createConsumable(concept, supplyComponent.getValueDrug(), sourceObs.getConcept().getId());
 	    						supply.setProduct(new Product(cons.getManufacturedProduct()));
+	    					}
 	    						break;
     						default:
     							throw new RuntimeException("Don't understand how to represent medication supply observation");
@@ -1058,7 +1077,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	/**
 	 * Create a consumable
 	 */
-	private Consumable createConsumable(Drug valueDrug, int containerConcent) {
+	private Consumable createConsumable(Concept valueConcept, Drug valueDrug, int containerConcent) {
 		// Create the product
 		Consumable consumable = new Consumable();
 		ManufacturedProduct product = new ManufacturedProduct(RoleClassManufacturedProduct.ManufacturedProduct);
@@ -1066,19 +1085,21 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 
 		Material manufacturedMaterial = new Material();
 		product.setManufacturedDrugOrOtherMaterial(manufacturedMaterial);
+		
+		
 		// Drug code
-		CE<String> drugCode = this.m_oddMetadataUtil.getStandardizedCode(valueDrug.getConcept(), CdaHandlerConstants.CODE_SYSTEM_RXNORM, CE.class);
-		if(drugCode != null && drugCode.isNull())
+		CE<String> cvxCode = this.m_oddMetadataUtil.getStandardizedCode(valueConcept, CdaHandlerConstants.CODE_SYSTEM_CVX, CE.class);
+		if(cvxCode != null && cvxCode.isNull())
 		{
-			CE<String> cvxCode = this.m_oddMetadataUtil.getStandardizedCode(valueDrug.getConcept(), CdaHandlerConstants.CODE_SYSTEM_CVX, CE.class);
-			if(!cvxCode.isNull())
-				manufacturedMaterial.setCode(cvxCode);
+			CE<String> drugCode = this.m_oddMetadataUtil.getStandardizedCode(valueConcept, CdaHandlerConstants.CODE_SYSTEM_RXNORM, CE.class);
+			if(!drugCode.isNull())
+				manufacturedMaterial.setCode(drugCode);
 		}
 		if(manufacturedMaterial.getCode() == null)
-			manufacturedMaterial.setCode(drugCode);
+			manufacturedMaterial.setCode(cvxCode);
 		
 		// Now get the drug from the concept
-		if(valueDrug.getName() != null)
+		if(valueDrug != null && valueDrug.getName() != null)
 			manufacturedMaterial.setName(new EN(Arrays.asList(new ENXP(valueDrug.getName()))));
 
 		consumable.setManufacturedProduct(product);
@@ -1297,4 +1318,104 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		
     }
 
+	
+	/**
+	 * Create an external references act
+	 */
+	protected Act createExternalReferenceAct(Obs data) {
+		 Act retVal = new Act(x_ActClassDocumentEntryAct.Act, x_DocumentActMood.Eventoccurrence);
+		retVal.setTemplateId(this.getTemplateIdList(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_EXTERNAL_REFERENCES_ENTRY)));
+		retVal.setId(SET.createSET(new II(UUID.randomUUID())));
+		retVal.setCode(new CD<String>());
+		retVal.getCode().setNullFlavor(NullFlavor.NotApplicable);
+		
+		for(Obs subObs : this.m_service.getObsGroupMembers(data))
+		{
+			Reference ref = new Reference();
+			ref.setTypeCode(this.m_oddMetadataUtil.getStandardizedCode(subObs.getConcept(), x_ActRelationshipExternalReference.ELNK.getCodeSystem(), CS.class));
+			ref.setExternalActChoice(new ExternalDocument());
+			ref.getExternalActChoiceIfExternalDocument().setId(SET.createSET(this.m_cdaDataUtil.parseIIFromString(subObs.getValueText())));
+			if(subObs.getComment() != null)
+				ref.getExternalActChoiceIfExternalDocument().setText(new ED(subObs.getComment()));
+			retVal.getReference().add(ref);
+		}
+		
+		if(data.getComment() != null)
+			retVal.setText(new ED(data.getComment()));
+		
+		return retVal;
+	}
+
+	/**
+	 * Correct a code to a more preferred code system
+	 */
+	protected void correctCode(CE<?> code, String... codeSystems) {
+
+		if(code.isNull())
+			return;
+
+		// Already preferred
+		for(String cs : codeSystems)
+			if(code.getCodeSystem().equals(cs))
+				return; 
+		
+		// Get translation
+		code.getTranslation().add(new CD(code.getCode(), code.getCodeSystem(), code.getCodeSystemName(), code.getCodeSystemVersion(), code.getDisplayName(), null));
+		// Move the first translation to the root code
+		for(String cs : codeSystems)
+		{
+			for(CD<?> tx : code.getTranslation())
+				if(tx.getCodeSystem().equals(cs))
+				{
+					code.setCode(tx.getCode());
+					code.setCodeSystem(tx.getCodeSystem());
+					code.setDisplayName(tx.getDisplayName());
+					code.setCodeSystemName(tx.getCodeSystemName());
+					code.setCodeSystemVersion(tx.getCodeSystemVersion());
+					code.getTranslation().remove(tx);
+					return;
+				}
+		}
+		
+		// Not found :| ... Null Flavor it with OTH
+		code.setNullFlavor(NullFlavor.Other);
+		code.setCodeSystemName(null);
+		code.setDisplayName(null);
+		code.setCodeSystemVersion(null);
+		code.setCode(null);
+		code.setCodeSystem(codeSystems[0]);
+		
+    }
+
+	/**
+	 * Create a reference to a source document
+	 */
+	protected Reference createReferenceToDocument(Encounter enc) {
+		
+		Reference retVal = null;
+		if(enc.getVisit() != null)
+		{
+            try {
+            	retVal = new Reference();
+        		ExternalDocument ed = new ExternalDocument();
+        		
+            	VisitAttributeType vat = this.m_conceptUtil.getOrCreateVisitExternalIdAttributeType();
+    			for(VisitAttribute attr : enc.getVisit().getActiveAttributes())
+    				if(attr.getAttributeType().equals(vat))
+    					ed.setId(SET.createSET(this.m_cdaDataUtil.parseIIFromString(attr.getValue().toString())));
+
+    			retVal.setTypeCode(x_ActRelationshipExternalReference.REFR);
+    			retVal.setExternalActChoice(ed);
+
+            }
+            catch (DocumentImportException e) {
+	            log.error("Error generated", e);
+            }
+		}
+		
+		return retVal;
+    }
+
+
 }
+

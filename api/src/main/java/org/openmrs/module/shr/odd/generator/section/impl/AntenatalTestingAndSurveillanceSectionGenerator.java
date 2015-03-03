@@ -37,7 +37,7 @@ public class AntenatalTestingAndSurveillanceSectionGenerator extends SectionGene
 	 */
 	public AntenatalTestingAndSurveillanceSectionGenerator() throws DocumentImportException
 	{
-		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode);
+		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode, null);
 	}
 	
 
@@ -70,7 +70,7 @@ public class AntenatalTestingAndSurveillanceSectionGenerator extends SectionGene
 					// Set additional core attributes
 					batteryOrganizer.setEffectiveTime(super.getEffectiveTime(battery));
 					batteryOrganizer.setStatusCode(super.getStatusCode(battery));
-					Reference original = super.createReferenceToDocument(battery);
+					Reference original = super.createReferenceToDocument(battery.getEncounter());
 					if(original != null) batteryOrganizer.getReference().add(original);
 					
 					// Sub observations in the battery 

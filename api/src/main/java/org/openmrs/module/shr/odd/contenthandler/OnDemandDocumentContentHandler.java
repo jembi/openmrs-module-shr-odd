@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javassist.NotFoundException;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,7 +16,6 @@ import org.openmrs.EncounterType;
 import org.openmrs.Patient;
 import org.openmrs.Provider;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.shr.cdahandler.contenthandler.CdaContentHandler;
 import org.openmrs.module.shr.cdahandler.everest.EverestUtil;
 import org.openmrs.module.shr.contenthandler.api.Content;
 import org.openmrs.module.shr.contenthandler.api.ContentHandler;
@@ -83,9 +80,11 @@ public class OnDemandDocumentContentHandler implements ContentHandler {
 	            ByteArrayOutputStream bos = new ByteArrayOutputStream();
 	            fmtr.graph(bos, generatedCda);
 	            String strPayload = new String(bos.toByteArray());
-	            log.info(String.format("Generated ODD:\r\n%s", strPayload));
+	            if(log.isInfoEnabled())
+		            log.info(String.format("Generated ODD:\r\n%s", strPayload));
+
 	            // Now set the return content
-	            Content retVal = new Content(arg0, strPayload, null, null, "text/xml");
+	            Content retVal = new Content(String.format("%s.%s", generatedCda.getId().getRoot(), generatedCda.getId().getExtension()), strPayload, null, null, "text/xml");
 	            
 	            return retVal;
 			}

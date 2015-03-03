@@ -60,7 +60,7 @@
  			<column name="creator" valueNumeric="2"/>
  			<column name="date_created" valueComputed="now()"/>
  			<column name="java_class_name" value="org.openmrs.module.shr.odd.generator.document.impl.ApsGenerator"/>
- 			<column name="format_code" value="urn:ihe:pcc:aps:2007"/>
+ 			<column name="format_code" value="urn:ihe:pcc:aps:2007^^^&amp;1.3.6.1.4.1.19376.1.2.3&amp;ISO"/>
  		</insert>
 	</changeSet>
 	

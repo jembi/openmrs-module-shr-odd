@@ -10,13 +10,11 @@ import org.marc.everest.datatypes.ENXP;
 import org.marc.everest.datatypes.II;
 import org.marc.everest.datatypes.NullFlavor;
 import org.marc.everest.datatypes.PN;
-import org.marc.everest.datatypes.SD;
 import org.marc.everest.datatypes.TS;
 import org.marc.everest.datatypes.generic.CD;
 import org.marc.everest.datatypes.generic.CE;
 import org.marc.everest.datatypes.generic.CS;
 import org.marc.everest.datatypes.generic.CV;
-import org.marc.everest.datatypes.generic.IVL;
 import org.marc.everest.datatypes.generic.LIST;
 import org.marc.everest.datatypes.generic.SET;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Act;
@@ -41,7 +39,6 @@ import org.openmrs.Obs;
 import org.openmrs.activelist.ActiveListItem;
 import org.openmrs.activelist.Allergy;
 import org.openmrs.activelist.AllergySeverity;
-import org.openmrs.activelist.Problem;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
@@ -62,7 +59,7 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 	 */
 	public AllergiesSectionGenerator() throws DocumentImportException
 	{
-		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode);
+		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode, null);
 	}
 	
 	@Override
@@ -109,6 +106,8 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 					problemObs, 
 					CdaHandlerConstants.CODE_SYSTEM_SNOMED);
 				
+				super.correctCode((CD<?>)problemObservation.getValue(), CdaHandlerConstants.CODE_SYSTEM_RXNORM, CdaHandlerConstants.CODE_SYSTEM_SNOMED, CdaHandlerConstants.CODE_SYSTEM_ICD_10);
+				
 				// Now for allergy information
 				String typeMnemonic = "", display = "";
 				switch(allergy.getAllergyType())
@@ -154,6 +153,8 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 				PlayingEntity playingEntity = new PlayingEntity(EntityClassRoot.ManufacturedMaterial);
 				
 				playingEntity.setCode(this.m_oddMetadataUtil.getStandardizedCode(allergy.getAllergen(), null, CE.class));
+				super.correctCode(playingEntity.getCode(), CdaHandlerConstants.CODE_SYSTEM_RXNORM, CdaHandlerConstants.CODE_SYSTEM_SNOMED, CdaHandlerConstants.CODE_SYSTEM_ICD_10);
+
 				playingEntity.setName(SET.createSET(new PN(Arrays.asList(new ENXP(allergy.getAllergen().getName().getName())))));
 				problemObservation.getParticipant().get(0).getParticipantRole().setPlayingEntityChoice(playingEntity);
 				
@@ -197,6 +198,9 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 	                	EntryRelationship manifestation = new EntryRelationship(x_ActRelationshipEntryRelationship.MFST, BL.TRUE);
 	                	manifestation.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_MANIFESTATION_RELATION)));
 	                	Observation manifestationObservation = super.createObs(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_REACTION_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION), eobs, CdaHandlerConstants.CODE_SYSTEM_IHE_ACT_CODE);
+	                	if(manifestationObservation.getValue() instanceof CE)
+	                		super.correctCode((CE)manifestationObservation.getValue(), CdaHandlerConstants.CODE_SYSTEM_ICD_10, CdaHandlerConstants.CODE_SYSTEM_SNOMED);
+
 	                	manifestation.setClinicalStatement(manifestationObservation);
 	                	problemObservation.getEntryRelationship().add(manifestation);
 	                }

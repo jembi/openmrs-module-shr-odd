@@ -1,66 +1,54 @@
 package org.openmrs.module.shr.odd.util;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.activation.URLDataSource;
 import javax.xml.stream.XMLInputFactory;
 
-import org.openmrs.Concept;
-import org.openmrs.ConceptDatatype;
-import org.openmrs.ConceptNumeric;
-import org.openmrs.EncounterRole;
-import org.openmrs.ImplementationId;
-import org.openmrs.Location;
-import org.openmrs.LocationAttribute;
-import org.openmrs.Obs;
-import org.openmrs.Patient;
-import org.openmrs.PatientIdentifier;
-import org.openmrs.PersonAddress;
-import org.openmrs.PersonAttribute;
-import org.openmrs.PersonName;
-import org.openmrs.Provider;
-import org.openmrs.ProviderAttribute;
-import org.openmrs.Relationship;
-import org.openmrs.Visit;
-import org.openmrs.VisitAttribute;
-import org.openmrs.api.context.Context;
-import org.openmrs.api.db.ConceptDAO;
-import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
-import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
-import org.openmrs.module.shr.cdahandler.processor.util.OpenmrsConceptUtil;
-import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
-import org.openmrs.module.shr.odd.configuration.OnDemandDocumentConfiguration;
-import org.openmrs.module.shr.odd.model.OnDemandDocumentType;
-import org.openmrs.obs.ComplexData;
-import org.openmrs.util.OpenmrsConstants;
 import org.jfree.util.Log;
-import org.marc.everest.datatypes.*;
+import org.marc.everest.datatypes.AD;
+import org.marc.everest.datatypes.ADXP;
+import org.marc.everest.datatypes.ANY;
+import org.marc.everest.datatypes.AddressPartType;
+import org.marc.everest.datatypes.BL;
+import org.marc.everest.datatypes.ED;
+import org.marc.everest.datatypes.ENXP;
+import org.marc.everest.datatypes.EntityNamePartType;
+import org.marc.everest.datatypes.EntityNameUse;
+import org.marc.everest.datatypes.II;
+import org.marc.everest.datatypes.INT;
+import org.marc.everest.datatypes.NullFlavor;
+import org.marc.everest.datatypes.ON;
+import org.marc.everest.datatypes.PN;
+import org.marc.everest.datatypes.PQ;
+import org.marc.everest.datatypes.PostalAddressUse;
+import org.marc.everest.datatypes.REAL;
+import org.marc.everest.datatypes.SC;
+import org.marc.everest.datatypes.TEL;
+import org.marc.everest.datatypes.TS;
+import org.marc.everest.datatypes.TelecommunicationsAddressUse;
 import org.marc.everest.datatypes.doc.StructDocElementNode;
 import org.marc.everest.datatypes.doc.StructDocNode;
 import org.marc.everest.datatypes.doc.StructDocTextNode;
-import org.marc.everest.datatypes.generic.*;
-import org.marc.everest.exceptions.FormatterException;
+import org.marc.everest.datatypes.generic.CD;
+import org.marc.everest.datatypes.generic.CE;
+import org.marc.everest.datatypes.generic.CS;
+import org.marc.everest.datatypes.generic.CV;
+import org.marc.everest.datatypes.generic.SET;
 import org.marc.everest.formatters.FormatterUtil;
-import org.marc.everest.interfaces.IGraphable;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssignedAuthor;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssignedEntity;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AssociatedEntity;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Author;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.AuthoringDevice;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.CustodianOrganization;
-import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Organization;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.OrganizationPartOf;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Participant1;
@@ -74,6 +62,26 @@ import org.marc.everest.rmim.uv.cdar2.vocabulary.RoleClassAssociative;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.RoleClassPart;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.RoleStatus;
 import org.marc.everest.xml.XMLStateStreamReader;
+import org.openmrs.Concept;
+import org.openmrs.ConceptDatatype;
+import org.openmrs.ConceptNumeric;
+import org.openmrs.ImplementationId;
+import org.openmrs.Location;
+import org.openmrs.LocationAttribute;
+import org.openmrs.Obs;
+import org.openmrs.Patient;
+import org.openmrs.PatientIdentifier;
+import org.openmrs.PersonAddress;
+import org.openmrs.PersonAttribute;
+import org.openmrs.PersonName;
+import org.openmrs.Provider;
+import org.openmrs.Relationship;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
+import org.openmrs.module.shr.cdahandler.configuration.CdaHandlerConfiguration;
+import org.openmrs.module.shr.cdahandler.processor.util.OpenmrsConceptUtil;
+import org.openmrs.module.shr.odd.configuration.OnDemandDocumentConfiguration;
+import org.openmrs.util.OpenmrsConstants;
 
 /**
  * The On-Demand document metadata util
@@ -206,34 +214,36 @@ public final class CdaDataUtil {
 	 * Creates a set of telecoms
 	 */
 	public SET<TEL> createTelecomSet(org.openmrs.Person person) {
+		
 		SET<TEL> retVal = new SET<TEL>();
-		for(PersonAttribute patt : person.getAttributes())
-		{
-			if(patt.getAttributeType().getName().equals(CdaHandlerConstants.ATTRIBUTE_NAME_TELECOM))
+		if(person != null)
+			for(PersonAttribute patt : person.getAttributes())
 			{
-				TEL tel = new TEL();
-				if(patt.getValue().contains(":"))
+				if(patt.getAttributeType().getName().equals(CdaHandlerConstants.ATTRIBUTE_NAME_TELECOM))
 				{
-					String[] parts = {
-							patt.getValue().substring(0, patt.getValue().indexOf(":")),
-							patt.getValue().substring(patt.getValue().indexOf(":") + 1)
-					};
-					tel.setValue(parts[1].trim());
-					try {
-	                    tel.setUse((SET<CS<TelecommunicationsAddressUse>>) FormatterUtil.fromWireFormat(parts[0], AssignedEntity.class.getMethod("getTelecom", null).getGenericReturnType(), false));
-                    }
-                    catch (Exception e) {
-	                    // Safe to ignore?
-                    }
+					TEL tel = new TEL();
+					if(patt.getValue().contains(":"))
+					{
+						String[] parts = {
+								patt.getValue().substring(0, patt.getValue().indexOf(":")),
+								patt.getValue().substring(patt.getValue().indexOf(":") + 1)
+						};
+						tel.setValue(parts[1].trim());
+						try {
+		                    tel.setUse((SET<CS<TelecommunicationsAddressUse>>) FormatterUtil.fromWireFormat(parts[0], AssignedEntity.class.getMethod("getTelecom", null).getGenericReturnType(), false));
+	                    }
+	                    catch (Exception e) {
+		                    // Safe to ignore?
+	                    }
+					}
+					else
+						tel.setValue(patt.getValue());
+					
+					if(patt.getVoided())
+						tel.setUse(TelecommunicationsAddressUse.BadAddress);
+					retVal.add(tel);
 				}
-				else
-					tel.setValue(patt.getValue());
-				
-				if(patt.getVoided())
-					tel.setUse(TelecommunicationsAddressUse.BadAddress);
-				retVal.add(tel);
 			}
-		}
 		
 		if(retVal.size() == 0)
 		{
@@ -316,18 +326,22 @@ public final class CdaDataUtil {
 
 		
 		// Set telecom
-		retVal.setTelecom(this.createTelecomSet(pvdr.getPerson()));
-		
-		// Get the address
-		retVal.setAddr(this.createAddressSet(pvdr.getPerson()));
-		
-		// Get names
-		retVal.setAssignedAuthorChoice(new Person(this.createNameSet(pvdr.getPerson())));
-		
-		PersonAttribute orgAttribute = pvdr.getPerson().getAttribute(CdaHandlerConstants.ATTRIBUTE_NAME_ORGANIZATION);
-		if(orgAttribute != null)
-			retVal.setRepresentedOrganization(this.createOrganization((Location)orgAttribute.getHydratedObject()));
- 
+		if(pvdr.getPerson() != null)
+		{
+			retVal.setTelecom(this.createTelecomSet(pvdr.getPerson()));
+			
+			// Get the address
+			retVal.setAddr(this.createAddressSet(pvdr.getPerson()));
+			
+			// Get names
+			retVal.setAssignedAuthorChoice(new Person(this.createNameSet(pvdr.getPerson())));
+			
+			PersonAttribute orgAttribute = pvdr.getPerson().getAttribute(CdaHandlerConstants.ATTRIBUTE_NAME_ORGANIZATION);
+			if(orgAttribute != null)
+				retVal.setRepresentedOrganization(this.createOrganization((Location)orgAttribute.getHydratedObject()));
+		}
+		else
+			retVal.setAssignedAuthorChoice(new AuthoringDevice(null, new SC(pvdr.getName()), null, null));
 		return retVal;
     }
 
@@ -489,8 +503,22 @@ public final class CdaDataUtil {
 		// Identifiers
 		patientRole.setId(new SET<II>());
 		for(PatientIdentifier pid : patient.getActiveIdentifiers())
-			patientRole.getId().add(new II(pid.getIdentifierType().getName(), pid.getIdentifier()));
-		patientRole.getId().add(new II(this.m_cdaConfiguration.getPatientRoot(), patient.getId().toString()));
+		{
+			II ii = new II(pid.getIdentifierType().getName(), pid.getIdentifier());
+			try
+			{
+				if(!patientRole.getId().contains(ii))
+					patientRole.getId().add(ii);
+			}
+			catch(Exception e)
+			{
+				Log.error(e);
+			}
+		}
+		
+		II meId = new II(this.m_cdaConfiguration.getPatientRoot(), patient.getId().toString());
+		if(!patientRole.getId().contains(meId))
+			patientRole.getId().add(meId);
 		
 		// Address?
 		patientRole.setAddr(this.createAddressSet(patient));
@@ -601,7 +629,8 @@ public final class CdaDataUtil {
 	public SET<PN> createNameSet(org.openmrs.Person person) {
 		SET<PN> retVal = new SET<PN>();
 		for(PersonName name : person.getNames())
-			retVal.add(this.createPN(name));
+			if(!name.getFamilyName().equals("*")) // HACK: Name is requiredso this is the hackery that I use to bypass it
+				retVal.add(this.createPN(name));
 		if(retVal.size() > 0)
 			return retVal;
 		return null;

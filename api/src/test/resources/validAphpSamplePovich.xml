@@ -220,7 +220,7 @@
 					<templateId root='2.16.840.1.113883.10.20.1.15' />
 					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.3.16' />
 					<!-- Required Social History Section content -->
-					<id root='1' extension='234534543543' />
+					<id root='1' extension='2345345435643' />
 					<code code='29762-2' displayName='SOCIAL HISTORY' codeSystem='2.16.840.1.113883.6.1'
 						codeSystemName='LOINC' />
 					<title>boink</title>
@@ -248,7 +248,7 @@
 				<section>
 					<templateId root='1.3.6.1.4.1.19376.1.5.3.1.3.18' />
 					<!-- Required Review of Systems Section content -->
-					<id root='1' extension='234534543543' />
+					<id root='1' extension='2345345435443' />
 					<code code='10187-3' displayName='REVIEW OF SYSTEMS'
 						codeSystem='2.16.840.1.113883.6.1' codeSystemName='LOINC' />
 					<text>

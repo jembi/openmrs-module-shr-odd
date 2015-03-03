@@ -3,7 +3,9 @@
 	xsi:schemaLocation="urn:hl7-org:v3 CDA.xsd">
 
 	<typeId extension="POCD_HD000040" root="2.16.840.1.113883.1.3" />
-	<templateId root='1.3.6.1.4.1.19376.1.5.3.1.1.16.1.4' />
+
+	<!-- <templateId root='1.3.6.1.4.1.19376.1.5.3.1.1.16.1.4' />-->
+	<!--  <templateId root='1.3.6.1.4.1.19376.1.5.3.1.1.11.2'/>-->
 	<templateId root='1.3.6.1.4.1.19376.1.5.3.1.1.16.1.1' />
 
 	<id root='1.2.3.2.2.2.2' extension='1' />
@@ -209,7 +211,7 @@
                   <statusCode code="completed"/>
                   <effectiveTime value="20141009090628.628-0400"/>
                   <value xsi:type="TS" value="20141009090628.627-0400"/>
-                  <entryRelationship typeCode="CAUS" contextConductionInd="true">
+                  <entryRelationship typeCode="SPRT" contextConductionInd="true">
                     <observation classCode="OBS" moodCode="EVN">
                       <templateId root="1.3.6.1.4.1.19376.1.5.3.1.4.13"/>
                       <id root="e2d38233-5a63-4c67-9a39-8ed5cf73b709"/>

@@ -19,10 +19,12 @@ public final class OnDemandDocumentConfiguration {
 	// Configuration constants
     public static final String PROP_ID_REGEX = "shr-odd.id.regex";
     public static final String PROP_REPOSITORY_UUID = "xds-b-repository.xdsrepository.uniqueId";
-
+    public static final String PROP_SUMMARY_TEMPLATE = "shr-odd.useCcdPlus";
+    
     // Id regex
     private String m_idRegex = "^(.*)?\\^\\^\\^\\&(.*)?\\&ISO$";
     private String m_repositoryUniqueId = "0.1.2.3.4.5";
+    private Boolean m_useCcdPlus = false;
     
 	// Private Ctor
 	private OnDemandDocumentConfiguration()
@@ -61,6 +63,15 @@ public final class OnDemandDocumentConfiguration {
     {
     	return this.m_cdaImportConfiguration.getShrRoot() + ".100";
     }
+    
+    /**
+     * Determines if the ODD generator should use CCD or CCD+
+     */
+    public Boolean getUseCcdPlus()
+    {
+    	return this.getOrCreateGlobalProperty(PROP_SUMMARY_TEMPLATE, this.m_useCcdPlus);
+    }
+    
     
 	/**
      * Read a global property

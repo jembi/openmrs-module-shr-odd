@@ -2,7 +2,6 @@ package org.openmrs.module.shr.odd.generator.section.impl;
 
 import java.util.List;
 
-import org.marc.everest.datatypes.SD;
 import org.marc.everest.datatypes.generic.CE;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Section;
 import org.openmrs.Concept;

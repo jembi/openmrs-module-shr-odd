@@ -6,10 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.marc.everest.datatypes.BL;
 import org.marc.everest.datatypes.ED;
 import org.marc.everest.datatypes.II;
@@ -19,35 +15,31 @@ import org.marc.everest.datatypes.TS;
 import org.marc.everest.datatypes.doc.StructDocElementNode;
 import org.marc.everest.datatypes.doc.StructDocNode;
 import org.marc.everest.datatypes.doc.StructDocTextNode;
-import org.marc.everest.datatypes.generic.CD;
 import org.marc.everest.datatypes.generic.CE;
 import org.marc.everest.datatypes.generic.CV;
 import org.marc.everest.datatypes.generic.EIVL;
 import org.marc.everest.datatypes.generic.IVL;
 import org.marc.everest.datatypes.generic.PIVL;
 import org.marc.everest.datatypes.generic.SXCM;
+import org.marc.everest.formatters.xml.datatypes.r1.DatatypeFormatter;
+import org.marc.everest.formatters.xml.its1.XmlIts1Formatter;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Act;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Author;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalStatement;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Component4;
-import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Entry;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.EntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Observation;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Organizer;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Participant2;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.SubstanceAdministration;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActStatus;
-import org.marc.everest.rmim.uv.cdar2.vocabulary.DrugEntity;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.EntityClassRoot;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ObservationInterpretation;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ParticipationType;
-import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntry;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubject;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubstanceMood;
-import org.openmrs.api.db.AdministrationDAO;
-import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 
 
 /**
@@ -478,7 +470,7 @@ public final class CdaTextUtil {
 		StructDocElementNode authorCol = retVal.addElement("td");
 		for(Author aut : observation.getAuthor())
 		{
-			authorCol.getChildren().add(this.generateAuthorDisplay(aut.getAssignedAuthor().getId().get(0), document));
+			authorCol.getChildren().add(this.generateAuthorDisplay(aut, document));
 			authorCol.addElement("br");
 		}
 		
@@ -624,17 +616,16 @@ public final class CdaTextUtil {
 	/**
 	 * Generate display for the author
 	 */
-	private StructDocTextNode generateAuthorDisplay(II authorId, ClinicalDocument document)
+	private StructDocTextNode generateAuthorDisplay(Author authorInfo, ClinicalDocument document)
 	{
 		// Find the author
-		for(Author aut : document.getAuthor())
-			if(aut.getAssignedAuthor().getId().contains(authorId))
-			{
-				if(aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson() != null)
-					return new StructDocTextNode(aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson().getName().get(0).toString());
-				else
-					return new StructDocTextNode(String.format("Device Authored : %s", aut.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedAuthoringDevice().getSoftwareName()));
-			}
+		if(authorInfo != null)
+		{
+			if(authorInfo.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson() != null)
+				return new StructDocTextNode(authorInfo.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedPerson().getName().get(0).toString());
+			else
+				return new StructDocTextNode(String.format("Device Authored : %s", authorInfo.getAssignedAuthor().getAssignedAuthorChoiceIfAssignedAuthoringDevice().getSoftwareName()));
+		}
 		return new StructDocTextNode("Unknown");
 	}
 	/**

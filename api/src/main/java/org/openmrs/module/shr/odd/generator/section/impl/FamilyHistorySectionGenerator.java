@@ -4,12 +4,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import javax.xml.soap.Detail;
 
 import org.marc.everest.datatypes.BL;
 import org.marc.everest.datatypes.ENXP;
@@ -30,7 +26,6 @@ import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Organizer;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.RelatedSubject;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Section;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Subject;
-import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.SubjectPerson;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActRelationshipHasComponent;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.ActStatus;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.AdministrativeGender;
@@ -62,7 +57,7 @@ public class FamilyHistorySectionGenerator extends SectionGeneratorImpl {
 	 */
 	public FamilyHistorySectionGenerator() throws DocumentImportException
 	{
-		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode);
+		this.m_sectionConcept = this.m_conceptUtil.getConcept(this.m_sectionCode, null);
 	}
 
 	/**
@@ -86,10 +81,12 @@ public class FamilyHistorySectionGenerator extends SectionGeneratorImpl {
 			// Group these observations by family member! eek
 			Map<Concept, List<Obs>> organizedFamilyHistoryObs = new HashMap<Concept, List<Obs>>();
 			Concept familyMemberRelationConcept = Context.getConceptService().getConcept(1560);
+			
 			for(Obs familyHistoryListObs : encounterFamilyHistoryObs)
 			{
 				if(familyHistoryListObs.getVoided()) continue;
 				
+				// Get the relationship observation
 				List<Obs> familyRelationObs = super.m_service.getObsGroupMembers(familyHistoryListObs, Arrays.asList(familyMemberRelationConcept));
 				if(familyRelationObs.size() == 0) 
 					continue;

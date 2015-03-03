@@ -1,13 +1,11 @@
 package org.openmrs.module.shr.odd.subscriber;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.hssf.record.CalcCountRecord;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.openmrs.Encounter;
 import org.openmrs.Obs;
@@ -17,7 +15,6 @@ import org.openmrs.module.shr.cdahandler.api.CdaImportSubscriber;
 import org.openmrs.module.shr.odd.OnDemandDocumentConstants;
 import org.openmrs.module.shr.odd.api.OnDemandDocumentService;
 import org.openmrs.module.shr.odd.configuration.OnDemandDocumentConfiguration;
-import org.openmrs.module.shr.odd.generator.document.impl.ApsGenerator;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentType;

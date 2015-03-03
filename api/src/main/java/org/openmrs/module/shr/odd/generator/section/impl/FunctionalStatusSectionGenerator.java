@@ -6,38 +6,35 @@ import java.util.List;
 import org.marc.everest.datatypes.generic.CE;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 
-
 /**
- * Generic Level 2 section generator for surgical procedures
+ * Functional Status Section generator
  */
-public class SurgicalProceduresSectionGenerator extends GenericLevel2SectionGenerator {
+public class FunctionalStatusSectionGenerator extends GenericLevel2SectionGenerator {
 
 	/**
-	 * Get template identifiers
+	 * Get the template identifiers
 	 * @see org.openmrs.module.shr.odd.generator.section.impl.GenericLevel2SectionGenerator#getTemplateIds()
 	 */
 	@Override
     protected List<String> getTemplateIds() {
-		return Arrays.asList(CdaHandlerConstants.SCT_TEMPLATE_HISTORY_OF_SURGICAL_PROCEDURES);
+		return Arrays.asList(CdaHandlerConstants.SCT_TEMPLATE_FUNCTIONAL_STATUS);
     }
 
 	/**
-	 * Get the title
+	 * Get the title of the birth plan
 	 * @see org.openmrs.module.shr.odd.generator.section.impl.GenericLevel2SectionGenerator#getTitle()
 	 */
 	@Override
     protected String getTitle() {
-		return "section.surgicalProcedures.title";
+		return "section.functionalStatus.title";
     }
-
+	
 	/**
 	 * Get the section code
 	 * @see org.openmrs.module.shr.odd.generator.section.impl.GenericLevel2SectionGenerator#getSectionCode()
 	 */
 	@Override
     protected CE<String> getSectionCode() {
-		return new CE<String>("10167-5", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "HISTORY OF SURGERY", null);
+		return new CE<String>("47420-5", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "Functional Status Assessment Note", null);
     }
-
-	
 }

@@ -84,7 +84,7 @@ public class OnDemandDocumentContentHandler implements ContentHandler {
 		            log.info(String.format("Generated ODD:\r\n%s", strPayload));
 
 	            // Now set the return content
-	            Content retVal = new Content(String.format("%s.%s", generatedCda.getId().getRoot(), generatedCda.getId().getExtension()), strPayload, null, null, "text/xml");
+	            Content retVal = new Content(String.format("%s.%s", generatedCda.getId().getRoot(), generatedCda.getId().getExtension()), bos.toByteArray(), null, null, "text/xml");
 	            
 	            return retVal;
 			}

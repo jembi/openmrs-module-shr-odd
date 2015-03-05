@@ -67,6 +67,7 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 		Context.getAdministrationService().setGlobalProperty(CdaHandlerConfiguration.PROP_VALIDATE_CONCEPT_STRUCTURE, "false");
 		Context.getAdministrationService().setGlobalProperty("order.nextOrderNumberSeed", "1");
 		Context.getAdministrationService().setGlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_FALSE_CONCEPT, "1066");
+        Context.getAdministrationService().setGlobalProperty("shr-cdahandler.cacheMappedConcepts", "false");
 		Context.getAdministrationService().saveGlobalProperty(saveDir);
 		executeDataSet(ACTIVE_LIST_INITIAL_XML);
 		executeDataSet(CIEL_LIST_INITIAL_XML);

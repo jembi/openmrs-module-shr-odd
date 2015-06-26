@@ -34,7 +34,7 @@
 							<property name="dao">
 								<bean class="org.openmrs.module.shr.odd.api.db.hibernate.HibernateOnDemandDocumentDAO">
 									<property name="sessionFactory">
-										<ref bean="sessionFactory" />
+										<ref bean="dbSessionFactory" />
 									</property>
 								</bean>
 							</property>

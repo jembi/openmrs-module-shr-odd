@@ -69,6 +69,9 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 		Context.getAdministrationService().setGlobalProperty(OpenmrsConstants.GLOBAL_PROPERTY_FALSE_CONCEPT, "1066");
         Context.getAdministrationService().setGlobalProperty("shr-cdahandler.cacheMappedConcepts", "false");
 		Context.getAdministrationService().saveGlobalProperty(saveDir);
+		GlobalProperty disableValidation = new GlobalProperty(OpenmrsConstants.GP_DISABLE_VALIDATION, "true");
+		Context.getAdministrationService().saveGlobalProperty(disableValidation);
+		Context.checkCoreDataset();
 		executeDataSet(ACTIVE_LIST_INITIAL_XML);
 		executeDataSet(CIEL_LIST_INITIAL_XML);
 		// Register the handler for a generic

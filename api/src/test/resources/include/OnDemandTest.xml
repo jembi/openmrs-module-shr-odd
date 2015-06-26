@@ -7,8 +7,8 @@
   <active_list_allergy active_list_id="1" allergy_type="POLLEN" severity="MILD"/>
   <active_list_problem active_list_id="2" sort_weight="1"/>
   
-  <concept_class concept_class_id="40" retired="0" description="Terms automatically created by the SHR" uuid="4ccac411-eb8e-45d6-8ec1-f6e09602449f" name="Automatically Created" creator="2" date_created="2014-05-02"/>
-  <concept_class concept_class_id="42" retired="0" description="Drug forms" uuid="895cf59a-3c14-43a1-8207-f13d20740c33" name="CDA" creator="2" date_created="2014-05-02"/>
+  <concept_class concept_class_id="40" retired="0" description="Terms automatically created by the SHR" uuid="4ccac411-eb8e-45d6-8ec1-f6e09602449f" name="Automatically Created" creator="1" date_created="2014-05-02"/>
+  <concept_class concept_class_id="42" retired="0" description="Drug forms" uuid="895cf59a-3c14-43a1-8207-f13d20740c33" name="CDA" creator="1" date_created="2014-05-02"/>
   
   <concept concept_id="90000" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05" uuid="c79b75a0-9648-4133-b20c-7d244a5f691d"/>
   <concept concept_id="90001" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05" uuid="e3a6097c-50f0-4e89-a3ac-a73dd9219296"/>
@@ -19,22 +19,22 @@
   <concept concept_id="90006" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05" uuid="caeed6f3-3625-451b-984e-d7ca3b7cafe3"/>
   <concept concept_id="90007" datatype_id="4" class_id="5" is_set="0" retired="false"  date_created="2014-04-05" uuid="335c3b3a-98d9-4956-9ef0-f2bdc12cd744"/>
   
-  <concept_name concept_name_id="1340" concept_id="90000" name="RMIM CONCEPT 1" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="1339" concept_id="90001" name="RMIM CONCEPT 2" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="1338" concept_id="90002" name="RMIM CONCEPT 3" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="1332" concept_id="90003" name="RMIM CONCEPT 4" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="1333" concept_id="90004" name="RMIM CONCEPT 5" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="1333" concept_id="90005" name="RMIM CONCEPT 6" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="1333" concept_id="90006" name="RMIM CONCEPT 7" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
-  <concept_name concept_name_id="1333" concept_id="90007" name="RMIM CONCEPT 8" locale="en" date_created="2014-04-05" creator="2" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/> 
+  <concept_name concept_name_id="1340" concept_id="90000" name="RMIM CONCEPT 1" locale="en" date_created="2014-04-05" creator="1" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/>
+  <concept_name concept_name_id="1339" concept_id="90001" name="RMIM CONCEPT 2" locale="en" date_created="2014-04-05" creator="1" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/>
+  <concept_name concept_name_id="1338" concept_id="90002" name="RMIM CONCEPT 3" locale="en" date_created="2014-04-05" creator="1" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/>
+  <concept_name concept_name_id="1332" concept_id="90003" name="RMIM CONCEPT 4" locale="en" date_created="2014-04-05" creator="1" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/>
+  <concept_name concept_name_id="1333" concept_id="90004" name="RMIM CONCEPT 5" locale="en" date_created="2014-04-05" creator="1" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/>
+  <concept_name concept_name_id="1333" concept_id="90005" name="RMIM CONCEPT 6" locale="en" date_created="2014-04-05" creator="1" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/>
+  <concept_name concept_name_id="1333" concept_id="90006" name="RMIM CONCEPT 7" locale="en" date_created="2014-04-05" creator="1" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/>
+  <concept_name concept_name_id="1333" concept_id="90007" name="RMIM CONCEPT 8" locale="en" date_created="2014-04-05" creator="1" voided="false" locale_preferred="0" concept_name_type="FULLY_SPECIFIED"/>
 	
-  <order_type order_type_id="40" description="Request to perform a procedure" retired="0" uuid="9506c6fe-d517-4707-a0c8-e72da23ff16d" name="Procedure Order" creator="2" date_created="2014-05-02" java_class_name="org.openmrs.module.shr.cdahandler.order.ProcedureOrder"/>
-  <order_type order_type_id="41" description="Request to perform an observation" retired="0" uuid="7f14cf98-8452-42c0-acac-2ba96c8e66ce" name="Observation Order" creator="2" date_created="2014-05-02" java_class_name="org.openmrs.module.shr.cdahandler.order.ObservationOrder"/>
+  <order_type order_type_id="40" description="Request to perform a procedure" retired="0" uuid="9506c6fe-d517-4707-a0c8-e72da23ff16d" name="Procedure Order" creator="1" date_created="2014-05-02" java_class_name="org.openmrs.module.shr.cdahandler.order.ProcedureOrder"/>
+  <order_type order_type_id="41" description="Request to perform an observation" retired="0" uuid="7f14cf98-8452-42c0-acac-2ba96c8e66ce" name="Observation Order" creator="1" date_created="2014-05-02" java_class_name="org.openmrs.module.shr.cdahandler.order.ObservationOrder"/>
   
-  <odd_type uuid="85c89cb3-7547-418d-a3d7-1a4666b38c5d" name="CCD" type_id="1" retired="0" creator="2" date_created="2014-04-05" java_class_name="org.openmrs.module.shr.odd.generator.document.impl.CcdGenerator" format_code="2.16.840.1.113883.10.20.1^^^&amp;HL7&amp;ISO"/>
-  <odd_type uuid="7e9987ed-11bb-4a58-ae13-e1de45e3007e" name="APS" type_id="2" retired="0" creator="2" date_created="2014-04-05" java_class_name="org.openmrs.module.shr.odd.generator.document.impl.ApsGenerator" format_code="urn:ihe:pcc:aps:2007"/>
+  <odd_type uuid="85c89cb3-7547-418d-a3d7-1a4666b38c5d" name="CCD" type_id="1" retired="0" creator="1" date_created="2014-04-05" java_class_name="org.openmrs.module.shr.odd.generator.document.impl.CcdGenerator" format_code="2.16.840.1.113883.10.20.1^^^&amp;HL7&amp;ISO"/>
+  <odd_type uuid="7e9987ed-11bb-4a58-ae13-e1de45e3007e" name="APS" type_id="2" retired="0" creator="1" date_created="2014-04-05" java_class_name="org.openmrs.module.shr.odd.generator.document.impl.ApsGenerator" format_code="urn:ihe:pcc:aps:2007"/>
   
   <location location_id="1" name="Elbonia Shared Health Authority DC" creator="1" retired="0"  />
 	<location_attribute_type location_attribute_type_id="1" name="ExternalId" creator="1" min_occurs="0" max_occurs="1" datatype="org.openmrs.customdatatype.datatype.FreeTextDatatype" retired="0" date_created="2014-05-02"/>
-  <location_attribute location_attribute_id="1" location_id="1" attribute_type_id="1" creator="2" value_reference="123^^^&amp;1.2.3.4.5.6.7.8&amp;ISO" date_created="2014-05-07" voided="0"/>
+  <location_attribute location_attribute_id="1" location_id="1" attribute_type_id="1" creator="1" value_reference="123^^^&amp;1.2.3.4.5.6.7.8&amp;ISO" date_created="2014-05-07" voided="0"/>
 </dataset>

@@ -15,6 +15,7 @@ import org.openmrs.Obs;
 import org.openmrs.Order;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
+import org.openmrs.api.db.hibernate.DbSessionFactory;
 import org.openmrs.module.shr.odd.api.db.OnDemandDocumentDAO;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentEncounterLink;
 import org.openmrs.module.shr.odd.model.OnDemandDocumentRegistration;
@@ -28,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
 	
 	// Hibernate session factory
-	private SessionFactory m_sessionFactory;
+	private DbSessionFactory m_sessionFactory;
 	
 	/**
 	 * Save an on demand document registration entry
@@ -160,7 +161,7 @@ public class HibernateOnDemandDocumentDAO implements OnDemandDocumentDAO {
     /**
      * @param sessionFactory the sessionFactory to set
      */
-    public void setSessionFactory(SessionFactory sessionFactory) {
+    public void setSessionFactory(DbSessionFactory sessionFactory) {
     	this.m_sessionFactory = sessionFactory;
     }
 

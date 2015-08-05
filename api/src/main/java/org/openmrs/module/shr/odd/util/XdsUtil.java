@@ -83,7 +83,7 @@ public final class XdsUtil {
 		// ODD
 		oddRegistryObject.setId(String.format("Document%s", registration.getId().toString()));
 		oddRegistryObject.setMimeType("text/xml");
-//		oddRegistryObject.setObjectType(XDSConstants.UUID_XDSDocumentEntry);
+		// oddRegistryObject.setObjectType(XDSConstants.UUID_XDSDocumentEntry);
 		oddRegistryObject.setName(new InternationalStringType());
 		oddRegistryObject.getName().getLocalizedString().add(new LocalizedStringType());
 		oddRegistryObject.getName().getLocalizedString().get(0).setValue(registration.getTitle());
@@ -118,11 +118,11 @@ public final class XdsUtil {
 		patientDob.setDateValuePrecision(TS.DAY);
 		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_SOURCE_PATIENT_ID, this.formatId(this.m_cdaConfiguration.getPatientRoot(), registration.getPatient().getId().toString()));
 		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_SOURCE_PATIENT_INFO,
-			String.format("PID-3|%s", this.formatId(this.m_cdaConfiguration.getPatientRoot(), registration.getPatient().getId().toString())),
-			String.format("PID-5|%s^%s^^^", registration.getPatient().getFamilyName(), registration.getPatient().getGivenName()),
-			String.format("PID-7|%s", patientDob.getValue()),
-			String.format("PID-8|%s", registration.getPatient().getGender())
-			);
+				String.format("PID-3|%s", this.formatId(this.m_cdaConfiguration.getPatientRoot(), registration.getPatient().getId().toString())),
+				String.format("PID-5|%s^%s^^^", registration.getPatient().getFamilyName(), registration.getPatient().getGivenName()),
+				String.format("PID-7|%s", patientDob.getValue()),
+				String.format("PID-8|%s", registration.getPatient().getGender())
+		);
 		InfosetUtil.addOrOverwriteSlot(oddRegistryObject, XDSConstants.SLOT_NAME_LANGUAGE_CODE, Context.getLocale().toLanguageTag());
 		
 		// Unique identifier
@@ -131,10 +131,9 @@ public final class XdsUtil {
 	
 		// Set classifications
 		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_confidentialityCode, "1.3.6.1.4.1.21367.2006.7.101", "Connect-a-thon confidentialityCodes", "confidentialityCode");
-		CV<String> formatCode = CdaDataUtil.getInstance().parseCodeFromString(registration.getType().getFormatCode(), CV.class);
-		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_formatCode, formatCode.getCode(), formatCode.getCodeSystem(), "formatCode");
-		//this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_healthCareFacilityTypeCode, "Not Available", "Connect-a-thon healthcareFacilityTypeCodes");
-		//this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_practiceSettingCode, "Not Available", "Connect-a-thon practiceSettingCodes");
+		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_formatCode, docGenerator.getFormatCode().getCode(), docGenerator.getFormatCode().getCodeSystemName(), "formatCode");
+		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_healthCareFacilityTypeCode, "SHR", "OHIE healthcareFacilityTypeCodes", "healthcareFacilityTypeCode");
+		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_practiceSettingCode, "SHR", "OHIE practiceSettingCodes", "practiceSettingCode");
 		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_typeCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystemName(), "typeCode");
 		this.addCodedValueClassification(oddRegistryObject, XDSConstants.UUID_XDSDocumentEntry_classCode, docGenerator.getDocumentTypeCode().getCode(), docGenerator.getDocumentTypeCode().getCodeSystemName(), "classCode");
 		

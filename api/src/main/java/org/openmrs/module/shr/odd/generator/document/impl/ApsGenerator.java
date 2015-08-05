@@ -74,4 +74,13 @@ public class ApsGenerator extends DocumentGeneratorImpl {
 		return new CE<String>("57055-6", CdaHandlerConstants.CODE_SYSTEM_LOINC, CdaHandlerConstants.CODE_SYSTEM_NAME_LOINC, null, "ANTEPARTUM SUMMARY NOTE", null);
     }
 
+	/**
+	 * Get the document format code
+	 * @see org.openmrs.module.shr.odd.generator.DocumentGenerator#getFormatCode()
+	 */
+	@Override
+	public CE<String> getFormatCode() {
+		return new CE<String>("1.3.6.1.4.1.19376.1.5.3.1.1.11.2", "IHE PCC", "IHE PCC", null, "urn:ihe:pcc:aps:2007", null);
+	}
+
 }

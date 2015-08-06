@@ -120,7 +120,14 @@ public class CcdGenerator extends DocumentGeneratorImpl {
 	    return this.m_documentCode;
     }
 
-	
-	
+
+	/**
+	 * Get the document format code
+	 * @see org.openmrs.module.shr.odd.generator.DocumentGenerator#getFormatCode()
+	 */
+	@Override
+	public CE<String> getFormatCode() {
+		return new CE<String>("2.16.840.1.113883.10.20.1", "HITSP", "HITSP", null, "HL7 CCD Document", null);
+	}
 	
 }

@@ -18,4 +18,9 @@ public interface DocumentGenerator {
 	 * Get the document type code
 	 */
 	public CE<String> getDocumentTypeCode();
+
+	/**
+	 * Get the document format code
+	 */
+	public CE<String> getFormatCode();
 }

@@ -68,5 +68,10 @@
 		<defaultValue>^(.*)?\\^\\^\\^\\&amp;(.*)?\\&amp;ISO$</defaultValue>
 		<description>Indicates the format of identifiers stored in the OpenSHR datastore</description>
 	</globalProperty>
+	<globalProperty>
+		<property>${project.parent.artifactId}.xdsRegistryUrl</property>
+		<defaultValue></defaultValue>
+		<description>The XDS.b Registry to use. Leave blank in order to use the coonfigured value for the xds.b-repository module</description>
+	</globalProperty>
 </module>
 

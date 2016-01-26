@@ -1,5 +1,6 @@
 package org.openmrs.module.shr.odd.util;
 
+import java.net.URL;
 import java.util.Date;
 
 import javax.xml.bind.JAXBElement;
@@ -208,7 +209,12 @@ public final class XdsUtil {
 
 		
 		try {
-	        xdsService.registerDocument(registration.getAccessionNumber(), OnDemandDocumentContentHandler.class, registryRequest);
+			String xdsRegistryUrlProp = Context.getAdministrationService().getGlobalProperty("shr-odd.xdsRegistryUrl");
+			if (xdsRegistryUrlProp==null || xdsRegistryUrlProp.trim().isEmpty()) {
+				xdsService.registerDocument(registration.getAccessionNumber(), OnDemandDocumentContentHandler.class, registryRequest);
+			} else {
+				xdsService.registerDocument(new URL(xdsRegistryUrlProp), registration.getAccessionNumber(), OnDemandDocumentContentHandler.class, registryRequest);
+			}
         }
         catch (Exception e) {
 	        throw new OnDemandDocumentException(e.getMessage(), e);

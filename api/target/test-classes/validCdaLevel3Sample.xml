@@ -86,7 +86,10 @@
 			<addr/>
 			<telecom/>
 			<associatedPerson>
-				<name>NextOfKin(NOK) Name</name>
+                <name>
+                    <family>Mary</family>
+                    <given>Jane</given>
+                </name>
 			</associatedPerson>
 		</associatedEntity>
 	</participant>

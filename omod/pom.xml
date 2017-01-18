@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openmrs.module</groupId>
 		<artifactId>shr-odd</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>shr-odd-omod</artifactId>
@@ -33,19 +33,19 @@
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>shr-cdahandler-api</artifactId>
-			<version>1.0.0</version>
+			<version>${cdahandlerVersion}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>shr-contenthandler-api</artifactId>
-			<version>3.0.0</version>
+			<version>${contenthandlerVersion}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>xds-b-repository-api</artifactId>
-			<version>1.0.0</version>
+			<version>${xdsbrepositoryVersion}</version>
 			<scope>provided</scope>
 		</dependency>						
 		<!-- End OpenMRS modules -->

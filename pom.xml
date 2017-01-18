@@ -4,7 +4,7 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>shr-odd</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>SHR On Demand Documents</name>
 	<description>Provides content generators for CDA documents</description>
@@ -22,9 +22,9 @@
 	</organization>
 
 	<scm>
-		<connection>scm:svn:https://svn.openmrs.org/openmrs-modules/shr-cdahandler/trunk/</connection>
-		<developerConnection>scm:svn:https://svn.openmrs.org/openmrs-modules/shr-cdahandler/trunk/</developerConnection>
-		<url>https://svn.openmrs.org/openmrs-modules/shr-cdahandler/trunk/</url>
+		<connection>scm:git@github.com:jembi/openmrs-module-shr-odd.git</connection>
+		<developerConnection>scm:git@github.com:jembi/openmrs-module-shr-odd.git</developerConnection>
+		<url>https://github.com/jembi/openmrs-module-shr-odd.git</url>
 	</scm>
 
 	<modules>
@@ -33,8 +33,11 @@
 	</modules>
 	
 	<properties>
-		<openMRSVersion>1.12.0-SNAPSHOT</openMRSVersion>
+		<openMRSVersion>1.11.5</openMRSVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <cdahandlerVersion>1.0.1-SNAPSHOT</cdahandlerVersion>
+        <contenthandlerVersion>3.0.1-SNAPSHOT</contenthandlerVersion>
+        <xdsbrepositoryVersion>1.1.1-SNAPSHOT</xdsbrepositoryVersion>
 	</properties>
 
 	<dependencyManagement>
@@ -107,8 +110,8 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
-						<target>1.8</target>
-						<source>1.8</source>
+						<target>1.7</target>
+						<source>1.7</source>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -136,11 +139,6 @@
 			<name>OpenMRS Nexus Repository</name>
 			<url>http://mavenrepo.openmrs.org/nexus/content/repositories/public</url>
 		</repository>
-		<repository>
-			<id>openehealth</id>
-			<name>Open eHealth Repository</name>
-			<url>http://repo.openehealth.org/maven2/releases/</url>
-		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -148,14 +146,6 @@
 			<id>openmrs-repo</id>
 			<name>OpenMRS Nexus Repository</name>
 			<url>http://mavenrepo.openmrs.org/nexus/content/repositories/public</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-		<pluginRepository>
-			<id>openehealth</id>
-			<name>Open eHealth Repository</name>
-			<url>http://repo.openehealth.org/maven2/releases/</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>

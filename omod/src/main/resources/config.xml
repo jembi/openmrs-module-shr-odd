@@ -12,20 +12,20 @@
 		${project.parent.description}
 	</description>
 	<updateURL>https://modules.openmrs.org/modules/download/${project.parent.artifactId}/update.rdf</updateURL>
-	<require_version>1.10.0</require_version>
+	<require_version>${openMRSVersion}</require_version>
 	<!-- / Module Properties -->
 
 	
 	<!-- Required Modules -->
 	<require_modules>
 																
-		<require_module version="0.5.0">
+		<require_module version="${cdahandlerVersion}">
 			org.openmrs.module.shr-cdahandler
 		</require_module>
-		<require_module version="0.4.1">
+		<require_module version="${xdsbrepositoryVersion}">
 			org.openmrs.module.xds-b-repository
 		</require_module>			
-		<require_module version="2.0.0">
+		<require_module version="${contenthandlerVersion">
 			org.openmrs.module.shr-contenthandler
 		</require_module>
 	</require_modules>

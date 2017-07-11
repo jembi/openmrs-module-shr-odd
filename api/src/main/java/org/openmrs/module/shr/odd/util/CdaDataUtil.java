@@ -12,7 +12,8 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLInputFactory;
 
-import org.jfree.util.Log;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.marc.everest.datatypes.AD;
 import org.marc.everest.datatypes.ADXP;
 import org.marc.everest.datatypes.ANY;
@@ -104,7 +105,8 @@ public final class CdaDataUtil {
 	    "AUNT", "UNCLE", "PGRMTH", "MGRMTH", "PGRFTH", "MGRFTH", "SON", "DAU", "BRO", "SIS", "DOMPART", "FAMMEMB");
 	
 	private final Pattern m_idPattern = Pattern.compile(m_oddConfiguration.getIdRegex(), Pattern.CASE_INSENSITIVE);
-	
+
+	protected Log log = LogFactory.getLog(getClass());
 	/**
 	 * Private ctor
 	 */
@@ -512,7 +514,7 @@ public final class CdaDataUtil {
 			}
 			catch(Exception e)
 			{
-				Log.error(e);
+				log.error(e);
 			}
 		}
 		

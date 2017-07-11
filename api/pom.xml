@@ -88,6 +88,15 @@
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
+
+		<!-- emrapi-condition-list Module -->
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>emrapi-condition-list</artifactId>
+			<version>${emrapiConditionListVersion}</version>
+			<type>jar</type>
+			<scope>provided</scope>
+		</dependency>
 		
 		<!-- Everest Dependencies -->
 		<dependency>
@@ -114,6 +123,26 @@
 			<version>1.1.0</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<!-- DCM4CHEE modules (for JAX-b classes and InfoSetUtil) -->
+		<dependency>
+			<groupId>org.dcm4che</groupId>
+			<artifactId>dcm4chee-xds2-infoset</artifactId>
+			<version>2.0.6</version>
+		</dependency>
+
+		<!-- DCM4CHEE common module -->
+		<dependency>
+			<groupId>org.dcm4che</groupId>
+			<artifactId>dcm4chee-xds2-common</artifactId>
+			<version>2.0.6</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jboss.spec.javax.servlet</groupId>
+					<artifactId>jboss-servlet-api_3.0_spec</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 	
 	<build>
@@ -135,6 +164,11 @@
 		<repository>
 			<id>marc-te-main</id>
 			<url>http://te.marc-hi.ca/mvn</url>
+		</repository>
+
+		<repository>
+			<id>dcm4che</id>
+			<url>http://dcm4che.org/maven2</url>
 		</repository>
 	</repositories>
 </project>

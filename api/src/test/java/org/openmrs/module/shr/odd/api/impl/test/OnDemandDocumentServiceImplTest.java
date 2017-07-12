@@ -9,8 +9,6 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
@@ -19,9 +17,7 @@ import org.marc.everest.formatters.FormatterUtil;
 import org.marc.everest.interfaces.IResultDetail;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.ClinicalDocument;
 import org.marc.everest.rmim.uv.cdar2.rim.InfrastructureRoot;
-import org.openmrs.GlobalProperty;
-import org.openmrs.Patient;
-import org.openmrs.Visit;
+import org.openmrs.*;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
@@ -125,9 +121,9 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 		Visit visit = this.doParseCda("/validAphpSampleFullSections.xml");
 		// Get patient information by name
 		List<Patient> patient = Context.getPatientService().getPatients("Sarah Levin");
-		Assert.assertEquals(1, patient.size());
+		assertEquals(1, patient.size());
 		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
-		Assert.assertEquals(2, oddDocuments.size());
+		assertEquals(2, oddDocuments.size());
 	}
 	
 	/**
@@ -141,9 +137,9 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 		Visit visit = this.doParseCda("/validAphpSampleFullSections.xml");
 		// Get patient information by name
 		List<Patient> patient = Context.getPatientService().getPatients("Sarah Levin");
-		Assert.assertEquals(1, patient.size());
+		assertEquals(1, patient.size());
 		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
-		Assert.assertEquals(2, oddDocuments.size());
+		assertEquals(2, oddDocuments.size());
 		// Generate CCD
 		try {
 	        ClinicalDocument doc = this.m_oddService.generateOnDemandDocument(oddDocuments.get(0));
@@ -170,11 +166,11 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 				visit2 = this.doParseCda("/validAphpSamplePovich2.xml");
 		// Get patient information by name
 		List<Patient> patient = Context.getPatientService().getPatients("Mary Levin");
-		Assert.assertEquals(1, patient.size());
+		assertEquals(1, patient.size());
 		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
 		// One APS one CCD
-		Assert.assertEquals(3, oddDocuments.size());
-		Assert.assertEquals(2, oddDocuments.get(1).getEncounterLinks().size());
+		assertEquals(3, oddDocuments.size());
+		assertEquals(2, oddDocuments.get(1).getEncounterLinks().size());
 		
 		// Generate CCD
 		try {
@@ -199,10 +195,10 @@ public class OnDemandDocumentServiceImplTest extends BaseModuleContextSensitiveT
 		Visit visit1 = this.doParseCda("/validCdaLevel3Sample.xml");
 		// Get patient information by name
 		List<Patient> patient = Context.getPatientService().getPatients("Patty");
-		Assert.assertEquals(1, patient.size());
+		assertEquals(1, patient.size());
 		List<OnDemandDocumentRegistration> oddDocuments = this.m_oddService.getOnDemandDocumentRegistrationsByPatient(patient.get(0));
-		Assert.assertEquals(1, oddDocuments.size());
-		Assert.assertEquals(1, oddDocuments.get(0).getEncounterLinks().size());
+		assertEquals(1, oddDocuments.size());
+		assertEquals(1, oddDocuments.get(0).getEncounterLinks().size());
 		
 		// Generate CCD
 		try {

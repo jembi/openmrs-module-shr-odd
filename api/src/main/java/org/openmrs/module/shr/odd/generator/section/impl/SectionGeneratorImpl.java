@@ -367,47 +367,11 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		
 	    // Add identifier
 	    retVal.setId(new SET<II>());
-	    //TODO update
-//	    if(activeListItem.getStartObs() != null && activeListItem.getStartObs().getAccessionNumber() != null &&
-//	    		activeListItem.getStartObs().getAccessionNumber().isEmpty())
-//	    	retVal.getId().add(this.m_cdaDataUtil.parseIIFromString(activeListItem.getStartObs().getAccessionNumber()));
 	    
 	    retVal.getId().add(new II(this.m_cdaConfiguration.getProblemRoot(), activeListItem.getId().toString()));
 	    // Add the code
 	    retVal.setCode(new CD<String>());
 	    retVal.getCode().setNullFlavor(NullFlavor.NotApplicable);
-		//TODO update
-	    // Now add reference the status code
-//	    IVL<TS> eft = new IVL<TS>();
-//	    if(activeListItem.getStartObs() != null)
-//	    {
-//    		eft.setLow(this.m_cdaDataUtil.createTS(activeListItem.getStartDate()));
-//	    	if(activeListItem.getStartObs() != null)
-//	    	{
-//	    		// Correct the precision of the dates
-//	    		ExtendedObs obs = Context.getService(CdaImportService.class).getExtendedObs(activeListItem.getStartObs().getId());
-//	    		if(obs != null && obs.getObsDatePrecision() == 0)
-//	    			eft.getLow().setNullFlavor(NullFlavor.Unknown);
-//	    		else if(obs != null)
-//	    			eft.getLow().setDateValuePrecision(obs.getObsDatePrecision());
-//	    	}
-//	    }
-//	    if(activeListItem.getStopObs() != null)
-//	    {
-//	    	eft.setHigh(this.m_cdaDataUtil.createTS(activeListItem.getEndDate()));
-//	    	if(activeListItem.getStopObs() != null)
-//	    	{
-//	    		// Correct the precision of the dates
-//	    		ExtendedObs obs = Context.getService(CdaImportService.class).getExtendedObs(activeListItem.getStopObs().getId());
-//	    		if(obs != null && obs.getObsDatePrecision() == 0)
-//	    			eft.getHigh().setNullFlavor(NullFlavor.Unknown);
-//	    		else if(obs != null)
-//	    			eft.getHigh().setDateValuePrecision(obs.getObsDatePrecision());
-//	    	}
-//
-//	    }
-
-	   // retVal.setEffectiveTime(eft);
 	    
 	    // Is there a creation time?
     	retVal.getAuthor().add(this.createAuthorPointer(activeListItem));

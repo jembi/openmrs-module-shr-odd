@@ -1,11 +1,13 @@
 package org.openmrs.module.shr.odd.generator.section.impl;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import org.marc.everest.datatypes.BL;
+import org.marc.everest.datatypes.NullFlavor;
+import org.marc.everest.datatypes.TS;
 import org.marc.everest.datatypes.generic.CD;
 import org.marc.everest.datatypes.generic.CE;
+import org.marc.everest.datatypes.generic.IVL;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Act;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.Entry;
 import org.marc.everest.rmim.uv.cdar2.pocd_mt000040uv.EntryRelationship;
@@ -17,10 +19,14 @@ import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntry;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentActMood;
 import org.openmrs.Concept;
+import org.openmrs.Condition;
 import org.openmrs.Obs;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.emrapi.conditionslist.ConditionService;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
+import org.openmrs.module.shr.cdahandler.api.CdaImportService;
 import org.openmrs.module.shr.cdahandler.exception.DocumentImportException;
+import org.openmrs.module.shr.cdahandler.obs.ExtendedObs;
 
 /**
  * Generator for Problem section
@@ -47,7 +53,7 @@ public class ProblemSectionGenerator extends SectionGeneratorImpl {
 	public Section generateSection() {
 
 		// Are there problems on file for the patient?
-		List<ActiveListItem> problems = Context.getActiveListService().getActiveListItems(this.m_registration.getPatient(), Problem.ACTIVE_LIST_TYPE);
+		List<Condition> conditions = Context.getService(ConditionService.class).getActiveConditions(this.m_registration.getPatient());
 
 		// Create generic section construct
 		Section retVal = super.createSection(
@@ -57,38 +63,61 @@ public class ProblemSectionGenerator extends SectionGeneratorImpl {
 		);
 
 		// Problem section must have level 3 content
-		if(problems.size() > 0)
+		if(conditions.size() > 0)
 		{
 			// Generate problem list
-			for(ActiveListItem itm : problems)
+			for(Condition condition : conditions)
 			{
 				Act problemAct = super.createAct(
 					x_ActClassDocumentEntryAct.Act,
 					x_DocumentActMood.Eventoccurrence,
 					Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_CONCERN, CdaHandlerConstants.ENT_TEMPLATE_CONCERN_ENTRY, CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_ACT),
-					itm);
-				
-				Problem prob = (Problem)itm;
-				
+					condition);
+
+				// Now add reference the status code
+				IVL<TS> eft = new IVL<TS>();
+
+				Obs startObs = findFirstProblemObs(condition);
+				Obs stopObs = findLastProblemObs(condition);
+
+				if(startObs != null){
+					eft.setLow(this.m_cdaDataUtil.createTS(condition.getOnsetDate()));
+					//Correct the precision of the dates
+					ExtendedObs obs = Context.getService(CdaImportService.class).getExtendedObs(startObs.getId());
+					if(obs != null && obs.getObsDatePrecision() == 0)
+						eft.getLow().setNullFlavor(NullFlavor.Unknown);
+					else if(obs != null)
+						eft.getLow().setDateValuePrecision(obs.getObsDatePrecision());
+				}
+				if(stopObs != null){
+					eft.setHigh(this.m_cdaDataUtil.createTS(condition.getEndDate()));
+					// Correct the precision of the dates
+					ExtendedObs obs = Context.getService(CdaImportService.class).getExtendedObs(stopObs.getId());
+					if(obs != null && obs.getObsDatePrecision() == 0)
+						eft.getHigh().setNullFlavor(NullFlavor.Unknown);
+					else if(obs != null)
+						eft.getHigh().setDateValuePrecision(obs.getObsDatePrecision());
+				}
+				problemAct.setEffectiveTime(eft);
+
+
+
 				// Negation indicator?
-				if(prob.getModifier() != null)
-					switch(prob.getModifier())
+				if(condition.getStatus() != null)
+					switch(condition.getStatus())
 					{
 						case HISTORY_OF:
 							problemAct.setStatusCode(ActStatus.Completed);
-						case RULE_OUT:
+						case INACTIVE:
 							problemAct.setNegationInd(BL.TRUE);
 					}
 				else
 					problemAct.setStatusCode(ActStatus.Active);
-				
+
 				// Add an entry relationship of the problem
-				Obs problemObs = itm.getStartObs();
-				if(itm.getStopObs() != null)
-					problemObs = itm.getStopObs();
 				
-				Observation problemObservation = super.createObs(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION), 
-					problemObs, 
+				Observation problemObservation = super.createObs(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION),
+						stopObs,
 					CdaHandlerConstants.CODE_SYSTEM_SNOMED);
 				
 				problemAct.getEntryRelationship().add(new EntryRelationship(x_ActRelationshipEntryRelationship.SUBJ, BL.FALSE, BL.TRUE, null, null, null, problemObservation));
@@ -115,6 +144,32 @@ public class ProblemSectionGenerator extends SectionGeneratorImpl {
 		}
 
 		return retVal;
+	}
+
+	private Obs findLastProblemObs(Condition condition){
+		List<Obs> candidates= new ArrayList<>();
+		List<Obs> obs = Context.getObsService().getObservationsByPerson(condition.getPatient());
+		for(Obs currentObs : obs){
+			if(currentObs.getValueCoded() != null && currentObs.getValueCoded().equals(condition.getConcept()))
+				candidates.add(currentObs);
+		}
+		Collections.sort(candidates, Comparator.comparing(Obs::getObsDatetime));
+		if(candidates.size()>0)
+			return candidates.get(candidates.size()-1);
+		return null;
+	}
+
+	private Obs findFirstProblemObs(Condition condition){
+		List<Obs> candidates= new ArrayList<>();
+		List<Obs> obs = Context.getObsService().getObservationsByPerson(condition.getPatient());
+		for(Obs currentObs : obs){
+			if(currentObs.getValueCoded() != null && currentObs.getValueCoded().equals(condition.getConcept()))
+				candidates.add(currentObs);
+		}
+		Collections.sort(candidates, Comparator.comparing(Obs::getObsDatetime));
+		if(candidates.size()>0)
+			return candidates.get(0);
+		return null;
 	}
 
 	/**

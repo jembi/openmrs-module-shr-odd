@@ -1,8 +1,6 @@
 package org.openmrs.module.shr.odd.subscriber;
 
-import java.util.Calendar;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -122,11 +120,13 @@ public class AntepartumSubscriber implements CdaImportSubscriber {
 		}
 		else // Find the appropriate one, whereby the visit time is before the most recent estimated delivery date
 		{
-			// get the estimated delivery date observation? 
-			Set<Obs> confinementObservations = Context.getObsService().getObservations(processedVisit.getPatient(), Context.getConceptService().getConcept(CONCEPT_ID_DATE_OF_CONFINEMENT_EST), false);
+			// get the estimated delivery date observation?
+			List<Obs> confinementObservations = Context.getObsService().getObservationsByPersonAndConcept(processedVisit.getPatient(),Context.getConceptService().getConcept(CONCEPT_ID_DATE_OF_CONFINEMENT_EST));
+			Set<Obs> setConfinementObservations=new HashSet<>();
+			setConfinementObservations.addAll(confinementObservations);
 			Obs lastConfinementObs = null;
 			// Find that last confinement obs with a time before the end of this visit
-			for(Obs candidateObs : confinementObservations)
+			for(Obs candidateObs : setConfinementObservations)
 			{
 				Calendar lastPossibleConfinementDate = Calendar.getInstance();
 				lastPossibleConfinementDate.setTime(candidateObs.getValueDate());

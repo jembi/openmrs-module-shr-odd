@@ -1,8 +1,6 @@
 package org.openmrs.module.shr.odd.generator.section.impl;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import org.marc.everest.datatypes.BL;
 import org.marc.everest.datatypes.ED;
@@ -88,16 +86,14 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 					x_DocumentActMood.Eventoccurrence,
 					Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_ALLERGIES_AND_INTOLERANCES_CONCERN, CdaHandlerConstants.ENT_TEMPLATE_CONCERN_ENTRY, CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_ACT),
 					allergy);
-			
+
 				requiredAllergyAssertions.remove(allergy.getAllergen());
 
 				// Add an entry relationship of the problem
-				Obs problemObs = allergy.getStartObs();
-				if(allergy.getStopObs() != null)
-					problemObs = allergy.getStopObs();
+				Obs problemObs = findLastProblemObs(allergy);
 				
-				Observation problemObservation = super.createObs(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_CCD_ALERT_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_ALLERGY_AND_INTOLERANCE_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION), 
-					problemObs, 
+				Observation problemObservation = super.createObs(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_CCD_ALERT_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_ALLERGY_AND_INTOLERANCE_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION),
+					problemObs,
 					CdaHandlerConstants.CODE_SYSTEM_SNOMED);
 				
 				super.correctCode((CD<?>)problemObservation.getValue(), CdaHandlerConstants.CODE_SYSTEM_RXNORM, CdaHandlerConstants.CODE_SYSTEM_SNOMED, CdaHandlerConstants.CODE_SYSTEM_ICD_10);
@@ -122,14 +118,9 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 						typeMnemonic = "O";
 						display = "Other ";
 				}
-				//TODO update, check what with AllergySeverity.INTOLERANCE
+
 				// Complete the code and assign
-				if(allergy.getSeverity().equals(AllergySeverity.INTOLERANCE))
-				{
-					typeMnemonic += "INT";
-					display += "Intolerance";
-				}
-				else if(typeMnemonic.equals("O"))
+				if(typeMnemonic.equals("O"))
 				{
 					typeMnemonic = "ALG";
 					display += "Allergy";
@@ -261,7 +252,33 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 
 		return retVal;
 	}
-	
+
+	private Obs findLastProblemObs(Allergy allergy){
+		List<Obs> candidates= new ArrayList<>();
+		List<Obs> obs = Context.getObsService().getObservationsByPerson(allergy.getPatient());
+		for(Obs currentObs : obs){
+			if(currentObs.getValueCoded() != null && currentObs.getValueCoded().equals(allergy.getAllergen().getCodedAllergen()))
+				candidates.add(currentObs);
+		}
+		Collections.sort(candidates, Comparator.comparing(Obs::getObsDatetime));
+		if(candidates.size()>0)
+			return candidates.get(candidates.size()-1);
+		return null;
+	}
+
+	private Obs findFirstProblemObs(Allergy allergy){
+		List<Obs> candidates= new ArrayList<>();
+		List<Obs> obs = Context.getObsService().getObservationsByPerson(allergy.getPatient());
+		for(Obs currentObs : obs){
+			if(currentObs.getValueCoded() != null && currentObs.getValueCoded().equals(allergy.getAllergen().getCodedAllergen()))
+				candidates.add(currentObs);
+		}
+		Collections.sort(candidates, Comparator.comparing(Obs::getObsDatetime));
+		if(candidates.size()>0)
+			return candidates.get(0);
+		return null;
+	}
+
 	/**
 	 * Get the obs group concept
 	 * @see org.openmrs.module.shr.odd.generator.section.impl.SectionGeneratorImpl#getSectionObsGroupConcept()

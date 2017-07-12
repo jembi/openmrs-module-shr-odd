@@ -80,18 +80,7 @@ import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipExternalRefere
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentActMood;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentProcedureMood;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentSubstanceMood;
-import org.openmrs.BaseOpenmrsData;
-import org.openmrs.Concept;
-import org.openmrs.Drug;
-import org.openmrs.DrugOrder;
-import org.openmrs.Encounter;
-import org.openmrs.Obs;
-import org.openmrs.Order;
-import org.openmrs.Person;
-import org.openmrs.Provider;
-import org.openmrs.VisitAttribute;
-import org.openmrs.VisitAttributeType;
-import org.openmrs.activelist.ActiveListItem;
+import org.openmrs.*;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
@@ -369,7 +358,7 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 	/**
 	 * Create an Act
 	 */
-	public Act createAct(x_ActClassDocumentEntryAct classCode, x_DocumentActMood moodCode, List<String> templateId, ActiveListItem activeListItem) {
+	public Act createAct(x_ActClassDocumentEntryAct classCode, x_DocumentActMood moodCode, List<String> templateId, BaseOpenmrsData activeListItem) {
 		Act retVal = new Act();
 		retVal.setClassCode(classCode);
 		retVal.setMoodCode(moodCode);
@@ -378,51 +367,17 @@ public abstract class SectionGeneratorImpl implements SectionGenerator {
 		
 	    // Add identifier
 	    retVal.setId(new SET<II>());
-	    if(activeListItem.getStartObs() != null && activeListItem.getStartObs().getAccessionNumber() != null &&
-	    		activeListItem.getStartObs().getAccessionNumber().isEmpty())
-	    	retVal.getId().add(this.m_cdaDataUtil.parseIIFromString(activeListItem.getStartObs().getAccessionNumber()));
 	    
 	    retVal.getId().add(new II(this.m_cdaConfiguration.getProblemRoot(), activeListItem.getId().toString()));
 	    // Add the code
 	    retVal.setCode(new CD<String>());
 	    retVal.getCode().setNullFlavor(NullFlavor.NotApplicable);
 	    
-	    // Now add reference the status code
-	    IVL<TS> eft = new IVL<TS>();
-	    if(activeListItem.getStartObs() != null)
-	    {
-    		eft.setLow(this.m_cdaDataUtil.createTS(activeListItem.getStartDate()));
-	    	if(activeListItem.getStartObs() != null)
-	    	{
-	    		// Correct the precision of the dates
-	    		ExtendedObs obs = Context.getService(CdaImportService.class).getExtendedObs(activeListItem.getStartObs().getId());
-	    		if(obs != null && obs.getObsDatePrecision() == 0)
-	    			eft.getLow().setNullFlavor(NullFlavor.Unknown);
-	    		else if(obs != null)
-	    			eft.getLow().setDateValuePrecision(obs.getObsDatePrecision());
-	    	}
-	    }
-	    if(activeListItem.getStopObs() != null)
-	    {
-	    	eft.setHigh(this.m_cdaDataUtil.createTS(activeListItem.getEndDate()));
-	    	if(activeListItem.getStopObs() != null)
-	    	{
-	    		// Correct the precision of the dates
-	    		ExtendedObs obs = Context.getService(CdaImportService.class).getExtendedObs(activeListItem.getStopObs().getId());
-	    		if(obs != null && obs.getObsDatePrecision() == 0)
-	    			eft.getHigh().setNullFlavor(NullFlavor.Unknown);
-	    		else if(obs != null)
-	    			eft.getHigh().setDateValuePrecision(obs.getObsDatePrecision());
-	    	}
-	    	
-	    }
-
-	    retVal.setEffectiveTime(eft);
-	    
 	    // Is there a creation time?
     	retVal.getAuthor().add(this.createAuthorPointer(activeListItem));
-	    
-	    retVal.setStatusCode(ConcernEntryProcessor.calculateCurrentStatus(activeListItem));;
+
+    	if(activeListItem instanceof Condition)
+	    	retVal.setStatusCode(ConcernEntryProcessor.calculateCurrentStatus((Condition)activeListItem));;
 	    
 		return retVal;
     }

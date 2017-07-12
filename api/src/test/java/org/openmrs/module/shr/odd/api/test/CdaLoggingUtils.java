@@ -3,7 +3,6 @@ package org.openmrs.module.shr.odd.api.test;
 import java.io.ByteArrayOutputStream;
 
 import org.apache.commons.logging.LogFactory;
-import org.jfree.util.Log;
 import org.marc.everest.formatters.interfaces.IFormatterGraphResult;
 import org.marc.everest.formatters.xml.datatypes.r1.DatatypeFormatter;
 import org.marc.everest.formatters.xml.datatypes.r1.R1FormatterCompatibilityMode;

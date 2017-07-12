@@ -33,11 +33,12 @@
 	</modules>
 	
 	<properties>
-		<openMRSVersion>1.11.5</openMRSVersion>
+		<openMRSVersion>2.0.5</openMRSVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <cdahandlerVersion>1.0.1-SNAPSHOT</cdahandlerVersion>
         <contenthandlerVersion>3.0.1-SNAPSHOT</contenthandlerVersion>
         <xdsbrepositoryVersion>1.1.1-SNAPSHOT</xdsbrepositoryVersion>
+		<emrapiConditionListVersion>1.22.1</emrapiConditionListVersion>
 	</properties>
 
 	<dependencyManagement>
@@ -110,8 +111,8 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
-						<target>1.7</target>
-						<source>1.7</source>
+						<target>1.8</target>
+						<source>1.8</source>
 					</configuration>
 				</plugin>
 				<plugin>

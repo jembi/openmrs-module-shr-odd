@@ -1,8 +1,6 @@
 package org.openmrs.module.shr.odd.generator.section.impl;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import org.marc.everest.datatypes.BL;
 import org.marc.everest.datatypes.ED;
@@ -34,11 +32,7 @@ import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActMoodDocumentObservation;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntry;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_ActRelationshipEntryRelationship;
 import org.marc.everest.rmim.uv.cdar2.vocabulary.x_DocumentActMood;
-import org.openmrs.Concept;
-import org.openmrs.Obs;
-import org.openmrs.activelist.ActiveListItem;
-import org.openmrs.activelist.Allergy;
-import org.openmrs.activelist.AllergySeverity;
+import org.openmrs.*;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.shr.cdahandler.CdaHandlerConstants;
 import org.openmrs.module.shr.cdahandler.api.CdaImportService;
@@ -65,7 +59,7 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 	@Override
 	public Section generateSection() {
 		// Are there problems on file for the patient?
-		List<ActiveListItem> allergies = Context.getActiveListService().getActiveListItems(this.m_registration.getPatient(), Allergy.ACTIVE_LIST_TYPE);
+		List<Allergy> allergies = Context.getPatientService().getAllergies(this.m_registration.getPatient());
 
 		// Create generic section construct
 		Section retVal = super.createSection(
@@ -85,32 +79,28 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 
 			
 			// Generate problem list
-			for(ActiveListItem itm : allergies)
+			for(Allergy allergy : allergies)
 			{
 				Act problemAct = super.createAct(
 					x_ActClassDocumentEntryAct.Act,
 					x_DocumentActMood.Eventoccurrence,
 					Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_ALLERGIES_AND_INTOLERANCES_CONCERN, CdaHandlerConstants.ENT_TEMPLATE_CONCERN_ENTRY, CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_ACT),
-					itm);
-				
-				Allergy allergy = (Allergy)itm;
-			
+					allergy);
+
 				requiredAllergyAssertions.remove(allergy.getAllergen());
-				
+
 				// Add an entry relationship of the problem
-				Obs problemObs = itm.getStartObs();
-				if(itm.getStopObs() != null)
-					problemObs = itm.getStopObs();
+				Obs problemObs = findLastProblemObs(allergy);
 				
-				Observation problemObservation = super.createObs(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_CCD_ALERT_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_ALLERGY_AND_INTOLERANCE_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION), 
-					problemObs, 
+				Observation problemObservation = super.createObs(Arrays.asList(CdaHandlerConstants.ENT_TEMPLATE_CCD_PROBLEM_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_CCD_ALERT_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_ALLERGY_AND_INTOLERANCE_OBSERVATION, CdaHandlerConstants.ENT_TEMPLATE_PROBLEM_OBSERVATION),
+					problemObs,
 					CdaHandlerConstants.CODE_SYSTEM_SNOMED);
 				
 				super.correctCode((CD<?>)problemObservation.getValue(), CdaHandlerConstants.CODE_SYSTEM_RXNORM, CdaHandlerConstants.CODE_SYSTEM_SNOMED, CdaHandlerConstants.CODE_SYSTEM_ICD_10);
 				
 				// Now for allergy information
 				String typeMnemonic = "", display = "";
-				switch(allergy.getAllergyType())
+				switch(allergy.getAllergenType())
 				{
 					case DRUG:
 						typeMnemonic = "D";
@@ -128,14 +118,9 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 						typeMnemonic = "O";
 						display = "Other ";
 				}
-				
+
 				// Complete the code and assign
-				if(allergy.getSeverity().equals(AllergySeverity.INTOLERANCE))
-				{
-					typeMnemonic += "INT";
-					display += "Intolerance";
-				}
-				else if(typeMnemonic.equals("O"))
+				if(typeMnemonic.equals("O"))
 				{
 					typeMnemonic = "ALG";
 					display += "Allergy";
@@ -152,27 +137,23 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 				problemObservation.getParticipant().get(0).setParticipantRole(new ParticipantRole(new CS<String>("MANU")));
 				PlayingEntity playingEntity = new PlayingEntity(EntityClassRoot.ManufacturedMaterial);
 				
-				playingEntity.setCode(this.m_oddMetadataUtil.getStandardizedCode(allergy.getAllergen(), null, CE.class));
+				playingEntity.setCode(this.m_oddMetadataUtil.getStandardizedCode(allergy.getAllergen().getCodedAllergen(), null, CE.class));
 				super.correctCode(playingEntity.getCode(), CdaHandlerConstants.CODE_SYSTEM_RXNORM, CdaHandlerConstants.CODE_SYSTEM_SNOMED, CdaHandlerConstants.CODE_SYSTEM_ICD_10);
 
-				playingEntity.setName(SET.createSET(new PN(Arrays.asList(new ENXP(allergy.getAllergen().getName().getName())))));
+				playingEntity.setName(SET.createSET(new PN(Arrays.asList(new ENXP(allergy.getAllergen().toString())))));
 				problemObservation.getParticipant().get(0).getParticipantRole().setPlayingEntityChoice(playingEntity);
 				
 				
 				// Now the severity
+				Concept severityConcept = allergy.getSeverity();
+				String uuidSeverity = severityConcept.getUuid();
 				String severityCode = null;
-				switch(allergy.getSeverity())
-				{
-					case SEVERE:
-						severityCode = "H";
-						break;
-					case MODERATE:
-						severityCode = "M";
-						break;
-					case MILD:
-						severityCode = "L";
-						break;
-				}
+				if(uuidSeverity.equals(getGlobalProperty("allergy.concept.severity.mild")))
+					severityCode = "L";
+				else if(uuidSeverity.equals(getGlobalProperty("allergy.concept.severity.moderate")))
+					severityCode = "M";
+				else if(uuidSeverity.equals(getGlobalProperty("allergy.concept.severity.severe")))
+					severityCode = "H";
 
 				// Severity code
 				if(severityCode != null)
@@ -182,9 +163,9 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 					severityObservation.setId(SET.createSET(new II(UUID.randomUUID())));
 					severityObservation.setTemplateId(LIST.createLIST(new II(CdaHandlerConstants.ENT_TEMPLATE_SEVERITY_OBSERVATION), new II(CdaHandlerConstants.ENT_TEMPLATE_CCD_SEVERITY_OBSERVATION)));
 					severityObservation.setCode(new CD<String>("SEV", CdaHandlerConstants.CODE_SYSTEM_ACT_CODE, "ActCode", null, "Severity", null));
-					severityObservation.setText(new ED(allergy.getSeverity().name()));
+					severityObservation.setText(new ED(allergy.getSeverity().getName().getName()));
 					severityObservation.setStatusCode(ActStatus.Completed);
-					severityObservation.setValue(new CD<String>(severityCode, CdaHandlerConstants.CODE_SYSTEM_OBSERVATION_VALUE, "ObservationValue", null, null, allergy.getSeverity().name()));
+					severityObservation.setValue(new CD<String>(severityCode, CdaHandlerConstants.CODE_SYSTEM_OBSERVATION_VALUE, "ObservationValue", null, null, allergy.getSeverity().getName().getName()));
 					problemObservation.getEntryRelationship().add(new EntryRelationship(x_ActRelationshipEntryRelationship.SUBJ, BL.TRUE, BL.TRUE, null, null, null, severityObservation));
 				}
 				
@@ -271,7 +252,33 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 
 		return retVal;
 	}
-	
+
+	private Obs findLastProblemObs(Allergy allergy){
+		List<Obs> candidates= new ArrayList<>();
+		List<Obs> obs = Context.getObsService().getObservationsByPerson(allergy.getPatient());
+		for(Obs currentObs : obs){
+			if(currentObs.getValueCoded() != null && currentObs.getValueCoded().equals(allergy.getAllergen().getCodedAllergen()))
+				candidates.add(currentObs);
+		}
+		Collections.sort(candidates, Comparator.comparing(Obs::getObsDatetime));
+		if(candidates.size()>0)
+			return candidates.get(candidates.size()-1);
+		return null;
+	}
+
+	private Obs findFirstProblemObs(Allergy allergy){
+		List<Obs> candidates= new ArrayList<>();
+		List<Obs> obs = Context.getObsService().getObservationsByPerson(allergy.getPatient());
+		for(Obs currentObs : obs){
+			if(currentObs.getValueCoded() != null && currentObs.getValueCoded().equals(allergy.getAllergen().getCodedAllergen()))
+				candidates.add(currentObs);
+		}
+		Collections.sort(candidates, Comparator.comparing(Obs::getObsDatetime));
+		if(candidates.size()>0)
+			return candidates.get(0);
+		return null;
+	}
+
 	/**
 	 * Get the obs group concept
 	 * @see org.openmrs.module.shr.odd.generator.section.impl.SectionGeneratorImpl#getSectionObsGroupConcept()
@@ -279,6 +286,14 @@ public class AllergiesSectionGenerator extends SectionGeneratorImpl {
 	@Override
 	protected Concept getSectionObsGroupConcept() {
 		return this.m_sectionConcept;
+	}
+
+	/**
+	 * Get global property
+	 *
+	 */
+	private String getGlobalProperty(String globalPropertyName) {
+		return Context.getAdministrationService().getGlobalProperty(globalPropertyName);
 	}
 	
 }

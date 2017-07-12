@@ -8,6 +8,6 @@
         <mapping resource="OnDemandDocumentType.hbm.xml" />
         <mapping resource="OnDemandDocumentRegistration.hbm.xml" />
         <mapping resource="ExtendedOrders.hbm.xml" />
-        
+        <mapping resource="Condition.hbm.xml"/>
     </session-factory>
 </hibernate-configuration>
